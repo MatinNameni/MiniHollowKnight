@@ -6,6 +6,8 @@ dependencies {
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
   api "com.github.raeleus.TenPatch:tenpatch:$tenPatchVersion"
 
+  api "org.xerial:sqlite-jdbc:3.53.2.0"
+
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
   }
