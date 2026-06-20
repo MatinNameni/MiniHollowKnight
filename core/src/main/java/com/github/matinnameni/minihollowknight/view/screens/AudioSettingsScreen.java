@@ -46,6 +46,7 @@ public class AudioSettingsScreen extends AbstractScreen {
         rootTable.add(buildMusicVolumeSection()).row();
         rootTable.add(buildSfxToggleSection()).row();
         rootTable.add(buildSfxVolumeSection()).row();
+        rootTable.add(buildResetButton()).row();
         rootTable.add(buildBackButton()).padTop(30);
 
         stage.addActor(rootTable);
@@ -172,7 +173,7 @@ public class AudioSettingsScreen extends AbstractScreen {
         style.checked = null;
         style.over = null;
         toggleButton.setStyle(style);
-        
+
         toggleButton.getLabel().setAlignment(Align.right);
 
         toggleButton.addListener(new ChangeListener() {
@@ -212,6 +213,20 @@ public class AudioSettingsScreen extends AbstractScreen {
             }
         });
         return slider;
+    }
+
+    /**
+     * Builds the button that resets the audio settings.
+     */
+    private TextButton buildResetButton() {
+        TextButton resetButton = new TextButton(Lang.get("audioSettings.reset"), skin);
+        resetButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                controller.resetAudioSettings();
+            }
+        });
+        return resetButton;
     }
 
     // --- Navigation ---

@@ -6,7 +6,6 @@ import com.github.matinnameni.minihollowknight.view.UiManager;
 
 /**
  * Controller for the audio settings screen.
- * Handles master volume, music toggle/volume, and SFX toggle/volume.
  */
 public class AudioSettingsController {
     private final ScreenNavigator navigator;
@@ -39,6 +38,13 @@ public class AudioSettingsController {
     public void onSfxVolumeChanged(float volume) {
         settings.setSfxVolume(volume);
         UiManager.getInstance().applySettings(settings);
+    }
+
+    /** Resets audio settings to default values */
+    public void resetAudioSettings() {
+        settings.resetVolumes();
+        UiManager.getInstance().applySettings(settings);
+        UiManager.getInstance().goToAudioSettings();
     }
 
     /** Returns to the main settings screen. */

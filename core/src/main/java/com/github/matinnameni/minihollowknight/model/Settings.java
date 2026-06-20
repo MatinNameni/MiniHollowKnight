@@ -62,6 +62,14 @@ public class Settings {
         keyPause = Input.Keys.ESCAPE;
     }
 
+    /** Resets all audio volumes to defaults. */
+    public void resetVolumes() {
+        musicEnabled = true;
+        musicVolume = 1.0f;
+        sfxEnabled = true;
+        sfxVolume = 1.0f;
+    }
+
     // --- Getters ---
 
     public float getMusicVolume() {
