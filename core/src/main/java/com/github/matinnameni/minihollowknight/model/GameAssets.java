@@ -13,6 +13,7 @@ public class GameAssets {
     // --- Asset paths ---
     private static final String BACKGROUND_IMG = "sprites/Menu/controller_prompt_bg.png";
     private static final String LOGO_IMG = "sprites/Menu/vheart_title.png";
+    private static final String SEPARATOR = "sprites/Menu/separator.png";
     private static final String UI_SKIN = "ui/uiskin.json";
 
     private final AssetManager manager = new AssetManager();
@@ -24,6 +25,7 @@ public class GameAssets {
     public void loadAll() {
         manager.load(BACKGROUND_IMG, Texture.class);
         manager.load(LOGO_IMG, Texture.class);
+        manager.load(SEPARATOR, Texture.class);
         manager.finishLoading();
     }
 
@@ -35,6 +37,10 @@ public class GameAssets {
 
     public Texture getLogo() {
         return manager.get(LOGO_IMG, Texture.class);
+    }
+
+    public Texture getSeparator() {
+        return manager.get(SEPARATOR, Texture.class);
     }
 
     public Skin createSkin() {

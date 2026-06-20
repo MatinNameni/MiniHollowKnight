@@ -8,31 +8,28 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Scaling;
 import com.github.matinnameni.minihollowknight.model.GameAssets;
 import com.github.matinnameni.minihollowknight.controller.MainMenuController;
+import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
 
 /**
  * Main-menu screen
  */
 public class MainMenuScreen extends AbstractScreen {
-    private static final float BUTTON_WIDTH  = 250f;
-    private static final float BUTTON_HEIGHT =  40f;
+    private static final float BUTTON_WIDTH = 250f;
+    private static final float BUTTON_HEIGHT = 40f;
     private static final float BUTTON_SPACING = 10f;
     private static final float LOGO_MIN_SIZE = 150f;
-    private static final float LOGO_PAD_TOP  =  50f;
-    private static final float LOGO_PAD_BOTTOM =  20f;
-    private static final float MENU_PAD_BOTTOM =  50f;
+    private static final float LOGO_PAD_TOP = 50f;
+    private static final float LOGO_PAD_BOTTOM = 20f;
+    private static final float MENU_PAD_BOTTOM = 50f;
 
     private final MainMenuController controller;
     private final Settings settings;
 
-    public MainMenuScreen(GameAssets assets, MainMenuController controller, Settings settings) {
+    public MainMenuScreen(GameAssets assets, Settings settings, MainMenuController controller) {
         super(assets);
         this.controller = controller;
         this.settings = settings;
-    }
-
-    public MainMenuScreen(GameAssets assets, MainMenuController controller) {
-        this(assets, controller, new Settings());
     }
 
     @Override
@@ -88,11 +85,12 @@ public class MainMenuScreen extends AbstractScreen {
             .width(BUTTON_WIDTH)
             .height(BUTTON_HEIGHT)
             .center();
-        wrapper.add(menuButton("Start Game", controller::onStartGame)).row();
-        wrapper.add(menuButton("Settings", controller::onSettings)).row();
-        wrapper.add(menuButton("Guide", controller::onGuide)).row();
-        wrapper.add(menuButton("Achievements", controller::onAchievements)).row();
-        wrapper.add(menuButton("Quit Game", controller::onQuit)).row();
+        wrapper.add(menuButton(Lang.get("menu.startGame"), controller::onStartGame)).row();
+        wrapper.add(menuButton(Lang.get("menu.settings"), controller::onSettings)).row();
+        wrapper.add(menuButton(Lang.get("menu.guide"), controller::onGuide)).row();
+        wrapper.add(menuButton(Lang.get("menu.achievements"), controller::onAchievements)).row();
+        wrapper.add(menuButton(Lang.get("menu.quit"), controller::onQuit)).row();
+
         return wrapper;
     }
 

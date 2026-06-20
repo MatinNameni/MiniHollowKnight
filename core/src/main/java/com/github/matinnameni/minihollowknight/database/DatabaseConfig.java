@@ -110,7 +110,7 @@ public final class DatabaseConfig {
                                   key_left, key_right, key_jump, key_attack,
                                   key_dash, key_focus, key_interact,
                                   key_inventory, key_pause)
-            VALUES (1,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            VALUES (1,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ON CONFLICT(id) DO UPDATE SET
                 music_volume = excluded.music_volume,
                 sfx_volume = excluded.sfx_volume,
@@ -143,7 +143,7 @@ public final class DatabaseConfig {
                                     current_environment, player_x, player_y,
                                     masks, max_masks, soul, total_notches,
                                     total_deaths, enemies_killed, bosses_defeated)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ON CONFLICT(slot_id) DO UPDATE SET
                 slot_name = excluded.slot_name,
                 play_time_seconds = excluded.play_time_seconds,

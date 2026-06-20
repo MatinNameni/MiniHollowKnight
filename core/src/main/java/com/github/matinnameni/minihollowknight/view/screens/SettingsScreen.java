@@ -1,12 +1,109 @@
 package com.github.matinnameni.minihollowknight.view.screens;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
+import com.github.matinnameni.minihollowknight.controller.SettingsController;
 import com.github.matinnameni.minihollowknight.model.GameAssets;
+import com.github.matinnameni.minihollowknight.model.Lang;
+import com.github.matinnameni.minihollowknight.model.Settings;
+import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
 
 /**
  * Settings screen
  */
 public class SettingsScreen extends AbstractScreen {
-    public SettingsScreen(GameAssets assets) {
+    private static final float FIELD_WIDTH = 250f;
+    private static final float FIELD_HEIGHT = 40f;
+    private static final float FIELD_SPACING = 20f;
+
+    private final Settings settings;
+    private final SettingsController controller;
+
+    public SettingsScreen(GameAssets assets, Settings settings, SettingsController controller) {
         super(assets);
+        this.settings = settings;
+        this.controller = controller;
+    }
+
+    @Override
+    public void show() {
+        super.show();
+
+        addBackground();
+
+        Table rootTable = new Table();
+        rootTable.setFillParent(true);
+        rootTable.defaults().space(FIELD_SPACING).expandX().fillX()
+            .width(FIELD_WIDTH).height(FIELD_HEIGHT).center();
+
+        rootTable.add(buildTitleLabel()).spaceBottom(0).row();
+        rootTable.add(new Image(assets.getSeparator())).space(0).row();
+        rootTable.add(buildLanguageSelectSection()).spaceTop(0).row();
+        rootTable.add(buildBackButton()).padTop(30);
+
+        stage.addActor(rootTable);
+    }
+
+    // --- Helpers ---
+
+    /** Sets settings-menu background image */
+    private void addBackground() {
+        Image background = new Image(assets.getBackground());
+        background.setScaling(Scaling.fill);
+        background.setFillParent(true);
+        stage.addActor(background);
+    }
+
+    /** Builds the label that shows menu title */
+    private Label buildTitleLabel() {
+        Label titleLabel = new Label(Lang.get("settings.title"), skin);
+        titleLabel.setAlignment(Align.center);
+        return titleLabel;
+    }
+
+    private Table buildLanguageSelectSection() {
+        Table wrapper = new Table(skin);
+
+        wrapper.add(new Label(Lang.get("settings.language"), skin)).expandX().grow().spaceRight(FIELD_SPACING);
+        wrapper.add(buildLanguageSelect()).growY();
+
+        return wrapper;
+    }
+
+    /**
+     * Builds the select box that lets the player switch the active language
+     */
+    private SelectBox<SupportedLanguage> buildLanguageSelect() {
+        SelectBox<SupportedLanguage> select = new SelectBox<>(skin);
+        select.setItems(SupportedLanguage.values());
+        select.setSelected(SupportedLanguage.fromShortName(settings.getLanguage()));
+
+        select.getStyle().background = null;
+        select.getList().setAlignment(Align.center);
+
+        select.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                controller.onLanguageChanged(select.getSelected());
+            }
+        });
+        return select;
+    }
+
+    /**
+     * Builds the back button that allows player to return to the main menu
+     */
+    private TextButton buildBackButton() {
+        TextButton button = new TextButton(Lang.get("settings.back"), skin);
+        button.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                controller.onBack();
+            }
+        });
+        return button;
     }
 }

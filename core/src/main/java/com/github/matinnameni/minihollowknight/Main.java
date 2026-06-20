@@ -9,4 +9,12 @@ public class Main extends Game {
         UiManager.init(this);
         UiManager.getInstance().goToMainMenu();
     }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (UiManager.getInstance() != null && UiManager.getInstance().getDatabase() != null) {
+            UiManager.getInstance().getDatabase().close();
+        }
+    }
 }
