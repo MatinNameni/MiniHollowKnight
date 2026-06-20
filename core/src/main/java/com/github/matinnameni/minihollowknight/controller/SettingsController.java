@@ -26,6 +26,12 @@ public class SettingsController {
         navigator.goToSettings();
     }
 
+    /** Called when the player adjusts the brightness slider. */
+    public void onBrightnessChanged(float brightness) {
+        settings.setBrightness(brightness);
+        UiManager.getInstance().applySettings(settings);
+    }
+
     public void onBack() {
         navigator.goToMainMenu();
     }

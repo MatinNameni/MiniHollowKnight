@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
+
 import com.github.matinnameni.minihollowknight.controller.SettingsController;
 import com.github.matinnameni.minihollowknight.model.GameAssets;
 import com.github.matinnameni.minihollowknight.model.Lang;
@@ -42,6 +43,7 @@ public class SettingsScreen extends AbstractScreen {
         rootTable.add(buildTitleLabel()).spaceBottom(0).row();
         rootTable.add(new Image(assets.getSeparator())).space(0).row();
         rootTable.add(buildLanguageSelectSection()).spaceTop(0).row();
+        rootTable.add(buildBrightnessSection()).row();
         rootTable.add(buildBackButton()).padTop(30);
 
         stage.addActor(rootTable);
@@ -91,6 +93,34 @@ public class SettingsScreen extends AbstractScreen {
             }
         });
         return select;
+    }
+
+    /**
+     * Builds the section containing a label and a slider for screen brightness.
+     */
+    private Table buildBrightnessSection() {
+        Table wrapper = new Table(skin);
+
+        wrapper.add(new Label(Lang.get("settings.brightness"), skin)).expandX().grow().spaceRight(FIELD_SPACING);
+        wrapper.add(buildBrightnessSlider()).growY();
+
+        return wrapper;
+    }
+
+    /**
+     * Builds the slider that lets the player adjust screen brightness.
+     */
+    private Slider buildBrightnessSlider() {
+        Slider slider = new Slider(0.2f, 1f, 0.01f, false, skin);
+        slider.setValue(settings.getBrightness());
+
+        slider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                controller.onBrightnessChanged(slider.getValue());
+            }
+        });
+        return slider;
     }
 
     /**
