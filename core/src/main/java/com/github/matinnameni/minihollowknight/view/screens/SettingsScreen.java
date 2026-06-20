@@ -44,6 +44,7 @@ public class SettingsScreen extends AbstractScreen {
         rootTable.add(new Image(assets.getSeparator())).space(0).row();
         rootTable.add(buildLanguageSelectSection()).spaceTop(0).row();
         rootTable.add(buildBrightnessSection()).row();
+        rootTable.add(buildAudioSettingsButton()).spaceTop(0).row();
         rootTable.add(buildBackButton()).padTop(30);
 
         stage.addActor(rootTable);
@@ -65,6 +66,24 @@ public class SettingsScreen extends AbstractScreen {
         titleLabel.setAlignment(Align.center);
         return titleLabel;
     }
+
+    // --- Audio ---
+
+    /**
+     * Builds the button that navigates to the audio settings sub-screen.
+     */
+    private TextButton buildAudioSettingsButton() {
+        TextButton button = new TextButton(Lang.get("settings.audio"), skin);
+        button.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                controller.onAudioSettings();
+            }
+        });
+        return button;
+    }
+
+    // --- Display ---
 
     private Table buildLanguageSelectSection() {
         Table wrapper = new Table(skin);
@@ -122,6 +141,8 @@ public class SettingsScreen extends AbstractScreen {
         });
         return slider;
     }
+
+    // --- Navigation ---
 
     /**
      * Builds the back button that allows player to return to the main menu

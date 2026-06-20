@@ -3,6 +3,7 @@ package com.github.matinnameni.minihollowknight.model;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 /**
@@ -15,6 +16,7 @@ public class GameAssets {
     private static final String LOGO_IMG = "sprites/Menu/vheart_title.png";
     private static final String SEPARATOR = "sprites/Menu/separator.png";
     private static final String UI_SKIN = "ui/uiskin.json";
+    private static final String MENU_MUSIC = "Audio_Files/Title.wav";
 
     private final AssetManager manager = new AssetManager();
 
@@ -26,6 +28,7 @@ public class GameAssets {
         manager.load(BACKGROUND_IMG, Texture.class);
         manager.load(LOGO_IMG, Texture.class);
         manager.load(SEPARATOR, Texture.class);
+        manager.load(MENU_MUSIC, Music.class);
         manager.finishLoading();
     }
 
@@ -45,6 +48,10 @@ public class GameAssets {
 
     public Skin createSkin() {
         return new Skin(Gdx.files.internal(UI_SKIN));
+    }
+
+    public Music getMenuMusic() {
+        return manager.get(MENU_MUSIC, Music.class);
     }
 
     public void dispose() {

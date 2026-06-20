@@ -3,6 +3,8 @@ package com.github.matinnameni.minihollowknight.view;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.github.matinnameni.minihollowknight.controller.AudioSettingsController;
 import com.github.matinnameni.minihollowknight.controller.SettingsController;
 import com.github.matinnameni.minihollowknight.database.DatabaseManager;
 import com.github.matinnameni.minihollowknight.model.GameAssets;
@@ -10,6 +12,7 @@ import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
 import com.github.matinnameni.minihollowknight.controller.MainMenuController;
+import com.github.matinnameni.minihollowknight.view.screens.AudioSettingsScreen;
 import com.github.matinnameni.minihollowknight.view.screens.MainMenuScreen;
 import com.github.matinnameni.minihollowknight.view.screens.SettingsScreen;
 
@@ -20,6 +23,7 @@ public class UiManager implements ScreenNavigator {
     private Game game;
     private DatabaseManager database;
     private Settings settings;
+    private Music menuMusic;
 
     private static UiManager instance;
 
@@ -36,6 +40,7 @@ public class UiManager implements ScreenNavigator {
             instance.setAssets(new GameAssets());
             instance.getAssets().loadAll();
             instance.initDatabaseAndSettings();
+            instance.playMenuMusic();
         }
     }
 
@@ -102,10 +107,37 @@ public class UiManager implements ScreenNavigator {
     public void applySettings(Settings settings) {
         this.settings = settings;
         Lang.load(SupportedLanguage.fromShortName(settings.getLanguage()));
+        applyVolumeSettings();
         try {
             database.saveSettings(settings);
         } catch (SQLException e) {
             System.err.println("[UiManager] Failed to save settings: " + e.getMessage());
+        }
+    }
+
+    // --- Audio ---
+
+    /** Starts playing the menu background music on loop using current volume settings. */
+    public void playMenuMusic() {
+        stopMenuMusic();
+        menuMusic = assets.getMenuMusic();
+        menuMusic.setLooping(true);
+        menuMusic.setVolume(settings.isMusicEnabled() ? settings.getMusicVolume() : 0f);
+        menuMusic.play();
+    }
+
+    /** Stops and disposes the current menu music instance. */
+    public void stopMenuMusic() {
+        if (menuMusic != null) {
+            menuMusic.stop();
+            menuMusic = null;
+        }
+    }
+
+    /** Applies the current volume settings. */
+    public void applyVolumeSettings() {
+        if (menuMusic != null) {
+            menuMusic.setVolume(settings.isMusicEnabled() ? settings.getMusicVolume() : 0f);
         }
     }
 
@@ -126,6 +158,12 @@ public class UiManager implements ScreenNavigator {
     public void goToSettings() {
         SettingsController controller = new SettingsController(this, settings);
         setScreen(new SettingsScreen(assets, settings, controller));
+    }
+
+    @Override
+    public void goToAudioSettings() {
+        AudioSettingsController controller = new AudioSettingsController(this, settings);
+        setScreen(new AudioSettingsScreen(assets, settings, controller));
     }
 
     @Override

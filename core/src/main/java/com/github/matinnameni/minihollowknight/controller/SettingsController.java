@@ -17,6 +17,11 @@ public class SettingsController {
         this.settings = settings;
     }
 
+    /** Called when the player taps the Audio Settings button. */
+    public void onAudioSettings() {
+        navigator.goToAudioSettings();
+    }
+
     /** Called when the player picks a different language in the dropdown. */
     public void onLanguageChanged(SupportedLanguage language) {
         if (language.shortName.equals(settings.getLanguage())) return;
