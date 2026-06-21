@@ -22,6 +22,11 @@ public class SettingsController {
         navigator.goToAudioSettings();
     }
 
+    /** Called when the player taps the Key Bindings button. */
+    public void onKeyBindings() {
+        navigator.goToKeyBindings();
+    }
+
     /** Called when the player picks a different language in the dropdown. */
     public void onLanguageChanged(SupportedLanguage language) {
         if (language.shortName.equals(settings.getLanguage())) return;

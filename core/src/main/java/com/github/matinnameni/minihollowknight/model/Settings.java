@@ -3,6 +3,11 @@ package com.github.matinnameni.minihollowknight.model;
 import com.badlogic.gdx.Input;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * All game's configurable settings.
  */
@@ -18,15 +23,15 @@ public class Settings {
     private String language = SupportedLanguage.ENGLISH.shortName;
 
     // --- Key bindings ---
-    private int keyLeft   = Input.Keys.LEFT;
-    private int keyRight  = Input.Keys.RIGHT;
-    private int keyJump   = Input.Keys.Z;
+    private int keyLeft = Input.Keys.LEFT;
+    private int keyRight = Input.Keys.RIGHT;
+    private int keyJump = Input.Keys.Z;
     private int keyAttack = Input.Keys.X;
-    private int keyDash   = Input.Keys.C;
-    private int keyFocus  = Input.Keys.A;
+    private int keyDash = Input.Keys.C;
+    private int keyFocus = Input.Keys.A;
     private int keyInteract = Input.Keys.E;
     private int keyInventory = Input.Keys.I;
-    private int keyPause  = Input.Keys.ESCAPE;
+    private int keyPause = Input.Keys.ESCAPE;
 
     /** Returns a deep copy from this {@link Settings} */
     public Settings copy() {
@@ -68,6 +73,24 @@ public class Settings {
         musicVolume = 1.0f;
         sfxEnabled = true;
         sfxVolume = 1.0f;
+    }
+
+    /**
+     * @return a {@link Map} containing all game button keycodes,
+     * keyed with their title
+     */
+    public Map<String, Integer> getKeys() {
+        Map<String, Integer> keys = new LinkedHashMap<>();
+        keys.put(Input.Keys.toString(keyLeft), keyLeft);
+        keys.put(Input.Keys.toString(keyRight), keyRight);
+        keys.put(Input.Keys.toString(keyJump), keyJump);
+        keys.put(Input.Keys.toString(keyAttack), keyAttack);
+        keys.put(Input.Keys.toString(keyDash), keyDash);
+        keys.put(Input.Keys.toString(keyFocus), keyFocus);
+        keys.put(Input.Keys.toString(keyInteract), keyInteract);
+        keys.put(Input.Keys.toString(keyInventory), keyInventory);
+        keys.put(Input.Keys.toString(keyPause), keyPause);
+        return keys;
     }
 
     // --- Getters ---

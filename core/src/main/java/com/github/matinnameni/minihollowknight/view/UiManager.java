@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.github.matinnameni.minihollowknight.controller.AudioSettingsController;
+import com.github.matinnameni.minihollowknight.controller.KeyBindingsController;
 import com.github.matinnameni.minihollowknight.controller.SettingsController;
 import com.github.matinnameni.minihollowknight.database.DatabaseManager;
 import com.github.matinnameni.minihollowknight.model.GameAssets;
@@ -13,6 +14,7 @@ import com.github.matinnameni.minihollowknight.model.Settings;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
 import com.github.matinnameni.minihollowknight.controller.MainMenuController;
 import com.github.matinnameni.minihollowknight.view.screens.AudioSettingsScreen;
+import com.github.matinnameni.minihollowknight.view.screens.KeyBindingsScreen;
 import com.github.matinnameni.minihollowknight.view.screens.MainMenuScreen;
 import com.github.matinnameni.minihollowknight.view.screens.SettingsScreen;
 
@@ -164,6 +166,12 @@ public class UiManager implements ScreenNavigator {
     public void goToAudioSettings() {
         AudioSettingsController controller = new AudioSettingsController(this, settings);
         setScreen(new AudioSettingsScreen(assets, settings, controller));
+    }
+
+    @Override
+    public void goToKeyBindings() {
+        KeyBindingsController controller = new KeyBindingsController(this, settings);
+        setScreen(new KeyBindingsScreen(assets, settings, controller));
     }
 
     @Override

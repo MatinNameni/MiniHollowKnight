@@ -5,6 +5,7 @@ public interface ScreenNavigator {
     void goToStartGame();
     void goToSettings();
     void goToAudioSettings();
+    void goToKeyBindings();
     void goToGuide();
     void goToAchievements();
     void quitGame();

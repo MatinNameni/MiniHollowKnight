@@ -45,6 +45,7 @@ public class SettingsScreen extends AbstractScreen {
         rootTable.add(buildLanguageSelectSection()).spaceTop(0).row();
         rootTable.add(buildBrightnessSection()).row();
         rootTable.add(buildAudioSettingsButton()).spaceTop(0).row();
+        rootTable.add(buildKeyBindingsButton()).spaceTop(0).row();
         rootTable.add(buildBackButton()).padTop(30);
 
         stage.addActor(rootTable);
@@ -78,6 +79,22 @@ public class SettingsScreen extends AbstractScreen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 controller.onAudioSettings();
+            }
+        });
+        return button;
+    }
+
+    // --- Key Bindings ---
+
+    /**
+     * Builds the button that navigates to the key bindings sub-screen.
+     */
+    private TextButton buildKeyBindingsButton() {
+        TextButton button = new TextButton(Lang.get("settings.keyBindings"), skin);
+        button.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                controller.onKeyBindings();
             }
         });
         return button;
