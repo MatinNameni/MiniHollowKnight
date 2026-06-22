@@ -105,17 +105,17 @@ com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
 	}
 }
 com.ray3k.tenpatch.TenPatchDrawable: {
-	TextButton_Menu_Over: {
-		region: TextButton_Menu
-		horizontalStretchAreas: [ 72, 125 ]
-		verticalStretchAreas: [ 0, 34, 59, 99 ]
+	TextButton_Menu_2_Over: {
+		region: TextButton_Menu_2
+		horizontalStretchAreas: [ 35, 63 ]
+		verticalStretchAreas: [ 0, 4, 30, 33 ]
 		tiling: false
-		minWidth: 200
-		minHeight: 100
-		rightWidth: 90
-		leftWidth: 88
-		bottomHeight: 36
-		topHeight: 41
+		minWidth: 99
+		minHeight: 34
+		rightWidth: 44
+		leftWidth: 44
+		bottomHeight: 5
+		topHeight: 4
 		offsetX: 0
 		offsetY: 0
 		offsetXspeed: 0
@@ -246,8 +246,8 @@ com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 	default: {
 		font: font
 		fontColor: white
-		down: TextButton_Menu_Over
-		over: TextButton_Menu_Over
+		down: TextButton_Menu_2_Over
+		over: TextButton_Menu_2_Over
 	}
 	toggle: {
 		font: font

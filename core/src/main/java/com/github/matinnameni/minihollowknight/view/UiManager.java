@@ -13,10 +13,12 @@ import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
 import com.github.matinnameni.minihollowknight.controller.MainMenuController;
+import com.github.matinnameni.minihollowknight.controller.StartGameController;
 import com.github.matinnameni.minihollowknight.view.screens.AudioSettingsScreen;
 import com.github.matinnameni.minihollowknight.view.screens.KeyBindingsScreen;
 import com.github.matinnameni.minihollowknight.view.screens.MainMenuScreen;
 import com.github.matinnameni.minihollowknight.view.screens.SettingsScreen;
+import com.github.matinnameni.minihollowknight.view.screens.StartGameScreen;
 
 import java.sql.SQLException;
 
@@ -153,7 +155,8 @@ public class UiManager implements ScreenNavigator {
 
     @Override
     public void goToStartGame() {
-        // TODO: write this method after implementing StartGameScreen
+        StartGameController controller = new StartGameController(this);
+        setScreen(new StartGameScreen(assets, controller));
     }
 
     @Override

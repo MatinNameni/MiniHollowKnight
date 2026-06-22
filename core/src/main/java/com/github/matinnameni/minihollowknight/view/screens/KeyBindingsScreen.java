@@ -55,7 +55,7 @@ public class KeyBindingsScreen extends AbstractScreen {
         rootTable.defaults().space(FIELD_SPACING).expandX().center();
 
         rootTable.add(buildTitleLabel()).width(FIELD_WIDTH).height(FIELD_HEIGHT).colspan(2).spaceBottom(0).row();
-        addSeparator(rootTable).colspan(2).spaceTop(0).row();
+        rootTable.add(buildSeparator()).width(FIELD_WIDTH).colspan(2).spaceTop(0).row();
         rootTable.add(buildBindingsColumns()).colspan(2).spaceTop(0).row();
         rootTable.add(buildResetButton()).height(FIELD_HEIGHT).colspan(2).row();
         rootTable.add(buildBackButton()).height(FIELD_HEIGHT).colspan(2).padTop(30);
@@ -87,14 +87,11 @@ public class KeyBindingsScreen extends AbstractScreen {
         return titleLabel;
     }
 
-    /** Adds the separator that goes bellow the menu title to the {@code wrapper} table. */
-    private Cell<Image> addSeparator(Table wrapper) {
-        float width = FIELD_WIDTH;
-        float height = assets.getSeparator().getHeight() * (FIELD_WIDTH / assets.getSeparator().getWidth());
-
-        return wrapper.add(new Image(assets.getSeparator()))
-            .width(width)
-            .height(height);
+    /** Builds the separator under the title. */
+    private Image buildSeparator() {
+        Image separator = new Image(assets.getSeparator());
+        separator.setScaling(Scaling.fillX);
+        return separator;
     }
 
     /**

@@ -42,7 +42,7 @@ public class MainMenuScreen extends AbstractScreen {
         rootTable.setFillParent(true);
         rootTable.defaults().space(30);
         rootTable.add(buildLogoSection()).grow().center().row();
-         rootTable.add(buildButtonsSection()).expandX().center().padBottom(MENU_PAD_BOTTOM);
+        rootTable.add(buildButtonsSection()).expandX().center().padBottom(MENU_PAD_BOTTOM);
 
         stage.addActor(rootTable);
     }

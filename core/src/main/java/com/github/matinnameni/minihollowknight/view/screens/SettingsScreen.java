@@ -42,7 +42,7 @@ public class SettingsScreen extends AbstractScreen {
             .height(FIELD_HEIGHT).center();
 
         rootTable.add(buildTitleLabel()).width(FIELD_WIDTH).spaceBottom(0).row();
-        addSeparator(rootTable).space(0).width(FIELD_WIDTH).row();
+        rootTable.add(buildSeparator()).width(FIELD_WIDTH).row();
         rootTable.add(buildLanguageSelectSection()).width(FIELD_WIDTH).spaceTop(0).row();
         rootTable.add(buildBrightnessSection()).width(FIELD_WIDTH).row();
         rootTable.add(buildAudioSettingsButton()).spaceTop(0).row();
@@ -70,14 +70,11 @@ public class SettingsScreen extends AbstractScreen {
         return titleLabel;
     }
 
-    /** Adds the separator that goes bellow the menu title to the {@code wrapper} table. */
-    private Cell<Image> addSeparator(Table wrapper) {
-        float width = FIELD_WIDTH;
-        float height = assets.getSeparator().getHeight() * (FIELD_WIDTH / assets.getSeparator().getWidth());
-
-        return wrapper.add(new Image(assets.getSeparator()))
-            .width(width)
-            .height(height);
+    /** Builds the separator under the title. */
+    private Image buildSeparator() {
+        Image separator = new Image(assets.getSeparator());
+        separator.setScaling(Scaling.fillX);
+        return separator;
     }
 
     // --- Audio ---

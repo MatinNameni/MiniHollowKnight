@@ -11,4 +11,12 @@ public enum GameEnvironment {
         this.id = id;
         this.name = name;
     }
+
+    /** Returns the environment matching the given id, or null if not found. */
+    public static GameEnvironment fromId(int id) {
+        for (GameEnvironment environment : values()) {
+            if (environment.id == id) return environment;
+        }
+        return null;
+    }
 }

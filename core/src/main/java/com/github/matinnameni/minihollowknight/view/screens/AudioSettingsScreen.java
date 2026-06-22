@@ -41,7 +41,7 @@ public class AudioSettingsScreen extends AbstractScreen {
         rootTable.defaults().space(FIELD_SPACING).expandX().center();
 
         rootTable.add(buildTitleLabel()).width(FIELD_WIDTH).colspan(2).spaceBottom(0).row();
-        addSeparator(rootTable).space(0).width(FIELD_WIDTH).colspan(2).row();
+        rootTable.add(buildSeparator()).space(0).width(FIELD_WIDTH).colspan(2).row();
         rootTable.add(buildSettingsColumns()).colspan(2).width(FIELD_WIDTH).row();
         rootTable.add(buildResetButton()).colspan(2).height(FIELD_HEIGHT).row();
         rootTable.add(buildBackButton()).colspan(2).height(FIELD_HEIGHT).padTop(30);
@@ -67,14 +67,11 @@ public class AudioSettingsScreen extends AbstractScreen {
         return titleLabel;
     }
 
-    /** Adds the separator that goes bellow the menu title to the {@code wrapper} table. */
-    private Cell<Image> addSeparator(Table wrapper) {
-        float width = FIELD_WIDTH;
-        float height = assets.getSeparator().getHeight() * (FIELD_WIDTH / assets.getSeparator().getWidth());
-
-        return wrapper.add(new Image(assets.getSeparator()))
-            .width(width)
-            .height(height);
+    /** Builds the separator under the title. */
+    private Image buildSeparator() {
+        Image separator = new Image(assets.getSeparator());
+        separator.setScaling(Scaling.fillX);
+        return separator;
     }
 
     /** Sets toggle button text to on/off */
@@ -165,7 +162,7 @@ public class AudioSettingsScreen extends AbstractScreen {
      */
     private TextButton buildSfxToggle() {
         TextButton toggleButton = new TextButton("", skin);
-        updateToggleButtonText(toggleButton, settings.isMusicEnabled());
+        updateToggleButtonText(toggleButton, settings.isSfxEnabled());
 
         TextButton.TextButtonStyle style = new TextButton.TextButtonStyle(toggleButton.getStyle());
         style.up = null;
