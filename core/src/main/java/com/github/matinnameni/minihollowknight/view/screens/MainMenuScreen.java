@@ -42,7 +42,7 @@ public class MainMenuScreen extends AbstractScreen {
         rootTable.setFillParent(true);
         rootTable.defaults().space(30);
         rootTable.add(buildLogoSection()).grow().center().row();
-        rootTable.add(buildButtonsSection()).expandX().center().padBottom(MENU_PAD_BOTTOM);
+         rootTable.add(buildButtonsSection()).expandX().center().padBottom(MENU_PAD_BOTTOM);
 
         stage.addActor(rootTable);
     }
@@ -80,11 +80,7 @@ public class MainMenuScreen extends AbstractScreen {
      */
     private Table buildButtonsSection() {
         Table wrapper = new Table();
-        wrapper.defaults()
-            .space(BUTTON_SPACING)
-            .width(BUTTON_WIDTH)
-            .height(BUTTON_HEIGHT)
-            .center();
+        wrapper.defaults().space(BUTTON_SPACING).height(BUTTON_HEIGHT).center();
         wrapper.add(menuButton(Lang.get("menu.startGame"), controller::onStartGame)).row();
         wrapper.add(menuButton(Lang.get("menu.settings"), controller::onSettings)).row();
         wrapper.add(menuButton(Lang.get("menu.guide"), controller::onGuide)).row();
@@ -97,7 +93,6 @@ public class MainMenuScreen extends AbstractScreen {
     /** Creates a button matching the main menu style */
     private TextButton menuButton(String label, Runnable action) {
         TextButton button = new TextButton(label, skin);
-        button.pad(10);
         button.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {

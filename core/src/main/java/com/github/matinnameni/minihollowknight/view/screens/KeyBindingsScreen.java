@@ -1,9 +1,6 @@
 package com.github.matinnameni.minihollowknight.view.screens;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -24,11 +21,12 @@ import java.util.function.IntSupplier;
  * Key bindings screen.
  */
 public class KeyBindingsScreen extends AbstractScreen {
-    private static final float FIELD_WIDTH = 250f;
+    private static final float FIELD_WIDTH = 400f;
     private static final float FIELD_HEIGHT = 36f;
-    private static final float FIELD_SPACING = 10f;
+    private static final float FIELD_SPACING = 30f;
     private static final float COLUMN_SPACING = 30f;
     private static final float KEY_BUTTON_WIDTH = 90f;
+    private static final float KEY_BUTTON_HEIGHT = 60f;
 
     private final Settings settings;
     private final KeyBindingsController controller;
@@ -57,10 +55,10 @@ public class KeyBindingsScreen extends AbstractScreen {
         rootTable.defaults().space(FIELD_SPACING).expandX().center();
 
         rootTable.add(buildTitleLabel()).width(FIELD_WIDTH).height(FIELD_HEIGHT).colspan(2).spaceBottom(0).row();
-        rootTable.add(new Image(assets.getSeparator())).width(FIELD_WIDTH).height(FIELD_HEIGHT).colspan(2).space(0).row();
+        addSeparator(rootTable).colspan(2).spaceTop(0).row();
         rootTable.add(buildBindingsColumns()).colspan(2).spaceTop(0).row();
-        rootTable.add(buildResetButton()).width(FIELD_WIDTH).height(FIELD_HEIGHT).colspan(2).row();
-        rootTable.add(buildBackButton()).width(FIELD_WIDTH).height(FIELD_HEIGHT).colspan(2).padTop(30);
+        rootTable.add(buildResetButton()).height(FIELD_HEIGHT).colspan(2).row();
+        rootTable.add(buildBackButton()).height(FIELD_HEIGHT).colspan(2).padTop(30);
 
         stage.addActor(rootTable);
     }
@@ -83,9 +81,20 @@ public class KeyBindingsScreen extends AbstractScreen {
 
     /** Builds the label that shows menu title */
     private Label buildTitleLabel() {
-        Label titleLabel = new Label(Lang.get("keyBindings.title"), skin);
+        Label titleLabel = new Label(Lang.get("keyBindings.title"), skin, "title");
         titleLabel.setAlignment(Align.center);
+        titleLabel.setFontScale(1.5f);
         return titleLabel;
+    }
+
+    /** Adds the separator that goes bellow the menu title to the {@code wrapper} table. */
+    private Cell<Image> addSeparator(Table wrapper) {
+        float width = FIELD_WIDTH;
+        float height = assets.getSeparator().getHeight() * (FIELD_WIDTH / assets.getSeparator().getWidth());
+
+        return wrapper.add(new Image(assets.getSeparator()))
+            .width(width)
+            .height(height);
     }
 
     /**
@@ -116,10 +125,10 @@ public class KeyBindingsScreen extends AbstractScreen {
 
         Table leftColumn = new Table();
         leftColumn.defaults().space(FIELD_SPACING).expandX().fillX()
-            .width(FIELD_WIDTH).height(FIELD_HEIGHT).center();
+            .height(FIELD_HEIGHT).center();
         Table rightColumn = new Table();
         rightColumn.defaults().space(FIELD_SPACING).expandX().fillX()
-            .width(FIELD_WIDTH).height(FIELD_HEIGHT).center();
+            .height(FIELD_HEIGHT).center();
 
         leftColumn.add(buildBindingRow("keyBindings.left", settings::getKeyLeft, controller::onKeyLeftChanged)).row();
         leftColumn.add(buildBindingRow("keyBindings.right", settings::getKeyRight, controller::onKeyRightChanged)).row();
@@ -144,7 +153,7 @@ public class KeyBindingsScreen extends AbstractScreen {
         Table wrapper = new Table(skin);
 
         wrapper.add(new Label(Lang.get(labelKey), skin)).expandX().grow().spaceRight(FIELD_SPACING);
-        wrapper.add(buildKeyButton(currentKeycode, onChanged)).width(KEY_BUTTON_WIDTH).right();
+        wrapper.add(buildKeyButton(currentKeycode, onChanged)).width(KEY_BUTTON_WIDTH).height(KEY_BUTTON_HEIGHT).right();
 
         return wrapper;
     }
@@ -154,7 +163,7 @@ public class KeyBindingsScreen extends AbstractScreen {
      * capturing the next key press as the new binding.
      */
     private TextButton buildKeyButton(IntSupplier currentKeycode, IntConsumer onChanged) {
-        TextButton keyButton = new TextButton(Input.Keys.toString(currentKeycode.getAsInt()), skin);
+        TextButton keyButton = new TextButton(Input.Keys.toString(currentKeycode.getAsInt()), skin, "KeyBindings");
         BindingState state = new BindingState(currentKeycode.getAsInt(), onChanged);
         keyButton.setUserObject(state);
 

@@ -15,10 +15,11 @@ import com.github.matinnameni.minihollowknight.model.Settings;
  * Audio settings screen with music toggle/volume, and SFX toggle/volume.
  */
 public class AudioSettingsScreen extends AbstractScreen {
-    private static final float FIELD_WIDTH = 250f;
+    private static final float FIELD_WIDTH = 350f;
     private static final float FIELD_HEIGHT = 40f;
-    private static final float FIELD_SPACING = 10f;
-    private static final float SLIDER_WIDTH = 150f;
+    private static final float FIELD_SPACING = 20f;
+    private static final float COLUMN_SPACING = 30f;
+    private static final float SLIDER_WIDTH = 200f;
 
     private final Settings settings;
     private final AudioSettingsController controller;
@@ -37,17 +38,13 @@ public class AudioSettingsScreen extends AbstractScreen {
 
         Table rootTable = new Table();
         rootTable.setFillParent(true);
-        rootTable.defaults().space(FIELD_SPACING).expandX().fillX()
-            .width(FIELD_WIDTH).height(FIELD_HEIGHT).center();
+        rootTable.defaults().space(FIELD_SPACING).expandX().center();
 
-        rootTable.add(buildTitleLabel()).spaceBottom(0).row();
-        rootTable.add(new Image(assets.getSeparator())).space(0).row();
-        rootTable.add(buildMusicToggleSection()).spaceTop(0).row();
-        rootTable.add(buildMusicVolumeSection()).row();
-        rootTable.add(buildSfxToggleSection()).row();
-        rootTable.add(buildSfxVolumeSection()).row();
-        rootTable.add(buildResetButton()).row();
-        rootTable.add(buildBackButton()).padTop(30);
+        rootTable.add(buildTitleLabel()).width(FIELD_WIDTH).colspan(2).spaceBottom(0).row();
+        addSeparator(rootTable).space(0).width(FIELD_WIDTH).colspan(2).row();
+        rootTable.add(buildSettingsColumns()).colspan(2).width(FIELD_WIDTH).row();
+        rootTable.add(buildResetButton()).colspan(2).height(FIELD_HEIGHT).row();
+        rootTable.add(buildBackButton()).colspan(2).height(FIELD_HEIGHT).padTop(30);
 
         stage.addActor(rootTable);
     }
@@ -64,11 +61,23 @@ public class AudioSettingsScreen extends AbstractScreen {
 
     /** Builds the label that shows menu title */
     private Label buildTitleLabel() {
-        Label titleLabel = new Label(Lang.get("audioSettings.title"), skin);
+        Label titleLabel = new Label(Lang.get("audioSettings.title"), skin, "title");
         titleLabel.setAlignment(Align.center);
+        titleLabel.setFontScale(1.5f);
         return titleLabel;
     }
 
+    /** Adds the separator that goes bellow the menu title to the {@code wrapper} table. */
+    private Cell<Image> addSeparator(Table wrapper) {
+        float width = FIELD_WIDTH;
+        float height = assets.getSeparator().getHeight() * (FIELD_WIDTH / assets.getSeparator().getWidth());
+
+        return wrapper.add(new Image(assets.getSeparator()))
+            .width(width)
+            .height(height);
+    }
+
+    /** Sets toggle button text to on/off */
     private void updateToggleButtonText(TextButton button, boolean isEnabled) {
         if(isEnabled) {
             button.setText(Lang.get("audioSettings.enabled"));
@@ -77,19 +86,34 @@ public class AudioSettingsScreen extends AbstractScreen {
         }
     }
 
-    // --- Music ---
+    /** Builds the table of audio settings rows. */
+    private Table buildSettingsColumns() {
+        Table columns = new Table();
+        columns.defaults().top().expandX();
 
-    /**
-     * Builds the row containing a label and a checkbox to toggle music on/off.
-     */
-    private Table buildMusicToggleSection() {
-        Table wrapper = new Table(skin);
+        Table leftColumn = new Table();
+        leftColumn.defaults().space(FIELD_SPACING).expandX().fillX()
+            .height(FIELD_HEIGHT).center();
+        Table rightColumn = new Table();
+        rightColumn.defaults().space(FIELD_SPACING).expandX().fillX()
+            .height(FIELD_HEIGHT).center();
 
-        wrapper.add(new Label(Lang.get("audioSettings.music"), skin)).spaceRight(FIELD_SPACING);
-        wrapper.add(buildMusicToggle()).expandX().grow();
+        leftColumn.add(new Label(Lang.get("audioSettings.music"), skin)).expandX().fillX().row();
+        leftColumn.add(new Label(Lang.get("audioSettings.musicVolume"), skin)).expandX().fillX().row();
+        leftColumn.add(new Label(Lang.get("audioSettings.sfx"), skin)).expandX().fillX().row();
+        leftColumn.add(new Label(Lang.get("audioSettings.sfxVolume"), skin)).expandX().fillX();
 
-        return wrapper;
+        rightColumn.add(buildMusicToggle()).expandX().fillX().row();
+        rightColumn.add(buildMusicVolumeSlider()).width(SLIDER_WIDTH).expandX().fillX().row();
+        rightColumn.add(buildSfxToggle()).expandX().fillX().row();
+        rightColumn.add(buildSfxVolumeSlider()).width(SLIDER_WIDTH).expandX().fillX().row();
+
+        columns.add(leftColumn).spaceRight(COLUMN_SPACING);
+        columns.add(rightColumn);
+        return columns;
     }
+
+    // --- Music ---
 
     /**
      * Builds the button that toggles music on or off.
@@ -119,18 +143,6 @@ public class AudioSettingsScreen extends AbstractScreen {
     }
 
     /**
-     * Builds the section containing a label and a slider for music volume.
-     */
-    private Table buildMusicVolumeSection() {
-        Table wrapper = new Table(skin);
-
-        wrapper.add(new Label(Lang.get("audioSettings.musicVolume"), skin)).expandX().grow().spaceRight(FIELD_SPACING);
-        wrapper.add(buildMusicVolumeSlider()).growY().right().width(SLIDER_WIDTH);
-
-        return wrapper;
-    }
-
-    /**
      * Builds the slider that lets the player adjust music volume.
      */
     private Slider buildMusicVolumeSlider() {
@@ -147,18 +159,6 @@ public class AudioSettingsScreen extends AbstractScreen {
     }
 
     // --- SFX ---
-
-    /**
-     * Builds the section containing a label and a checkbox to toggle SFX on/off.
-     */
-    private Table buildSfxToggleSection() {
-        Table wrapper = new Table(skin);
-
-        wrapper.add(new Label(Lang.get("audioSettings.sfx"), skin)).spaceRight(FIELD_SPACING);
-        wrapper.add(buildSfxToggle()).expandX().grow();
-
-        return wrapper;
-    }
 
     /**
      * Builds the checkbox that toggles SFX on or off.
@@ -185,18 +185,6 @@ public class AudioSettingsScreen extends AbstractScreen {
             }
         });
         return toggleButton;
-    }
-
-    /**
-     * Builds the section containing a label and a slider for SFX volume.
-     */
-    private Table buildSfxVolumeSection() {
-        Table wrapper = new Table(skin);
-
-        wrapper.add(new Label(Lang.get("audioSettings.sfxVolume"), skin)).expandX().grow().spaceRight(FIELD_SPACING);
-        wrapper.add(buildSfxVolumeSlider()).growY().right().width(SLIDER_WIDTH);
-
-        return wrapper;
     }
 
     /**

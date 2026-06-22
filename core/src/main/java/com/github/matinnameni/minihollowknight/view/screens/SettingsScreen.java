@@ -16,9 +16,10 @@ import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
  * Settings screen
  */
 public class SettingsScreen extends AbstractScreen {
-    private static final float FIELD_WIDTH = 250f;
+    private static final float FIELD_WIDTH = 400f;
     private static final float FIELD_HEIGHT = 40f;
     private static final float FIELD_SPACING = 20f;
+    private static final float SLIDER_WIDTH = 200f;
 
     private final Settings settings;
     private final SettingsController controller;
@@ -37,13 +38,13 @@ public class SettingsScreen extends AbstractScreen {
 
         Table rootTable = new Table();
         rootTable.setFillParent(true);
-        rootTable.defaults().space(FIELD_SPACING).expandX().fillX()
-            .width(FIELD_WIDTH).height(FIELD_HEIGHT).center();
+        rootTable.defaults().space(FIELD_SPACING)
+            .height(FIELD_HEIGHT).center();
 
-        rootTable.add(buildTitleLabel()).spaceBottom(0).row();
-        rootTable.add(new Image(assets.getSeparator())).space(0).row();
-        rootTable.add(buildLanguageSelectSection()).spaceTop(0).row();
-        rootTable.add(buildBrightnessSection()).row();
+        rootTable.add(buildTitleLabel()).width(FIELD_WIDTH).spaceBottom(0).row();
+        addSeparator(rootTable).space(0).width(FIELD_WIDTH).row();
+        rootTable.add(buildLanguageSelectSection()).width(FIELD_WIDTH).spaceTop(0).row();
+        rootTable.add(buildBrightnessSection()).width(FIELD_WIDTH).row();
         rootTable.add(buildAudioSettingsButton()).spaceTop(0).row();
         rootTable.add(buildKeyBindingsButton()).spaceTop(0).row();
         rootTable.add(buildBackButton()).padTop(30);
@@ -63,9 +64,20 @@ public class SettingsScreen extends AbstractScreen {
 
     /** Builds the label that shows menu title */
     private Label buildTitleLabel() {
-        Label titleLabel = new Label(Lang.get("settings.title"), skin);
+        Label titleLabel = new Label(Lang.get("settings.title"), skin, "title");
         titleLabel.setAlignment(Align.center);
+        titleLabel.setFontScale(1.5f);
         return titleLabel;
+    }
+
+    /** Adds the separator that goes bellow the menu title to the {@code wrapper} table. */
+    private Cell<Image> addSeparator(Table wrapper) {
+        float width = FIELD_WIDTH;
+        float height = assets.getSeparator().getHeight() * (FIELD_WIDTH / assets.getSeparator().getWidth());
+
+        return wrapper.add(new Image(assets.getSeparator()))
+            .width(width)
+            .height(height);
     }
 
     // --- Audio ---
@@ -138,7 +150,7 @@ public class SettingsScreen extends AbstractScreen {
         Table wrapper = new Table(skin);
 
         wrapper.add(new Label(Lang.get("settings.brightness"), skin)).expandX().grow().spaceRight(FIELD_SPACING);
-        wrapper.add(buildBrightnessSlider()).growY();
+        wrapper.add(buildBrightnessSlider()).width(SLIDER_WIDTH).growY();
 
         return wrapper;
     }

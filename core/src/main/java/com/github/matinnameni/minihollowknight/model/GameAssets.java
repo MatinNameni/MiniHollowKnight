@@ -13,9 +13,9 @@ public class GameAssets {
 
     // --- Asset paths ---
     private static final String BACKGROUND_IMG = "sprites/Menu/controller_prompt_bg.png";
-    private static final String LOGO_IMG = "sprites/Menu/vheart_title.png";
-    private static final String SEPARATOR = "sprites/Menu/separator.png";
-    private static final String UI_SKIN = "ui/uiskin.json";
+    private static final String LOGO_IMG = "sprites/Menu/logo.png";
+    private static final String SEPARATOR = "sprites/Inventory & UI/Fleurs/Warning_Fleur0008.png";
+    private static final String UI_SKIN = "skins/gameskins.json";
     private static final String MENU_MUSIC = "Audio_Files/Title.wav";
 
     private final AssetManager manager = new AssetManager();
