@@ -7,7 +7,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 
 import com.github.matinnameni.minihollowknight.controller.AudioSettingsController;
-import com.github.matinnameni.minihollowknight.model.GameAssets;
+import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
 import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
 
@@ -24,8 +24,8 @@ public class AudioSettingsScreen extends AbstractScreen {
     private final Settings settings;
     private final AudioSettingsController controller;
 
-    public AudioSettingsScreen(GameAssets assets, Settings settings, AudioSettingsController controller) {
-        super(assets);
+    public AudioSettingsScreen(AssetRegistry registry, Settings settings, AudioSettingsController controller) {
+        super(registry);
         this.settings = settings;
         this.controller = controller;
     }
@@ -53,7 +53,7 @@ public class AudioSettingsScreen extends AbstractScreen {
 
     /** Sets audio-settings background image */
     private void addBackground() {
-        Image background = new Image(assets.getBackground());
+        Image background = new Image(menuAssets().getBackground());
         background.setScaling(Scaling.fill);
         background.setFillParent(true);
         stage.addActor(background);
@@ -69,7 +69,7 @@ public class AudioSettingsScreen extends AbstractScreen {
 
     /** Builds the separator under the title. */
     private Image buildSeparator() {
-        Image separator = new Image(assets.getSeparator());
+        Image separator = new Image(menuAssets().getSeparator());
         separator.setScaling(Scaling.fillX);
         return separator;
     }

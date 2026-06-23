@@ -15,8 +15,12 @@ public class Main extends Game {
     @Override
     public void dispose() {
         super.dispose();
-        if (UiManager.getInstance() != null && UiManager.getInstance().getDatabase() != null) {
-            UiManager.getInstance().getDatabase().close();
+        UiManager uiManager = UiManager.getInstance();
+        if (uiManager != null) {
+            if (uiManager.getDatabase() != null) {
+                uiManager.getDatabase().close();
+            }
+            uiManager.dispose();
         }
     }
 }

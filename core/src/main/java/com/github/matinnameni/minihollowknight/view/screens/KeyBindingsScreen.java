@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 
 import com.github.matinnameni.minihollowknight.controller.KeyBindingsController;
-import com.github.matinnameni.minihollowknight.model.GameAssets;
+import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
 import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
 
@@ -37,8 +37,8 @@ public class KeyBindingsScreen extends AbstractScreen {
     /** Contains the TextButtons in this menu. keyed with their title. */
     Map<String, TextButton> buttons = new LinkedHashMap<>();
 
-    public KeyBindingsScreen(GameAssets assets, Settings settings, KeyBindingsController controller) {
-        super(assets);
+    public KeyBindingsScreen(AssetRegistry registry, Settings settings, KeyBindingsController controller) {
+        super(registry);
         this.settings = settings;
         this.controller = controller;
     }
@@ -73,7 +73,7 @@ public class KeyBindingsScreen extends AbstractScreen {
 
     /** Sets key-bindings background image */
     private void addBackground() {
-        Image background = new Image(assets.getBackground());
+        Image background = new Image(menuAssets().getBackground());
         background.setScaling(Scaling.fill);
         background.setFillParent(true);
         stage.addActor(background);
@@ -89,7 +89,7 @@ public class KeyBindingsScreen extends AbstractScreen {
 
     /** Builds the separator under the title. */
     private Image buildSeparator() {
-        Image separator = new Image(assets.getSeparator());
+        Image separator = new Image(menuAssets().getSeparator());
         separator.setScaling(Scaling.fillX);
         return separator;
     }

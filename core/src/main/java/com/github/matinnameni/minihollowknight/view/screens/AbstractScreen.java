@@ -7,7 +7,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.github.matinnameni.minihollowknight.model.GameAssets;
+import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
+import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
 import com.github.matinnameni.minihollowknight.model.Settings;
 import com.github.matinnameni.minihollowknight.view.UiManager;
 
@@ -15,19 +16,24 @@ import com.github.matinnameni.minihollowknight.view.UiManager;
  * Base class for all screens.
  */
 public abstract class AbstractScreen implements Screen {
-    protected final GameAssets assets;
+    protected final AssetRegistry registry;
     protected Stage stage;
     protected Skin skin;
     private ShapeRenderer overlayRenderer;
 
-    public AbstractScreen(GameAssets assets) {
-        this.assets = assets;
+    public AbstractScreen(AssetRegistry registry) {
+        this.registry = registry;
+    }
+
+    /** Accessor for the menu bundle. */
+    protected MenuAssetBundle menuAssets() {
+        return (MenuAssetBundle) registry.get(MenuAssetBundle.KEY);
     }
 
     @Override
     public void show() {
         stage = new Stage(new ScreenViewport());
-        skin = assets.createSkin();
+        skin = menuAssets().createSkin();
         Gdx.input.setInputProcessor(stage);
         overlayRenderer = new ShapeRenderer();
     }

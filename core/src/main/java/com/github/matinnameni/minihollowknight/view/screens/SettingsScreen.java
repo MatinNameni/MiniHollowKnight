@@ -7,7 +7,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 
 import com.github.matinnameni.minihollowknight.controller.SettingsController;
-import com.github.matinnameni.minihollowknight.model.GameAssets;
+import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
 import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
@@ -24,8 +24,8 @@ public class SettingsScreen extends AbstractScreen {
     private final Settings settings;
     private final SettingsController controller;
 
-    public SettingsScreen(GameAssets assets, Settings settings, SettingsController controller) {
-        super(assets);
+    public SettingsScreen(AssetRegistry registry, Settings settings, SettingsController controller) {
+        super(registry);
         this.settings = settings;
         this.controller = controller;
     }
@@ -56,7 +56,7 @@ public class SettingsScreen extends AbstractScreen {
 
     /** Sets settings-menu background image */
     private void addBackground() {
-        Image background = new Image(assets.getBackground());
+        Image background = new Image(menuAssets().getBackground());
         background.setScaling(Scaling.fill);
         background.setFillParent(true);
         stage.addActor(background);
@@ -72,7 +72,7 @@ public class SettingsScreen extends AbstractScreen {
 
     /** Builds the separator under the title. */
     private Image buildSeparator() {
-        Image separator = new Image(assets.getSeparator());
+        Image separator = new Image(menuAssets().getSeparator());
         separator.setScaling(Scaling.fillX);
         return separator;
     }

@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Scaling;
-import com.github.matinnameni.minihollowknight.model.GameAssets;
+import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
 import com.github.matinnameni.minihollowknight.controller.MainMenuController;
 import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
@@ -26,8 +26,8 @@ public class MainMenuScreen extends AbstractScreen {
     private final MainMenuController controller;
     private final Settings settings;
 
-    public MainMenuScreen(GameAssets assets, Settings settings, MainMenuController controller) {
-        super(assets);
+    public MainMenuScreen(AssetRegistry registry, Settings settings, MainMenuController controller) {
+        super(registry);
         this.controller = controller;
         this.settings = settings;
     }
@@ -51,7 +51,7 @@ public class MainMenuScreen extends AbstractScreen {
 
     /** Sets main-menu background image */
     private void addBackground() {
-        Image background = new Image(assets.getBackground());
+        Image background = new Image(menuAssets().getBackground());
         background.setScaling(Scaling.fill);
         background.setFillParent(true);
         stage.addActor(background);
@@ -63,7 +63,7 @@ public class MainMenuScreen extends AbstractScreen {
      */
     private Table buildLogoSection() {
         Table wrapper = new Table();
-        Image logo = new Image(assets.getLogo());
+        Image logo = new Image(menuAssets().getLogo());
         logo.setScaling(Scaling.fit);
         wrapper.add(logo)
             .grow()

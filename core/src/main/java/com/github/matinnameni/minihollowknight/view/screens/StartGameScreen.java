@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.github.matinnameni.minihollowknight.controller.StartGameController;
-import com.github.matinnameni.minihollowknight.model.GameAssets;
+import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
 import com.github.matinnameni.minihollowknight.model.GameData;
 import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
@@ -25,8 +25,8 @@ public class StartGameScreen extends AbstractScreen {
     private static final float SLOT_PAD_TOP = 40f;
     private static final float TITLE_FONT_SCALE = 1.6f;
     private static final float SLOT_NUM_FONT_SCALE = 1.4f;
-    private static final float AREA_FONT_SCALE = 1.0f;
-    private static final float DETAIL_FONT_SCALE = 0.75f;
+    private static final float AREA_FONT_SCALE = 1.2f;
+    private static final float DETAIL_FONT_SCALE = 1.0f;
     private static final float RESET_BUTTON_WIDTH = 200f;
     private static final float RESET_BUTTON_SPACING = 50f;
     private static final float RESET_BUTTON_HEIGHT = 32f;
@@ -43,8 +43,8 @@ public class StartGameScreen extends AbstractScreen {
 
     private final StartGameController controller;
 
-    public StartGameScreen(GameAssets assets, StartGameController controller) {
-        super(assets);
+    public StartGameScreen(AssetRegistry registry, StartGameController controller) {
+        super(registry);
         this.controller = controller;
     }
 
@@ -81,7 +81,7 @@ public class StartGameScreen extends AbstractScreen {
 
     /** Sets start-game background image */
     private void addBackground() {
-        Image background = new Image(assets.getBackground());
+        Image background = new Image(menuAssets().getBackground());
         background.setScaling(Scaling.fill);
         background.setFillParent(true);
         stage.addActor(background);
@@ -97,7 +97,7 @@ public class StartGameScreen extends AbstractScreen {
 
     /** Builds the separator under the title. */
     private Image buildSeparator() {
-        Image separator = new Image(assets.getSeparator());
+        Image separator = new Image(menuAssets().getSeparator());
         separator.setScaling(Scaling.fillX);
         return separator;
     }
@@ -113,7 +113,7 @@ public class StartGameScreen extends AbstractScreen {
 
         if(occupied) {
             saveSlotTable.setBackground(
-                new TextureRegionDrawable(assets.getSaveSlotBG(data))
+                new TextureRegionDrawable(menuAssets().getSaveSlotBG(data))
             );
         }
 
@@ -165,7 +165,7 @@ public class StartGameScreen extends AbstractScreen {
 
     /** Builds the fleur image that sits on the top edge of each save slot. */
     private Image buildFleur() {
-        Image fleur = new Image(assets.getProfileFleur());
+        Image fleur = new Image(menuAssets().getProfileFleur());
         fleur.setScaling(Scaling.fit);
         fleur.setColor(Color.WHITE);
         return fleur;
@@ -214,7 +214,7 @@ public class StartGameScreen extends AbstractScreen {
         areaLabel.setAlignment(Align.right);
         areaLabel.setFontScale(AREA_FONT_SCALE);
         areaLabel.setColor(new Color(Color.WHITE));
-        rightTable.add(areaLabel).padTop(25f).right().row();
+        rightTable.add(areaLabel).padTop(30f).padRight(20f).right().row();
 
         // Detail line: masks / deaths / play time
         String detail = buildDetailLine(data);
@@ -222,7 +222,7 @@ public class StartGameScreen extends AbstractScreen {
         detailLabel.setAlignment(Align.right);
         detailLabel.setFontScale(DETAIL_FONT_SCALE);
         detailLabel.setColor(new Color(Color.WHITE));
-        rightTable.add(detailLabel).right().padTop(20f);
+        rightTable.add(detailLabel).right().padTop(30f).padRight(20f);
 
         // Add tables to info
         info.add(leftTable);
@@ -236,14 +236,14 @@ public class StartGameScreen extends AbstractScreen {
         Table hud = new Table();
         hud.top().center();
 
-        Image soulBar = new Image(assets.getProfileSoul());
+        Image soulBar = new Image(menuAssets().getProfileSoul());
         soulBar.setScaling(Scaling.fit);
 
         hud.add(soulBar).size(SOUL_BAR_SIZE).padBottom(5f).padRight(-SOUL_BAR_OVERLAP);
 
         Table masksRow = new Table();
         for (int i = 0; i < data.masks; i++) {
-            Image mask = new Image(assets.getProfileMask());
+            Image mask = new Image(menuAssets().getProfileMask());
             mask.setScaling(Scaling.fit);
             masksRow.add(mask).size(MASK_ICON_SIZE).spaceRight(2f);
         }
@@ -275,7 +275,7 @@ public class StartGameScreen extends AbstractScreen {
     /** Reset button for a single slot. */
     private TextButton buildResetButton(int slotId) {
         TextButton button = new TextButton(Lang.get("startGame.reset"), skin);
-        button.getLabel().setFontScale(0.7f);
+        button.getLabel().setFontScale(1.2f);
         button.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {

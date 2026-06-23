@@ -8,9 +8,10 @@ import com.github.matinnameni.minihollowknight.controller.AudioSettingsControlle
 import com.github.matinnameni.minihollowknight.controller.KeyBindingsController;
 import com.github.matinnameni.minihollowknight.controller.SettingsController;
 import com.github.matinnameni.minihollowknight.database.DatabaseManager;
-import com.github.matinnameni.minihollowknight.model.GameAssets;
 import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
+import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
+import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
 import com.github.matinnameni.minihollowknight.controller.MainMenuController;
 import com.github.matinnameni.minihollowknight.controller.StartGameController;
@@ -23,7 +24,7 @@ import com.github.matinnameni.minihollowknight.view.screens.StartGameScreen;
 import java.sql.SQLException;
 
 public class UiManager implements ScreenNavigator {
-    private GameAssets assets;
+    private AssetRegistry registry;
     private Game game;
     private DatabaseManager database;
     private Settings settings;
@@ -41,11 +42,19 @@ public class UiManager implements ScreenNavigator {
         if(instance == null) {
             instance = new UiManager();
             instance.setGame(game);
-            instance.setAssets(new GameAssets());
-            instance.getAssets().loadAll();
+            instance.initAssetRegistry();
             instance.initDatabaseAndSettings();
             instance.playMenuMusic();
         }
+    }
+
+    /**
+     * Registers all asset bundles and loads the menu bundle.
+     */
+    private void initAssetRegistry() {
+        registry = new AssetRegistry();
+        registry.register(new MenuAssetBundle(registry.getManager()));
+        registry.loadBundle(MenuAssetBundle.KEY);
     }
 
     /**
@@ -77,8 +86,12 @@ public class UiManager implements ScreenNavigator {
 
     // --- Getters ---
 
-    public GameAssets getAssets() {
-        return assets;
+    public AssetRegistry getRegistry() {
+        return registry;
+    }
+
+    public MenuAssetBundle getMenuAssets() {
+        return (MenuAssetBundle) registry.get(MenuAssetBundle.KEY);
     }
 
     public Game getGame() {
@@ -98,10 +111,6 @@ public class UiManager implements ScreenNavigator {
     }
 
     // --- Setters ---
-
-    public void setAssets(GameAssets assets) {
-        this.assets = assets;
-    }
 
     public void setGame(Game game) {
         this.game = game;
@@ -124,7 +133,7 @@ public class UiManager implements ScreenNavigator {
     /** Starts playing the menu background music on loop using current volume settings. */
     public void playMenuMusic() {
         stopMenuMusic();
-        menuMusic = assets.getMenuMusic();
+        menuMusic = getMenuAssets().getMenuMusic();
         menuMusic.setLooping(true);
         menuMusic.setVolume(settings.isMusicEnabled() ? settings.getMusicVolume() : 0f);
         menuMusic.play();
@@ -150,31 +159,31 @@ public class UiManager implements ScreenNavigator {
     @Override
     public void goToMainMenu() {
         MainMenuController controller = new MainMenuController(this);
-        setScreen(new MainMenuScreen(assets, settings, controller));
+        setScreen(new MainMenuScreen(registry, settings, controller));
     }
 
     @Override
     public void goToStartGame() {
         StartGameController controller = new StartGameController(this);
-        setScreen(new StartGameScreen(assets, controller));
+        setScreen(new StartGameScreen(registry, controller));
     }
 
     @Override
     public void goToSettings() {
         SettingsController controller = new SettingsController(this, settings);
-        setScreen(new SettingsScreen(assets, settings, controller));
+        setScreen(new SettingsScreen(registry, settings, controller));
     }
 
     @Override
     public void goToAudioSettings() {
         AudioSettingsController controller = new AudioSettingsController(this, settings);
-        setScreen(new AudioSettingsScreen(assets, settings, controller));
+        setScreen(new AudioSettingsScreen(registry, settings, controller));
     }
 
     @Override
     public void goToKeyBindings() {
         KeyBindingsController controller = new KeyBindingsController(this, settings);
-        setScreen(new KeyBindingsScreen(assets, settings, controller));
+        setScreen(new KeyBindingsScreen(registry, settings, controller));
     }
 
     @Override
@@ -190,5 +199,13 @@ public class UiManager implements ScreenNavigator {
     @Override
     public void quitGame() {
         Gdx.app.exit();
+    }
+
+    // --- Lifecycle ---
+
+    public void dispose() {
+        if (registry != null) {
+            registry.dispose();
+        }
     }
 }
