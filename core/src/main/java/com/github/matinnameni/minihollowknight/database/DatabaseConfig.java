@@ -34,10 +34,13 @@ public final class DatabaseConfig {
                 -- Key bindings
                 key_left INTEGER NOT NULL DEFAULT 21,
                 key_right INTEGER NOT NULL DEFAULT 22,
+                key_up INTEGER NOT NULL DEFAULT 19,
+                key_down INTEGER NOT NULL DEFAULT 20,
                 key_jump INTEGER NOT NULL DEFAULT 54,
                 key_attack INTEGER NOT NULL DEFAULT 52,
                 key_dash INTEGER NOT NULL DEFAULT 31,
                 key_focus INTEGER NOT NULL DEFAULT 29,
+                key_cast INTEGER NOT NULL DEFAULT 47,
                 key_interact INTEGER NOT NULL DEFAULT 33,
                 key_inventory INTEGER NOT NULL DEFAULT 37,
                 key_pause INTEGER NOT NULL DEFAULT 111
@@ -107,10 +110,11 @@ public final class DatabaseConfig {
     public static final String UPSERT_SETTINGS = """
             INSERT INTO settings (id, music_volume, sfx_volume, music_enabled,
                                   sfx_enabled, brightness, language,
-                                  key_left, key_right, key_jump, key_attack,
-                                  key_dash, key_focus, key_interact,
+                                  key_left, key_right, key_up, key_down,
+                                  key_jump, key_attack, key_dash,
+                                  key_focus, key_cast, key_interact,
                                   key_inventory, key_pause)
-            VALUES (1,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            VALUES (1,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ON CONFLICT(id) DO UPDATE SET
                 music_volume = excluded.music_volume,
                 sfx_volume = excluded.sfx_volume,
@@ -120,10 +124,13 @@ public final class DatabaseConfig {
                 language = excluded.language,
                 key_left = excluded.key_left,
                 key_right = excluded.key_right,
+                key_up = excluded.key_up,
+                key_down = excluded.key_down,
                 key_jump = excluded.key_jump,
                 key_attack = excluded.key_attack,
                 key_dash = excluded.key_dash,
                 key_focus = excluded.key_focus,
+                key_cast = excluded.key_cast,
                 key_interact = excluded.key_interact,
                 key_inventory = excluded.key_inventory,
                 key_pause = excluded.key_pause
@@ -132,7 +139,8 @@ public final class DatabaseConfig {
     public static final String LOAD_SETTINGS =
         "SELECT music_volume, sfx_volume, music_enabled, sfx_enabled, " +
             "brightness, language, " +
-            "key_left, key_right, key_jump, key_attack, key_dash, key_focus, " +
+            "key_left, key_right, key_up, key_down, key_jump, " +
+            "key_attack, key_dash, key_focus, key_cast, " +
             "key_interact, key_inventory, key_pause " +
             "FROM settings WHERE id = 1";
 

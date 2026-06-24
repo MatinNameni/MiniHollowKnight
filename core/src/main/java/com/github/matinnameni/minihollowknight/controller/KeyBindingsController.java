@@ -35,6 +35,20 @@ public class KeyBindingsController {
         UiManager.getInstance().goToKeyBindings();
     }
 
+    /** Called when the player rebinds the Up action to {@code keycode}. */
+    public void onKeyUpChanged(int keycode) {
+        settings.setKeyUp(keycode);
+        UiManager.getInstance().applySettings(settings);
+        UiManager.getInstance().goToKeyBindings();
+    }
+
+    /** Called when the player rebinds the Down action to {@code keycode}. */
+    public void onKeyDownChanged(int keycode) {
+        settings.setKeyDown(keycode);
+        UiManager.getInstance().applySettings(settings);
+        UiManager.getInstance().goToKeyBindings();
+    }
+
     /** Called when the player rebinds the Jump action to {@code keycode}. */
     public void onKeyJumpChanged(int keycode) {
         settings.setKeyJump(keycode);
@@ -59,6 +73,13 @@ public class KeyBindingsController {
     /** Called when the player rebinds the Focus action to {@code keycode}. */
     public void onKeyFocusChanged(int keycode) {
         settings.setKeyFocus(keycode);
+        UiManager.getInstance().applySettings(settings);
+        UiManager.getInstance().goToKeyBindings();
+    }
+
+    /** Called when the player rebinds the Cast action to {@code keycode}. */
+    public void onKeyCastChanged(int keycode) {
+        settings.setKeyCast(keycode);
         UiManager.getInstance().applySettings(settings);
         UiManager.getInstance().goToKeyBindings();
     }

@@ -52,13 +52,16 @@ public class DatabaseManager {
             statement.setString(6, settings.getLanguage());
             statement.setInt(7, settings.getKeyLeft());
             statement.setInt(8, settings.getKeyRight());
-            statement.setInt(9, settings.getKeyJump());
-            statement.setInt(10, settings.getKeyAttack());
-            statement.setInt(11, settings.getKeyDash());
-            statement.setInt(12, settings.getKeyFocus());
-            statement.setInt(13, settings.getKeyInteract());
-            statement.setInt(14, settings.getKeyInventory());
-            statement.setInt(15, settings.getKeyPause());
+            statement.setInt(9, settings.getKeyUp());
+            statement.setInt(10, settings.getKeyDown());
+            statement.setInt(11, settings.getKeyJump());
+            statement.setInt(12, settings.getKeyAttack());
+            statement.setInt(13, settings.getKeyDash());
+            statement.setInt(14, settings.getKeyFocus());
+            statement.setInt(15, settings.getKeyCast());
+            statement.setInt(16, settings.getKeyInteract());
+            statement.setInt(17, settings.getKeyInventory());
+            statement.setInt(18, settings.getKeyPause());
             statement.executeUpdate();
         }
     }
@@ -81,10 +84,13 @@ public class DatabaseManager {
             settings.setLanguage(resultSet.getString("language"));
             settings.setKeyLeft(resultSet.getInt("key_left"));
             settings.setKeyRight(resultSet.getInt("key_right"));
+            settings.setKeyUp(resultSet.getInt("key_up"));
+            settings.setKeyDown(resultSet.getInt("key_down"));
             settings.setKeyJump(resultSet.getInt("key_jump"));
             settings.setKeyAttack(resultSet.getInt("key_attack"));
             settings.setKeyDash(resultSet.getInt("key_dash"));
             settings.setKeyFocus(resultSet.getInt("key_focus"));
+            settings.setKeyCast(resultSet.getInt("key_cast"));
             settings.setKeyInteract(resultSet.getInt("key_interact"));
             settings.setKeyInventory(resultSet.getInt("key_inventory"));
             settings.setKeyPause(resultSet.getInt("key_pause"));

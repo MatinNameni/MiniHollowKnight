@@ -127,15 +127,18 @@ public class KeyBindingsScreen extends AbstractScreen {
         rightColumn.defaults().space(FIELD_SPACING).expandX().fillX()
             .height(FIELD_HEIGHT).center();
 
-        leftColumn.add(buildBindingRow("keyBindings.left", settings::getKeyLeft, controller::onKeyLeftChanged)).row();
-        leftColumn.add(buildBindingRow("keyBindings.right", settings::getKeyRight, controller::onKeyRightChanged)).row();
+        leftColumn.add(buildBindingRow("keyBindings.up", settings::getKeyUp, controller::onKeyUpChanged)).row();
+        leftColumn.add(buildBindingRow("keyBindings.down", settings::getKeyDown, controller::onKeyDownChanged)).row();
         leftColumn.add(buildBindingRow("keyBindings.jump", settings::getKeyJump, controller::onKeyJumpChanged)).row();
         leftColumn.add(buildBindingRow("keyBindings.attack", settings::getKeyAttack, controller::onKeyAttackChanged)).row();
         leftColumn.add(buildBindingRow("keyBindings.dash", settings::getKeyDash, controller::onKeyDashChanged)).row();
+        leftColumn.add(buildBindingRow("keyBindings.inventory", settings::getKeyInventory, controller::onKeyInventoryChanged)).row();
 
+        rightColumn.add(buildBindingRow("keyBindings.left", settings::getKeyLeft, controller::onKeyLeftChanged)).row();
+        rightColumn.add(buildBindingRow("keyBindings.right", settings::getKeyRight, controller::onKeyRightChanged)).row();
         rightColumn.add(buildBindingRow("keyBindings.focus", settings::getKeyFocus, controller::onKeyFocusChanged)).row();
+        rightColumn.add(buildBindingRow("keyBindings.cast", settings::getKeyCast, controller::onKeyCastChanged)).row();
         rightColumn.add(buildBindingRow("keyBindings.interact", settings::getKeyInteract, controller::onKeyInteractChanged)).row();
-        rightColumn.add(buildBindingRow("keyBindings.inventory", settings::getKeyInventory, controller::onKeyInventoryChanged)).row();
         rightColumn.add(buildBindingRow("keyBindings.pause", settings::getKeyPause, controller::onKeyPauseChanged)).row();
 
         columns.add(leftColumn).spaceRight(COLUMN_SPACING);

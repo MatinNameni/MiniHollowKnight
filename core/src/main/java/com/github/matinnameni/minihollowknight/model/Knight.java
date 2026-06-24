@@ -247,9 +247,8 @@ public class Knight implements Entity {
         }
 
         // Quick cast
-        // TODO: quick cast and up buttons are harcoded here, add it to settings key bindings
-        if(Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-            if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+        if(Gdx.input.isKeyJustPressed(settings.getKeyCast())) {
+            if (Gdx.input.isKeyPressed(settings.getKeyUp())) {
                 if(canCastHowlingWraiths()) {
                     castHowlingWraiths();
                 }
@@ -360,9 +359,8 @@ public class Knight implements Entity {
     }
 
     private AttackDirection resolveAttackDirection() {
-        // TODO: up and down key is hard coded here, add them to settings keys
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN))  return AttackDirection.DOWN;
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) return AttackDirection.UP;
+        if (Gdx.input.isKeyPressed(settings.getKeyDown())) { return AttackDirection.DOWN; }
+        if (Gdx.input.isKeyPressed(settings.getKeyUp())) { return AttackDirection.UP; }
         return facingRight ? AttackDirection.RIGHT : AttackDirection.LEFT;
     }
 
