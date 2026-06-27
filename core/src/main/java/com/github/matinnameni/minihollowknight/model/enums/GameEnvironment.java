@@ -1,15 +1,17 @@
 package com.github.matinnameni.minihollowknight.model.enums;
 
 public enum GameEnvironment {
-    FORGOTTEN_CROSSROADS(1, "Forgotton Crossroads"),
-    GREENPATH(2, "Greenpath");
+    FORGOTTEN_CROSSROADS(1, "Forgotton Crossroads", "maps/forgotten_crossroads/spawnPoint.tmx"),
+    GREENPATH(2, "Greenpath", "");
 
     public final int id;
     public final String name;
+    public final String path;
 
-    GameEnvironment(int id, String name) {
+    GameEnvironment(int id, String name, String path) {
         this.id = id;
         this.name = name;
+        this.path = path;
     }
 
     /** Returns the environment matching the given id, or null if not found. */

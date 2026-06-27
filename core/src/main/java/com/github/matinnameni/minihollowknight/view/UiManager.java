@@ -11,15 +11,13 @@ import com.github.matinnameni.minihollowknight.database.DatabaseManager;
 import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
 import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
+import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
 import com.github.matinnameni.minihollowknight.controller.MainMenuController;
 import com.github.matinnameni.minihollowknight.controller.StartGameController;
-import com.github.matinnameni.minihollowknight.view.screens.AudioSettingsScreen;
-import com.github.matinnameni.minihollowknight.view.screens.KeyBindingsScreen;
-import com.github.matinnameni.minihollowknight.view.screens.MainMenuScreen;
-import com.github.matinnameni.minihollowknight.view.screens.SettingsScreen;
-import com.github.matinnameni.minihollowknight.view.screens.StartGameScreen;
+import com.github.matinnameni.minihollowknight.model.GameData;
+import com.github.matinnameni.minihollowknight.view.screens.*;
 
 import java.sql.SQLException;
 
@@ -29,6 +27,7 @@ public class UiManager implements ScreenNavigator {
     private DatabaseManager database;
     private Settings settings;
     private Music menuMusic;
+    private boolean knightAssetsLoaded = false;
 
     private static UiManager instance;
 
@@ -55,6 +54,7 @@ public class UiManager implements ScreenNavigator {
         registry = new AssetRegistry();
         registry.register(new MenuAssetBundle(registry.getManager()));
         registry.loadBundle(MenuAssetBundle.KEY);
+        registry.register(new KnightAssetBundle(registry.getManager()));
     }
 
     /**
@@ -158,6 +158,7 @@ public class UiManager implements ScreenNavigator {
 
     @Override
     public void goToMainMenu() {
+        playMenuMusic();
         MainMenuController controller = new MainMenuController(this);
         setScreen(new MainMenuScreen(registry, settings, controller));
     }
@@ -184,6 +185,24 @@ public class UiManager implements ScreenNavigator {
     public void goToKeyBindings() {
         KeyBindingsController controller = new KeyBindingsController(this, settings);
         setScreen(new KeyBindingsScreen(registry, settings, controller));
+    }
+
+    @Override
+    public void goToGame(GameData data) {
+        ensureKnightAssetsLoaded();
+        stopMenuMusic();
+        KnightAssetBundle knightAssets = (KnightAssetBundle) registry.get(KnightAssetBundle.KEY);
+        setScreen(new GameScreen(this, data, settings, knightAssets));
+    }
+
+    /**
+     * Loads the KnightAssetBundle if it hasn't been loaded yet.
+     */
+    private void ensureKnightAssetsLoaded() {
+        if (!knightAssetsLoaded) {
+            registry.loadBundle(KnightAssetBundle.KEY);
+            knightAssetsLoaded = true;
+        }
     }
 
     @Override

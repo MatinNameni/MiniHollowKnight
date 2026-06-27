@@ -20,8 +20,8 @@ public class GameData {
 
     // --- Player position ---
     public int currentEnvironment = GameEnvironment.FORGOTTEN_CROSSROADS.id; // Environment id
-    public float playerX = 0f; // Knight's X position within the current environment
-    public float playerY = 0f; // Knight's Y position within the current environment
+    public float playerX = -1f; // Knight's X position within the current environment
+    public float playerY = -1f; // Knight's Y position within the current environment
 
     // --- Masks ---
     public int masks = 5; // 0..maxMasks

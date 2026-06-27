@@ -86,8 +86,8 @@ public class StartGameController {
             }
         }
 
-        // Load save slot
-        // TODO: Navigate to the actual gameplay screen
+        // Navigate to the gameplay screen
+        navigator.goToGame(data);
     }
 
     /**

@@ -653,6 +653,7 @@ public class Knight implements Entity {
     public void onWallCollision(float pushX) {
         position.x = pushX;
         velocity.x = 0f;
+        hittingWall = true;
     }
 
     public void onCeilingCollision(float pushY) {
@@ -660,6 +661,14 @@ public class Knight implements Entity {
         if (velocity.y > 0f) {
             velocity.y = 0f;
         }
+    }
+
+    public void onFloorCollision(float pushY) {
+        position.y = pushY;
+        if (velocity.y < 0f) {
+            velocity.y = 0f;
+        }
+        grounded = true;
     }
 
     // --- Getters ---
