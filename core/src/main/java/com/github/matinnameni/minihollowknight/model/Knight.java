@@ -1,8 +1,6 @@
 package com.github.matinnameni.minihollowknight.model;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -11,7 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.event.EventBus;
 import com.github.matinnameni.minihollowknight.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
-import com.github.matinnameni.minihollowknight.model.enums.AttackDirection;
+import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightAnimationType;
 import com.github.matinnameni.minihollowknight.model.enums.KnightState;
 
@@ -55,8 +53,9 @@ public class Knight implements Entity {
     public static final int FOCUS_SOUL_COST = 33;
 
     // Invincibility
-    public static final float INVINCIBILITY_DURATION = 1.3f;
-    public static final float KNOCKBACK_VELOCITY = 300f;
+    public static final float INVINCIBILITY_DURATION = 1.5f;
+    public static final float KNOCKBACK_VELOCITY = 100f;
+    private static final float HIT_FREEZE_COOLDOWN = 0.4f;
 
     // Spells
     private static final float VENGEFUL_SPIRIT_DURATION = KnightAnimationType.FIREBALL_CAST.getDuration();
@@ -79,7 +78,7 @@ public class Knight implements Entity {
     private boolean canDash = true;
 
     // --- Combat ---
-    private AttackDirection attackDirection = AttackDirection.RIGHT;
+    private Direction attackDirection = Direction.RIGHT;
     private float attackCooldownTimer = 0f;
     private float attackTimer = 0f;
 
@@ -97,6 +96,7 @@ public class Knight implements Entity {
 
     // --- Invincibility ---
     private float invincibilityTimer = 0f;
+    private float hitFreezeCooldownTimer = 0f;
 
     // --- Spells ---
     private float vengefulSpiritTimer = 0f;
@@ -108,6 +108,9 @@ public class Knight implements Entity {
     // --- Dependencies ---
     private final KnightAssetBundle assets;
     private final Settings settings;
+
+    // --- Safe Spots ---
+    private Vector2 lastSafePosition = new Vector2();
 
     public Knight(KnightAssetBundle assets, Settings settings) {
         this.assets = assets;
@@ -188,6 +191,7 @@ public class Knight implements Entity {
         stateTime = 0f;
         velocity.setZero();
         invincibilityTimer = 0f;
+        hitFreezeCooldownTimer = 0f;
         dashCooldownTimer = 0f;
         canDoubleJump = true;
     }
@@ -220,6 +224,9 @@ public class Knight implements Entity {
         }
         if(howlingWraithsCooldownTimer > 0f) {
             howlingWraithsCooldownTimer = Math.max(0f, howlingWraithsCooldownTimer - delta);
+        }
+        if(hitFreezeCooldownTimer > 0f) {
+            hitFreezeCooldownTimer = Math.max(0f, hitFreezeCooldownTimer - delta);
         }
     }
 
@@ -358,10 +365,10 @@ public class Knight implements Entity {
         enterState(KnightState.ATTACKING);
     }
 
-    private AttackDirection resolveAttackDirection() {
-        if (Gdx.input.isKeyPressed(settings.getKeyDown())) { return AttackDirection.DOWN; }
-        if (Gdx.input.isKeyPressed(settings.getKeyUp())) { return AttackDirection.UP; }
-        return facingRight ? AttackDirection.RIGHT : AttackDirection.LEFT;
+    private Direction resolveAttackDirection() {
+        if (Gdx.input.isKeyPressed(settings.getKeyDown())) { return Direction.DOWN; }
+        if (Gdx.input.isKeyPressed(settings.getKeyUp())) { return Direction.UP; }
+        return facingRight ? Direction.RIGHT : Direction.LEFT;
     }
 
     // --- Dash ---
@@ -431,7 +438,7 @@ public class Knight implements Entity {
                 break;
 
             case HIT:
-                if (invincibilityTimer <= 0f) {
+                if (hitFreezeCooldownTimer <= 0f) {
                     enterState(resolvePostActionState());
                 }
                 break;
@@ -566,6 +573,7 @@ public class Knight implements Entity {
         grounded = false;
         enterState(KnightState.JUMPING);
         canDoubleJump = true;
+        canDash = true;
     }
 
     // --- Take damage ---
@@ -575,6 +583,7 @@ public class Knight implements Entity {
 
         masks--;
         invincibilityTimer = INVINCIBILITY_DURATION;
+        hitFreezeCooldownTimer = HIT_FREEZE_COOLDOWN;
 
         // Cancel any ongoing action
         if (state == KnightState.FOCUSING) {
@@ -650,6 +659,14 @@ public class Knight implements Entity {
         this.position.set(x, y);
     }
 
+    public void setSafePosition(float x, float y) {
+        this.lastSafePosition.set(x, y);
+    }
+
+    public void goToLastSafePosition() {
+        this.position.set(lastSafePosition);
+    }
+
     public void onWallCollision(float pushX) {
         position.x = pushX;
         velocity.x = 0f;
@@ -687,6 +704,10 @@ public class Knight implements Entity {
 
     public boolean isInvincible() {
         return invincibilityTimer > 0f;
+    }
+
+    public float isFreeze() {
+        return hitFreezeCooldownTimer;
     }
 
     public boolean isDead() {
@@ -729,7 +750,7 @@ public class Knight implements Entity {
         return HEIGHT;
     }
 
-    public AttackDirection getAttackDirection() {
+    public Direction getAttackDirection() {
         return attackDirection;
     }
 }

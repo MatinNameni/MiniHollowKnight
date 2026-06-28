@@ -4,11 +4,17 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.model.GameData;
+import com.github.matinnameni.minihollowknight.model.GridObject;
 import com.github.matinnameni.minihollowknight.model.Knight;
 import com.github.matinnameni.minihollowknight.model.Settings;
+import com.github.matinnameni.minihollowknight.model.enums.Direction;
+import com.github.matinnameni.minihollowknight.model.enums.KnightState;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
 import com.github.matinnameni.minihollowknight.view.screens.GameScreen;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class GameScreenController {
     private ScreenNavigator navigator;
@@ -37,6 +43,8 @@ public class GameScreenController {
     public void update(float delta, OrthographicCamera camera) {
         delta = Math.min(delta, 0.05f);
 
+        resolveNailAttack();
+
         knight.setGrounded(false);
         knight.setHittingWall(false);
 
@@ -53,45 +61,47 @@ public class GameScreenController {
     private void resolveCollisions() {
         Rectangle knightHitbox = knight.getBounds();
 
-        float knightX = knightHitbox.x;
-        float kngihtY = knightHitbox.y;
-        float knightWidth = knightHitbox.width;
-        float knightHeight = knightHitbox.height;
+        Map<GridObject, Direction> collisions = getOverlappingObjects(knightHitbox);
 
-        for (Rectangle platform : gameMap.getColliders()) {
-            if (knightX + knightWidth <= platform.x || knightX >= platform.x + platform.width
-                || kngihtY + knightHeight <= platform.y || kngihtY >= platform.y + platform.height) {
-                continue;
-            }
+        for(Map.Entry<GridObject, Direction> entry : collisions.entrySet()) {
+            GridObject platform = entry.getKey();
+            Direction direction = entry.getValue();
 
-            float pushLeft = (knightX + knightWidth) - platform.x;
-            float pushRight = (platform.x + platform.width) - knightX;
-            float pushUp = (platform.y + platform.height) - kngihtY;
-            float pushDown = (kngihtY + knightHeight) - platform.y;
-
-            float minPush = Math.min(
-                Math.min(pushLeft, pushRight),
-                Math.min(pushUp, pushDown)
-            );
-
-            if (minPush == pushUp) {
+            if (direction == Direction.UP) {
+                if(platform.isDeadly) {
+                    knight.takeDamage(-1);
+                    knight.goToLastSafePosition();
+                    return;
+                }
                 float resolvedHitboxY = platform.y + platform.height;
                 knight.onFloorCollision(resolvedHitboxY - Knight.HITBOX_Y_OFFSET);
-            } else if (minPush == pushDown) {
-                float resolvedHitboxY = platform.y - knightHeight;
+                knight.setSafePosition(knight.getPosition().x, knight.getPosition().y);
+            } else if (direction == Direction.DOWN) {
+                if(platform.isDeadly) {
+                    knight.takeDamage(-1);
+                    knight.goToLastSafePosition();
+                    return;
+                }
+                float resolvedHitboxY = platform.y - knightHitbox.height;
                 knight.onCeilingCollision(resolvedHitboxY - Knight.HITBOX_Y_OFFSET);
-            } else if (minPush == pushLeft) {
-                float resolvedHitboxX = platform.x - knightWidth;
+            } else if (direction == Direction.LEFT) {
+                if(platform.isDeadly) {
+                    knight.takeDamage(-1);
+                    knight.goToLastSafePosition();
+                    return;
+                }
+                float resolvedHitboxX = platform.x - knightHitbox.width;
                 knight.onWallCollision(resolvedHitboxX - Knight.HITBOX_X_OFFSET);
                 knight.setHittingWall(true);
             } else {
+                if(platform.isDeadly) {
+                    knight.takeDamage(1);
+                    knight.goToLastSafePosition();
+                    return;
+                }
                 float resolvedHitboxX = platform.x + platform.width;
                 knight.onWallCollision(resolvedHitboxX - Knight.HITBOX_X_OFFSET);
             }
-
-            // Refresh knight position
-            knightX = knightHitbox.x;
-            kngihtY = knightHitbox.y;
         }
     }
 
@@ -113,6 +123,72 @@ public class GameScreenController {
         camera.position.y = Math.max(halfHeight, Math.min(gameMap.getMapHeight() - halfHeight, camera.position.y));
 
         camera.update();
+    }
+
+    /** Resolves the Knight's nail attack if he's in attacking state. */
+    public void resolveNailAttack() {
+        if(knight.getState() != KnightState.ATTACKING) {
+            return;
+        }
+
+        resolvePlatformAttack();
+    }
+
+    /** Resolves collisions between the Knight's attack hitbox and all map colliders. */
+    public void resolvePlatformAttack() {
+        Rectangle attackHitbox = knight.getAttackHitbox();
+
+        Map<GridObject, Direction> collisions = getOverlappingObjects(attackHitbox);
+
+        for(Map.Entry<GridObject, Direction> entry : collisions.entrySet()) {
+            GridObject platform = entry.getKey();
+            Direction direction = entry.getValue();
+
+            if (direction == Direction.UP) {
+                if (platform.canPogo) {
+                    knight.onDownAttackBounce();
+                }
+            }
+        }
+    }
+
+    // --- Helpers ---
+
+    private Map<GridObject, Direction> getOverlappingObjects(Rectangle rect) {
+        Map<GridObject, Direction> overlappingObjects = new LinkedHashMap<>();
+
+        float x = rect.x;
+        float y = rect.y;
+        float width = rect.width;
+        float height = rect.height;
+
+        for (GridObject platform : gameMap.getColliders()) {
+            if (!rect.overlaps(platform)) {
+                continue;
+            }
+
+            float pushLeft = (x + width) - platform.x;
+            float pushRight = (platform.x + platform.width) - x;
+            float pushUp = (platform.y + platform.height) - y;
+            float pushDown = (y + height) - platform.y;
+
+            float minPush = Math.min(
+                Math.min(pushLeft, pushRight),
+                Math.min(pushUp, pushDown)
+            );
+
+            if (minPush == pushUp) {
+                overlappingObjects.put(platform, Direction.UP);
+            } else if (minPush == pushDown) {
+                overlappingObjects.put(platform, Direction.DOWN);
+            } else if (minPush == pushLeft) {
+                overlappingObjects.put(platform, Direction.LEFT);
+            } else {
+                overlappingObjects.put(platform, Direction.RIGHT);
+            }
+        }
+
+        return overlappingObjects;
     }
 
     // --- Getters ---

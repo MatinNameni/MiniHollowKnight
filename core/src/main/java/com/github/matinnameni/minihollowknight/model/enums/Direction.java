@@ -1,5 +1,5 @@
 package com.github.matinnameni.minihollowknight.model.enums;
 
-public enum AttackDirection {
+public enum Direction {
     LEFT, RIGHT, UP, DOWN
 }
