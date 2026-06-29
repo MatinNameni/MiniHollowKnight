@@ -28,9 +28,8 @@ public class GameData {
     public int maxMasks = 5;
 
     // --- Soul ---
-    public int soul = 0; // 0..MAX_SOUL
-    public static final int MAX_SOUL = 99;
-    public static final int SOUL_PER_SPELL = 33;
+    public float soul = 0f; // 0..MAX_SOUL
+    public static final float MAX_SOUL = 99f;
 
     // --- Charms ---
     public Set<CharmType> collectedCharms = EnumSet.noneOf(CharmType.class);

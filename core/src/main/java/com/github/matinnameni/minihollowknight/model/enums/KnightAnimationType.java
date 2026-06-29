@@ -23,7 +23,11 @@ public enum KnightAnimationType {
     FOCUS_END("animation/Focus End.png", 3, 1, 3, 1/15f, Animation.PlayMode.NORMAL),
     FIREBALL_CAST("animation/Fireball Cast.png", 9, 1, 9, 1/15f, Animation.PlayMode.NORMAL),
     SCREAM("animation/Scream.png", 7, 1, 7, 1/15f, Animation.PlayMode.NORMAL),
-    DEATH("animation/Death.png", 18, 1, 18, 1/15f, Animation.PlayMode.NORMAL);
+    DEATH("animation/Death.png", 18, 1, 18, 1/15f, Animation.PlayMode.NORMAL),
+
+    SLASH_EFFECT("animation//Effects/SlashEffect.png", 6, 1, 6, 1/15f, Animation.PlayMode.NORMAL),
+    UP_SLASH_EFFECT("animation//Effects/UpSlashEffect.png", 6, 1, 6, 1/15f, Animation.PlayMode.NORMAL),
+    DOWN_SLASH_EFFECT("animation/Effects/DownSlashEffect.png", 6, 1, 6, 1/15f, Animation.PlayMode.NORMAL);
 
 
     public final String path;

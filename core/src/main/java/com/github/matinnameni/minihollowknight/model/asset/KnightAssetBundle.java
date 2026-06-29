@@ -24,14 +24,6 @@ public class KnightAssetBundle extends AssetBundle {
     // --- Resolved after loading ---
     private Map<KnightAnimationType, Animation<TextureRegion>> animations = new EnumMap<>(KnightAnimationType.class);
 
-    // --- Animation timings (seconds per frame) ---
-    private static final float IDLE_FRAME_DURATION   = 0.10f;
-    private static final float RUN_FRAME_DURATION    = 0.08f;
-    private static final float ATTACK_FRAME_DURATION = 0.05f;
-    private static final float JUMP_FRAME_DURATION   = 0.06f;
-    private static final float DASH_FRAME_DURATION   = 0.04f;
-    private static final float FALL_FRAME_DURATION   = 0.08f;
-
     public KnightAssetBundle(AssetManager manager) {
         super(manager);
     }

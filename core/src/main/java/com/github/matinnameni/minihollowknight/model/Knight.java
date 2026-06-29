@@ -38,19 +38,20 @@ public class Knight implements Entity {
     public static final float MAX_FALL_SPEED = 600f;
 
     // Dash
-    public static final float DASH_SPEED = 500f;
+    public static final float DASH_SPEED = 600f;
     public static final float DASH_DURATION = 0.25f;
     public static final float DASH_COOLDOWN = 0.5f;
 
     // Attack
     public static final float ATTACK_DURATION = 0.30f;
-    public static final float ATTACK_HITBOX_WIDTH = 60f;
-    public static final float ATTACK_HITBOX_HEIGHT = 60f;
-    public static final float ATTACK_HITBOX_RANGE = 70f;
+    public static final float ATTACK_HITBOX_WIDTH = 80f;
+    public static final float ATTACK_HITBOX_HEIGHT = 50f;
+    public static final float ATTACK_HITBOX_RANGE = 100f;
 
     // Focus / Heal
     public static final float FOCUS_CHANNEL_TIME = 1f;
-    public static final int FOCUS_SOUL_COST = 33;
+    public static final float FOCUS_SOUL_COST = 33f;
+    public static final float FOCUS_DISABLED_COOLDOWN = 0.7f;
 
     // Invincibility
     public static final float INVINCIBILITY_DURATION = 1.5f;
@@ -60,9 +61,11 @@ public class Knight implements Entity {
     // Spells
     private static final float VENGEFUL_SPIRIT_DURATION = KnightAnimationType.FIREBALL_CAST.getDuration();
     private static final float VENGEFUL_SPIRIT_COOLDOWN = 0.7f;
+    public static final float VENGEFUL_SPIRIT_SOUL_COST = 33f;
 
     private static final float HOWLING_WRAITHS_DURATION = KnightAnimationType.SCREAM.getDuration();
     private static final float HOWLING_WRAITHS_COOLDOWN = 0.7f;
+    public static final float HOWLING_WRAITHS_SOUL_COST = 33f;
 
     // --- State ---
     private KnightState state = KnightState.IDLE;
@@ -88,11 +91,12 @@ public class Knight implements Entity {
 
     // --- Focus / Heal ---
     private float focusTimer = 0f;
+    private float focusCooldownTimer = 0f;
 
     // --- Health ---
     private int masks;
     private int maxMasks;
-    private int soul;
+    private float soul;
 
     // --- Invincibility ---
     private float invincibilityTimer = 0f;
@@ -128,9 +132,10 @@ public class Knight implements Entity {
             return;
         }
 
-        // Input is only processed when not locked by dash / hit
         boolean inputLocked = (state == KnightState.DASHING)
-            || (state == KnightState.HIT);
+            || (state == KnightState.HIT)
+            || (state == KnightState.VENGEFUL_SPIRIT)
+            || (state == KnightState.HOWLING_WRAITHS);
 
         if (!inputLocked) {
             handleInput(deltaTime);
@@ -152,16 +157,11 @@ public class Knight implements Entity {
             return;
         }
 
-        int facingRightScaleX = -1;
-        if(state == KnightState.WALL_JUMP) {
-            facingRightScaleX = 1;
-        }
-
         batch.draw(frame,
             position.x, position.y,
             WIDTH / 2f, 0,
             WIDTH, HEIGHT,
-            facingRight ? facingRightScaleX : -facingRightScaleX, 1, 0);
+            facingRight ? -1 : 1, 1, 0);
     }
 
     @Override
@@ -228,6 +228,9 @@ public class Knight implements Entity {
         if(hitFreezeCooldownTimer > 0f) {
             hitFreezeCooldownTimer = Math.max(0f, hitFreezeCooldownTimer - delta);
         }
+        if(focusCooldownTimer > 0f) {
+            focusCooldownTimer = Math.max(0f, focusCooldownTimer - delta);
+        }
     }
 
     // --- Input Handler ---
@@ -239,11 +242,8 @@ public class Knight implements Entity {
                 enterState(KnightState.FOCUSING);
                 focusTimer = 0f;
                 velocity.x = 0f;
+                velocity.y = 0f;
                 EventBus.getInstance().publish(GameEvent.PLAYER_FOCUS_START);
-            }
-            focusTimer += deltaTime;
-            if (focusTimer >= FOCUS_CHANNEL_TIME) {
-                completeFocus();
             }
             return; // blocking other inputs
         }
@@ -263,6 +263,7 @@ public class Knight implements Entity {
             } else if (canCastVengefulSpirit()) {
                 castVengefulSpirit();
             }
+            return; // blocking other inputs
         }
 
         // Attack
@@ -289,6 +290,7 @@ public class Knight implements Entity {
                 velocity.y = JUMP_INITIAL_VELOCITY;
                 velocity.x = facingRight ? -WALL_JUMP_INITIAL_VELOCITY : WALL_JUMP_INITIAL_VELOCITY;
                 hittingWall = false;
+                facingRight = !facingRight;
                 canDoubleJump = true;
                 enterState(KnightState.WALL_JUMP);
             } else if (canDoubleJump) {
@@ -301,25 +303,32 @@ public class Knight implements Entity {
 
         // movement
         if (state != KnightState.WALL_JUMP) {
-            float moveInput = 0f;
-            if (Gdx.input.isKeyPressed(settings.getKeyLeft()))  moveInput -= 1f;
-            if (Gdx.input.isKeyPressed(settings.getKeyRight())) moveInput += 1f;
-
-            velocity.x = moveInput * MOVE_SPEED;
-
-            if (moveInput != 0f) {
-                facingRight = moveInput > 0f;
-                if (grounded && state != KnightState.RUNNING) {
-                    enterState(KnightState.RUNNING);
+            if (state == KnightState.ATTACKING) {
+                if (grounded) {
+                    // root the knight on the ground during the slash
+                    velocity.x = 0f;
+                } else {
+                    float moveInput = 0f;
+                    if (Gdx.input.isKeyPressed(settings.getKeyLeft()))  moveInput -= 1f;
+                    if (Gdx.input.isKeyPressed(settings.getKeyRight())) moveInput += 1f;
+                    velocity.x = moveInput * MOVE_SPEED;
                 }
-            } else if (grounded && state == KnightState.RUNNING) {
-                enterState(KnightState.IDLE);
-            }
-        }
+            } else {
+                float moveInput = 0f;
+                if (Gdx.input.isKeyPressed(settings.getKeyLeft()))  moveInput -= 1f;
+                if (Gdx.input.isKeyPressed(settings.getKeyRight())) moveInput += 1f;
 
-        // Fell off a ledge
-        if (!grounded && state == KnightState.RUNNING) {
-            enterState(KnightState.FALLING);
+                velocity.x = moveInput * MOVE_SPEED;
+
+                if (moveInput != 0f) {
+                    facingRight = moveInput > 0f;
+                    if (grounded && state != KnightState.RUNNING) {
+                        enterState(KnightState.RUNNING);
+                    }
+                } else if (grounded && state == KnightState.RUNNING) {
+                    enterState(KnightState.IDLE);
+                }
+            }
         }
     }
 
@@ -330,18 +339,17 @@ public class Knight implements Entity {
             && state != KnightState.ATTACKING
             && state != KnightState.DASHING
             && state != KnightState.HIT
-            && soul >= FOCUS_SOUL_COST;
+            && soul > 0f
+            && focusCooldownTimer <= 0f;
     }
 
     private void completeFocus() {
-        if (soul >= FOCUS_SOUL_COST) {
-            soul -= FOCUS_SOUL_COST;
-            if(masks < maxMasks) { masks++; }
-            EventBus.getInstance().publish(GameEvent.PLAYER_SOUL_SPENT, FOCUS_SOUL_COST);
-            EventBus.getInstance().publish(GameEvent.PLAYER_HEALED);
-            EventBus.getInstance().publish(GameEvent.PLAYER_FOCUS_COMPLETE);
-        }
+        if(masks < maxMasks) { masks++; }
+        EventBus.getInstance().publish(GameEvent.PLAYER_SOUL_SPENT, FOCUS_SOUL_COST);
+        EventBus.getInstance().publish(GameEvent.PLAYER_HEALED);
+        EventBus.getInstance().publish(GameEvent.PLAYER_FOCUS_COMPLETE);
         focusTimer = 0f;
+        focusCooldownTimer = FOCUS_DISABLED_COOLDOWN;
         enterState(KnightState.IDLE);
     }
 
@@ -361,12 +369,13 @@ public class Knight implements Entity {
 
     private void startAttack() {
         attackCooldownTimer = ATTACK_DURATION;
+        attackTimer = 0f;
         attackDirection = resolveAttackDirection();
         enterState(KnightState.ATTACKING);
     }
 
     private Direction resolveAttackDirection() {
-        if (Gdx.input.isKeyPressed(settings.getKeyDown())) { return Direction.DOWN; }
+        if (Gdx.input.isKeyPressed(settings.getKeyDown()) && !grounded) { return Direction.DOWN; }
         if (Gdx.input.isKeyPressed(settings.getKeyUp())) { return Direction.UP; }
         return facingRight ? Direction.RIGHT : Direction.LEFT;
     }
@@ -391,21 +400,29 @@ public class Knight implements Entity {
     // --- Spells ---
 
     private boolean canCastHowlingWraiths() {
-        return howlingWraithsCooldownTimer <= 0;
+        return howlingWraithsCooldownTimer <= 0
+            && soul >= HOWLING_WRAITHS_SOUL_COST;
     }
 
     private void castHowlingWraiths() {
         howlingWraithsCooldownTimer = HOWLING_WRAITHS_COOLDOWN;
         enterState(KnightState.HOWLING_WRAITHS);
+        velocity.x = 0;
+        velocity.y = 0;
+        spendSoul(HOWLING_WRAITHS_SOUL_COST);
     }
 
     private boolean canCastVengefulSpirit() {
-        return vengefulSpiritCooldownTimer <= 0;
+        return vengefulSpiritCooldownTimer <= 0
+            && soul >= VENGEFUL_SPIRIT_SOUL_COST;
     }
 
     private void castVengefulSpirit() {
         vengefulSpiritCooldownTimer = VENGEFUL_SPIRIT_COOLDOWN;
         enterState(KnightState.VENGEFUL_SPIRIT);
+        velocity.x = 0;
+        velocity.y = 0;
+        spendSoul(VENGEFUL_SPIRIT_SOUL_COST);
     }
 
     // --- State ---
@@ -419,6 +436,12 @@ public class Knight implements Entity {
         stateTime += deltaTime;
 
         switch (state) {
+
+            case IDLE:
+            case RUNNING:
+                if(!grounded) {
+                    enterState(KnightState.FALLING);
+                }
 
             case ATTACKING:
                 attackTimer += deltaTime;
@@ -464,7 +487,7 @@ public class Knight implements Entity {
             case WALL_SLIDE:
                 if (grounded) {
                     enterState(KnightState.IDLE);
-                } else if (!hittingWall) {     // ← add this
+                } else if (!hittingWall) {
                     enterState(KnightState.FALLING);
                 }
                 break;
@@ -485,6 +508,18 @@ public class Knight implements Entity {
                 }
                 break;
 
+            case FOCUSING:
+                spendSoul(FOCUS_SOUL_COST * deltaTime / FOCUS_CHANNEL_TIME);
+                if (!canFocus()) {
+                    cancelFocus();
+                    break;
+                }
+                focusTimer += deltaTime;
+                if (focusTimer >= FOCUS_CHANNEL_TIME) {
+                    completeFocus();
+                }
+                break;
+
             default:
                 break;
         }
@@ -502,8 +537,9 @@ public class Knight implements Entity {
     // --- Physics ---
 
     private void applyPhysics(float delta) {
-        // Gravity - disabled during dash and focus
-        if (state != KnightState.DASHING && state != KnightState.FOCUSING) {
+        // Gravity - disabled during dash, focus and spells
+        if (state != KnightState.DASHING && state != KnightState.FOCUSING &&
+            state != KnightState.VENGEFUL_SPIRIT && state != KnightState.HOWLING_WRAITHS) {
             velocity.y -= GRAVITY * delta;
             if (velocity.y < -MAX_FALL_SPEED) {
                 velocity.y = -MAX_FALL_SPEED;
@@ -571,7 +607,6 @@ public class Knight implements Entity {
     public void onDownAttackBounce() {
         velocity.y = DOUBLE_JUMP_INITIAL_VELOCITY * 0.7f;
         grounded = false;
-        enterState(KnightState.JUMPING);
         canDoubleJump = true;
         canDash = true;
     }
@@ -608,16 +643,71 @@ public class Knight implements Entity {
 
     // --- Soul ---
 
-    public void gainSoul(int amount) {
+    public void gainSoul(float amount) {
         soul = Math.min(soul + amount, GameData.MAX_SOUL);
         EventBus.getInstance().publish(GameEvent.PLAYER_SOUL_GAINED, amount);
     }
 
+    public void spendSoul(float amount) {
+        soul = Math.max(soul - amount, 0);
+        EventBus.getInstance().publish(GameEvent.PLAYER_SOUL_SPENT, amount);
+    }
+
     // --- Render ---
+
+    public void renderEffects(SpriteBatch batch) {
+        if(state == KnightState.ATTACKING) {
+            renderSlashEffect(batch);
+        }
+    }
 
     /** Helper method for the blinking effect that plays when the knight gets hit */
     private boolean shouldSkipRenderFrame() {
         return ((int) (invincibilityTimer * 8f) % 2) == 0;
+    }
+
+    private void renderSlashEffect(SpriteBatch batch) {
+        KnightAnimationType effectType;
+        switch (attackDirection) {
+            case UP:
+                effectType = KnightAnimationType.UP_SLASH_EFFECT;
+                break;
+            case DOWN:
+                effectType = KnightAnimationType.DOWN_SLASH_EFFECT;
+                break;
+            default:
+                effectType = KnightAnimationType.SLASH_EFFECT;
+                break;
+        }
+
+        Animation<TextureRegion> animation = assets.getAnimation(effectType);
+        if (animation == null) return;
+
+        TextureRegion frame = animation.getKeyFrame(stateTime);
+
+        float frameWidth = frame.getRegionWidth();
+        float frameHeight = frame.getRegionHeight();
+
+        float centerX = position.x + WIDTH / 2f;
+        float centerY;
+        switch (attackDirection) {
+            case UP:
+                centerY = position.y + HEIGHT;
+                break;
+            case DOWN:
+                centerY = position.y;
+                break;
+            default:
+                centerY = position.y + HEIGHT / 2f;
+                break;
+        }
+
+        batch.draw(frame,
+            centerX - frameWidth / 2f, centerY - frameHeight / 2f,
+            frameWidth / 2f, 0,
+            frameWidth, frameHeight,
+            facingRight ? -1 : 1, 1,
+            0f);
     }
 
     private Animation<TextureRegion> getCurrentAnimation() {
@@ -734,7 +824,7 @@ public class Knight implements Entity {
         return maxMasks;
     }
 
-    public int getSoul() {
+    public float getSoul() {
         return soul;
     }
 

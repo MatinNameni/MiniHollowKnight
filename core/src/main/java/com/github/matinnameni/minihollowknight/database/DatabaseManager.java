@@ -206,7 +206,7 @@ public class DatabaseManager {
             statement.setFloat(7, data.playerY);
             statement.setInt(8, data.masks);
             statement.setInt(9, data.maxMasks);
-            statement.setInt(10, data.soul);
+            statement.setFloat(10, data.soul);
             statement.setInt(11, data.totalNotches);
             statement.setInt(12, data.totalDeaths);
             statement.setInt(13, data.enemiesKilled);

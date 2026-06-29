@@ -118,6 +118,11 @@ public class GameScreen implements Screen {
         // Foreground layer
         gameMap.renderForeground(camera);
 
+        // Knight effects
+        batch.begin();
+        knight.renderEffects(batch);
+        batch.end();
+
         // Debug overlay
         if (showDebugInfo) {
             renderDebugOverlay();

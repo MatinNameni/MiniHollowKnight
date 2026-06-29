@@ -50,6 +50,16 @@ public class GameScreenController {
 
         resolveCollisions();
 
+        // wall proximity check
+        if (isAdjacentToWall(knight.getBounds())) {
+            knight.setHittingWall(true);
+        }
+
+        // floor proximity check
+        if(isOnFloor(knight.getBounds())) {
+            knight.setGrounded(true);
+        }
+
         knight.update(delta);
 
         updateCamera(delta, camera);
@@ -150,6 +160,35 @@ public class GameScreenController {
                 }
             }
         }
+    }
+
+    /** @return true if a wall is within {@code EPSILON} pixels of the given rectangle */
+    private boolean isAdjacentToWall(Rectangle rect) {
+        final float EPSILON = 1f;
+        for (GridObject platform : gameMap.getColliders()) {
+            if (rect.y + rect.height <= platform.y) continue;
+            if (rect.y >= platform.y + platform.height) continue;
+
+            float rightGap = Math.abs(platform.x - (rect.x + rect.width));
+            if (rightGap >= 0f && rightGap <= EPSILON) return true;
+
+            float leftGap = Math.abs(rect.x - (platform.x + platform.width));
+            if (leftGap >= 0f && leftGap <= EPSILON) return true;
+        }
+        return false;
+    }
+
+    /** @return true if a floor is within {@code EPSILON} pixels of the given rectangle */
+    private boolean isOnFloor(Rectangle rect) {
+        final float EPSILON = 1f;
+        for (GridObject platform : gameMap.getColliders()) {
+            if (rect.x + rect.width <= platform.x) continue;
+            if (rect.x >= platform.x + platform.width) continue;
+
+            float gap = Math.abs(rect.y - (platform.y + platform.height));
+            if (gap >= 0f && gap <= EPSILON) return true;
+        }
+        return false;
     }
 
     // --- Helpers ---
