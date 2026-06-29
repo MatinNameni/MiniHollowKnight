@@ -62,10 +62,12 @@ public class Knight implements Entity {
     private static final float VENGEFUL_SPIRIT_DURATION = KnightAnimationType.FIREBALL_CAST.getDuration();
     private static final float VENGEFUL_SPIRIT_COOLDOWN = 0.7f;
     public static final float VENGEFUL_SPIRIT_SOUL_COST = 33f;
+    public static final float VENGEFUL_SPIRIT_OFFSET = 40f;
 
     private static final float HOWLING_WRAITHS_DURATION = KnightAnimationType.SCREAM.getDuration();
     private static final float HOWLING_WRAITHS_COOLDOWN = 0.7f;
     public static final float HOWLING_WRAITHS_SOUL_COST = 33f;
+    public static final float HOWLING_WRAITHS_OFFSET = 120f;
 
     // --- State ---
     private KnightState state = KnightState.IDLE;
@@ -410,6 +412,12 @@ public class Knight implements Entity {
         velocity.x = 0;
         velocity.y = 0;
         spendSoul(HOWLING_WRAITHS_SOUL_COST);
+
+        float spawnX = position.x + WIDTH / 2f;
+        float spawnY = position.y + HEIGHT / 2f + HOWLING_WRAITHS_OFFSET;
+
+        EventBus.getInstance().publish(GameEvent.PLAYER_HOWLING_WRAITHS_CAST,
+            new HowlingWraiths.SpawnInfo(spawnX, spawnY, assets));
     }
 
     private boolean canCastVengefulSpirit() {
@@ -423,6 +431,14 @@ public class Knight implements Entity {
         velocity.x = 0;
         velocity.y = 0;
         spendSoul(VENGEFUL_SPIRIT_SOUL_COST);
+
+        float spawnX = position.x + WIDTH / 2f +
+            (facingRight ? VENGEFUL_SPIRIT_OFFSET : -VENGEFUL_SPIRIT_OFFSET);
+        float spawnY = position.y + HEIGHT / 2f;
+        Direction fireDir = facingRight ? Direction.RIGHT : Direction.LEFT;
+
+        EventBus.getInstance().publish(GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST,
+            new VengefulSpirit.SpawnInfo(spawnX, spawnY, fireDir, assets));
     }
 
     // --- State ---

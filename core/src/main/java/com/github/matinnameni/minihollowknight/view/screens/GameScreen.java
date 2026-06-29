@@ -11,9 +11,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.controller.GameScreenController;
-import com.github.matinnameni.minihollowknight.model.GameData;
-import com.github.matinnameni.minihollowknight.model.Knight;
-import com.github.matinnameni.minihollowknight.model.Settings;
+import com.github.matinnameni.minihollowknight.model.*;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.map.MapLoader;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
@@ -113,6 +111,11 @@ public class GameScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         knight.render(batch);
+
+        // Projectiles
+        for (Projectile projectile : controller.getProjectiles()) {
+            projectile.render(batch);
+        }
         batch.end();
 
         // Foreground layer
@@ -149,6 +152,7 @@ public class GameScreen implements Screen {
         batch.dispose();
         shapeRenderer.dispose();
         gameMap.dispose();
+        controller.dispose();
     }
 
     // --- Helpers ---
@@ -173,6 +177,13 @@ public class GameScreen implements Screen {
         if (attackHitbox != null) {
             shapeRenderer.setColor(Color.RED);
             shapeRenderer.rect(attackHitbox.x, attackHitbox.y, attackHitbox.width, attackHitbox.height);
+        }
+
+        // Draw projectile hitboxes
+        shapeRenderer.setColor(Color.YELLOW);
+        for (Projectile projectile : controller.getProjectiles()) {
+            Rectangle pBounds = projectile.getBounds();
+            shapeRenderer.rect(pBounds.x, pBounds.y, pBounds.width, pBounds.height);
         }
 
         shapeRenderer.end();

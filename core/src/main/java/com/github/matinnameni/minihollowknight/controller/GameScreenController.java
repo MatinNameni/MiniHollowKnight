@@ -3,25 +3,31 @@ package com.github.matinnameni.minihollowknight.controller;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.github.matinnameni.minihollowknight.model.GameData;
-import com.github.matinnameni.minihollowknight.model.GridObject;
-import com.github.matinnameni.minihollowknight.model.Knight;
-import com.github.matinnameni.minihollowknight.model.Settings;
+import com.github.matinnameni.minihollowknight.event.EventBus;
+import com.github.matinnameni.minihollowknight.event.GameEvent;
+import com.github.matinnameni.minihollowknight.event.EventListener;
+import com.github.matinnameni.minihollowknight.model.*;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightState;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
 import com.github.matinnameni.minihollowknight.view.screens.GameScreen;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-public class GameScreenController {
+public class GameScreenController implements EventListener {
     private ScreenNavigator navigator;
     private Settings settings;
     private GameData gameData;
     private Knight knight;
     private TiledGameMap gameMap;
+
+    // --- Projectiles ---
+    private final List<Projectile> projectiles = new ArrayList<>();
 
     // --- Camera control ---
     private static final float CAMERA_LERP = 4f;
@@ -33,6 +39,9 @@ public class GameScreenController {
         this.settings = settings;
         this.gameData = gameData;
         this.knight = knight;
+
+        EventBus.getInstance().subscribe(GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST, this);
+        EventBus.getInstance().subscribe(GameEvent.PLAYER_HOWLING_WRAITHS_CAST, this);
     }
 
     public void initializeCameraTarget() {
@@ -62,7 +71,72 @@ public class GameScreenController {
 
         knight.update(delta);
 
+        updateProjectiles(delta);
+
         updateCamera(delta, camera);
+    }
+
+    // --- Projectiles ---
+
+    /** Returns the list of active projectiles. */
+    public List<Projectile> getProjectiles() {
+        return projectiles;
+    }
+
+    /** Updates all active projectiles. */
+    private void updateProjectiles(float delta) {
+        Iterator<Projectile> iterator = projectiles.iterator();
+        while (iterator.hasNext()) {
+            Projectile projectile = iterator.next();
+
+            if(projectile instanceof VengefulSpirit) {
+                updateVengefulSpirit(delta, (VengefulSpirit) projectile);
+            } else if(projectile instanceof HowlingWraiths) {
+                updateHowlingWraiths(delta, (HowlingWraiths) projectile);
+            }
+
+            if (projectile.isDead()) {
+                iterator.remove();
+            }
+        }
+    }
+
+    private void updateVengefulSpirit(float delta, VengefulSpirit projectile) {
+        if (projectile.isFlying()) {
+            Rectangle projectileBounds = projectile.getBounds();
+            for (GridObject platform : gameMap.getColliders()) {
+                if (projectileBounds.y >= platform.y &&
+                projectileBounds.y + projectileBounds.height <= platform.y + platform.height &&
+                projectileBounds.overlaps(platform)) {
+                    projectile.onHitWall();
+                    break;
+                }
+            }
+        }
+
+        projectile.update(delta);
+    }
+
+    private void updateHowlingWraiths(float delta, HowlingWraiths projectile) {
+        projectile.update(delta);
+    }
+
+    // --- EventListener ---
+
+    @Override
+    public void onEvent(GameEvent event, Object payload) {
+        if (event == GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST && payload instanceof VengefulSpirit.SpawnInfo) {
+            VengefulSpirit.SpawnInfo info = (VengefulSpirit.SpawnInfo) payload;
+            projectiles.add(new VengefulSpirit(info.x, info.y, info.direction, info.assets));
+        } else if(event == GameEvent.PLAYER_HOWLING_WRAITHS_CAST && payload instanceof HowlingWraiths.SpawnInfo) {
+            HowlingWraiths.SpawnInfo info = (HowlingWraiths.SpawnInfo) payload;
+            projectiles.add(new HowlingWraiths(info.x, info.y, info.assets));
+        }
+    }
+
+    public void dispose() {
+        EventBus.getInstance().unsubscribe(GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST, this);
+        EventBus.getInstance().unsubscribe(GameEvent.PLAYER_HOWLING_WRAITHS_CAST, this);
     }
 
     // --- Update Helpers ---

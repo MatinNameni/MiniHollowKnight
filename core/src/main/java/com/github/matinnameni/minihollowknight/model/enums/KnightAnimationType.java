@@ -3,6 +3,7 @@ package com.github.matinnameni.minihollowknight.model.enums;
 import com.badlogic.gdx.graphics.g2d.Animation;
 
 public enum KnightAnimationType {
+    // --- Knight ---
     IDLE("animation/Idle.png", 9, 1, 9, 1/15f, Animation.PlayMode.LOOP),
     IDLE_HURT("animation/Idle Hurt.png", 12, 1, 12, 1/15f, Animation.PlayMode.LOOP),
     RUN("animation/Run_", 13, ".png", 3, 12, 1/15f, Animation.PlayMode.LOOP),
@@ -25,9 +26,17 @@ public enum KnightAnimationType {
     SCREAM("animation/Scream.png", 7, 1, 7, 1/15f, Animation.PlayMode.NORMAL),
     DEATH("animation/Death.png", 18, 1, 18, 1/15f, Animation.PlayMode.NORMAL),
 
+    // --- Slash ---
+
     SLASH_EFFECT("animation//Effects/SlashEffect.png", 6, 1, 6, 1/15f, Animation.PlayMode.NORMAL),
     UP_SLASH_EFFECT("animation//Effects/UpSlashEffect.png", 6, 1, 6, 1/15f, Animation.PlayMode.NORMAL),
-    DOWN_SLASH_EFFECT("animation/Effects/DownSlashEffect.png", 6, 1, 6, 1/15f, Animation.PlayMode.NORMAL);
+    DOWN_SLASH_EFFECT("animation/Effects/DownSlashEffect.png", 6, 1, 6, 1/15f, Animation.PlayMode.NORMAL),
+
+    // --- Spells ---
+
+    SOUL_BALL("animation/Projectile/SoulBall.png", 4, 1, 4, 1/15f, Animation.PlayMode.LOOP),
+    BALL_END("animation/Projectile/Ball End_", 4, ".png", 0, 2, 1/15f, Animation.PlayMode.NORMAL),
+    SOUL_SCREAM("animation/Effects/SoulScream.png", 13, 1, 13, 1/15f, Animation.PlayMode.NORMAL);
 
 
     public final String path;

@@ -18,7 +18,8 @@ public enum GameEvent {
     PLAYER_DASH,
     PLAYER_DOUBLE_JUMP,
     PLAYER_NAIL_HIT,
-    PLAYER_SPELL_CAST,
+    PLAYER_VENGEFUL_SPIRIT_CAST,
+    PLAYER_HOWLING_WRAITHS_CAST,
     PLAYER_COLLECTED_GEO,
 
     // --- Enemies ---
@@ -48,5 +49,5 @@ public enum GameEvent {
     UI_HIDE_DIALOGUE,
     UI_INVENTORY_OPENED,
     UI_INVENTORY_CLOSED,
-    UI_ACHIEVEMENT_POPUP,   // payload = achievement id (String)
+    UI_ACHIEVEMENT_POPUP,
 }
