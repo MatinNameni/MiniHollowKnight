@@ -15,8 +15,10 @@ import com.github.matinnameni.minihollowknight.model.*;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.map.MapLoader;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
+import com.github.matinnameni.minihollowknight.model.asset.HudAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
 import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
+import com.github.matinnameni.minihollowknight.view.hud.GameHud;
 
 /**
  * The main gameplay screen.
@@ -37,15 +39,20 @@ public class GameScreen implements Screen {
     private Knight knight;
     private TiledGameMap gameMap;
 
+    // --- HUD ---
+    private GameHud gameHud;
+
     // --- Debug ---
     private boolean showDebugInfo = true;
 
-    public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings, KnightAssetBundle knightAssets) {
+    public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
+                      KnightAssetBundle knightAssets, HudAssetBundle hudAssets) {
         this.navigator = navigator;
         this.gameData = gameData;
         this.settings = settings;
         this.knight = new Knight(knightAssets, settings);
         this.controller = new GameScreenController(navigator, settings, gameData, knight);
+        this.gameHud = new GameHud(knight, hudAssets);
     }
 
     // --- Screen ---
@@ -79,6 +86,10 @@ public class GameScreen implements Screen {
         camera.position.set(controller.getCameraTarget().x, controller.getCameraTarget().y, 0f);
         camera.update();
 
+        // Initialize and position HUD elements
+        gameHud.init();
+        gameHud.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
         Gdx.input.setInputProcessor(null);
         // TODO: implement input processors for the game
     }
@@ -97,6 +108,9 @@ public class GameScreen implements Screen {
         }
 
         controller.update(delta, camera);
+
+        // Update HUD
+        gameHud.update(delta);
 
         Gdx.gl.glClearColor(16/255f, 13/255f, 143/255f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -130,12 +144,16 @@ public class GameScreen implements Screen {
         if (showDebugInfo) {
             renderDebugOverlay();
         }
+
+        // HUD
+        gameHud.draw();
     }
 
     @Override
     public void resize(int width, int height) {
         camera.setToOrtho(false, width, height);
         camera.update();
+        gameHud.resize(width, height);
     }
 
     @Override
@@ -153,6 +171,7 @@ public class GameScreen implements Screen {
         shapeRenderer.dispose();
         gameMap.dispose();
         controller.dispose();
+        gameHud.dispose();
     }
 
     // --- Helpers ---

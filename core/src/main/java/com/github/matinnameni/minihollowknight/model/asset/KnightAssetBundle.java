@@ -10,7 +10,7 @@ import com.github.matinnameni.minihollowknight.model.enums.KnightAnimationType;
 import java.util.*;
 
 /**
- * Owns all assets for the Knight (player character):
+ * Owns all assets for the Knight.
  */
 public class KnightAssetBundle extends AssetBundle {
 
@@ -54,54 +54,14 @@ public class KnightAssetBundle extends AssetBundle {
     // --- Animation loader ---
 
     public void loadAnimations(KnightAnimationType animationType) {
+        Animation<TextureRegion> animation;
         if(animationType.isSpritesheet()) {
-            loadSpritesheetAnimation(animationType);
+            animation = buildAnimation(animationType.path, animationType.columnCount,
+                animationType.rowCount, animationType.frameDuration, animationType.playMode);
         } else {
-            loadAnimationWithPrefix(animationType);
+            animation = buildAnimation(animationType.path, animationType.frameCount, animationType.suffix,
+                animationType.startFrameNum, animationType.endFrameNum, animationType.frameDuration, animationType.playMode);
         }
-    }
-
-    private void loadSpritesheetAnimation(KnightAnimationType animationType) {
-        Texture texture = new Texture(animationType.path);
-
-        TextureRegion[][] split = TextureRegion.split(
-            texture,
-            texture.getWidth() / animationType.columnCount,
-            texture.getHeight() / animationType.rowCount
-        );
-
-        int frameCount = animationType.frameCount;
-        TextureRegion[] frames = new TextureRegion[frameCount];
-
-        int columns = split[0].length;
-
-        for(int i = 0; i < frameCount; i++) {
-            int row = i / columns;
-            int column = i % columns;
-            frames[i] = split[row][column];
-        }
-
-        Animation<TextureRegion> animation = new Animation<>(animationType.frameDuration, frames);
-        animation.setPlayMode(animationType.playMode);
-
-        animations.put(animationType, animation);
-    }
-
-    private void loadAnimationWithPrefix(KnightAnimationType animationType) {
-        int frameCount = animationType.frameCount;
-        Array<TextureRegion> keyFrames = new Array<>(frameCount);
-
-        for (int i = animationType.startFrameNum; i <= animationType.endFrameNum; i++) {
-            String frameNum = String.format("%03d", i);
-            keyFrames.add(
-                new TextureRegion(
-                    new Texture(animationType.path + frameNum + animationType.suffix)
-                )
-            );
-        }
-
-        Animation<TextureRegion> animation = new Animation<>(animationType.frameDuration, keyFrames, animationType.playMode);
-
         animations.put(animationType, animation);
     }
 

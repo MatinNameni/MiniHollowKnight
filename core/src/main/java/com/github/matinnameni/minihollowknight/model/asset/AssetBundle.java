@@ -1,6 +1,10 @@
 package com.github.matinnameni.minihollowknight.model.asset;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.Array;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,5 +42,53 @@ public abstract class AssetBundle {
      */
     public List<String> getAssetPaths() {
         return Collections.emptyList();
+    }
+
+    /**
+     * Builds an animation from a sprite sheet.
+     */
+    public Animation<TextureRegion> buildAnimation(String path, int columns, int rows, float frameDuration, Animation.PlayMode playMode) {
+        Texture texture = new Texture(path);
+
+        TextureRegion[][] split = TextureRegion.split(
+            texture,
+            texture.getWidth() / columns,
+            texture.getHeight() / rows
+        );
+
+        int frameCount = columns * rows;
+        TextureRegion[] frames = new TextureRegion[frameCount];
+
+        int cols = split[0].length;
+
+        for(int i = 0; i < frameCount; i++) {
+            int row = i / cols;
+            int column = i % cols;
+            frames[i] = split[row][column];
+        }
+
+        Animation<TextureRegion> animation = new Animation<>(frameDuration, frames);
+        animation.setPlayMode(playMode);
+
+        return animation;
+    }
+
+    /**
+     * Builds an animation from a frame sequence.
+     */
+    public Animation<TextureRegion> buildAnimation(String path, int frameCount, String suffix, int startFrame,
+                                                   int endFrame, float frameDuration, Animation.PlayMode playMode) {
+        Array<TextureRegion> keyFrames = new Array<>(frameCount);
+
+        for (int i = startFrame; i <= endFrame; i++) {
+            String frameNum = String.format("%03d", i);
+            keyFrames.add(
+                new TextureRegion(
+                    new Texture(path + frameNum + suffix)
+                )
+            );
+        }
+
+        return new Animation<>(frameDuration, keyFrames, playMode);
     }
 }

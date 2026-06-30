@@ -11,6 +11,7 @@ import com.github.matinnameni.minihollowknight.database.DatabaseManager;
 import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
 import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
+import com.github.matinnameni.minihollowknight.model.asset.HudAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
@@ -28,6 +29,7 @@ public class UiManager implements ScreenNavigator {
     private Settings settings;
     private Music menuMusic;
     private boolean knightAssetsLoaded = false;
+    private boolean hudAssetsLoaded = false;
 
     private static UiManager instance;
 
@@ -55,6 +57,7 @@ public class UiManager implements ScreenNavigator {
         registry.register(new MenuAssetBundle(registry.getManager()));
         registry.loadBundle(MenuAssetBundle.KEY);
         registry.register(new KnightAssetBundle(registry.getManager()));
+        registry.register(new HudAssetBundle(registry.getManager()));
     }
 
     /**
@@ -190,9 +193,11 @@ public class UiManager implements ScreenNavigator {
     @Override
     public void goToGame(GameData data) {
         ensureKnightAssetsLoaded();
+        ensureHudAssetsLoaded();
         stopMenuMusic();
         KnightAssetBundle knightAssets = (KnightAssetBundle) registry.get(KnightAssetBundle.KEY);
-        setScreen(new GameScreen(this, data, settings, knightAssets));
+        HudAssetBundle hudAssets = (HudAssetBundle) registry.get(HudAssetBundle.KEY);
+        setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets));
     }
 
     /**
@@ -202,6 +207,16 @@ public class UiManager implements ScreenNavigator {
         if (!knightAssetsLoaded) {
             registry.loadBundle(KnightAssetBundle.KEY);
             knightAssetsLoaded = true;
+        }
+    }
+
+    /**
+     * Loads the HudAssetBundle if it hasn't been loaded yet.
+     */
+    private void ensureHudAssetsLoaded() {
+        if (!hudAssetsLoaded) {
+            registry.loadBundle(HudAssetBundle.KEY);
+            hudAssetsLoaded = true;
         }
     }
 
