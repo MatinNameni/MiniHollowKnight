@@ -31,16 +31,19 @@ public class Knight implements Entity {
 
     // Movement
     public static final float MOVE_SPEED = 200f;
-    public static final float JUMP_INITIAL_VELOCITY = 420f;
+    public static final float JUMP_INITIAL_VELOCITY = 600f;
     public static final float DOUBLE_JUMP_INITIAL_VELOCITY = 400f;
     public static final float WALL_JUMP_INITIAL_VELOCITY = 80f;
     public static final float GRAVITY = 980f;
     public static final float MAX_FALL_SPEED = 600f;
+    public static final float JUMP_CUT_MULTIPLIER = 0.5f;
 
     // Dash
     public static final float DASH_SPEED = 600f;
     public static final float DASH_DURATION = 0.25f;
     public static final float DASH_COOLDOWN = 0.5f;
+    public static final float DASH_EFFECT_Y_OFFSET = 25f;
+    public static final float DASH_EFFECT_X_OFFSET = 10f;
 
     // Attack
     public static final float ATTACK_DURATION = 0.30f;
@@ -49,12 +52,12 @@ public class Knight implements Entity {
     public static final float ATTACK_HITBOX_RANGE = 100f;
 
     // Focus / Heal
-    public static final float FOCUS_CHANNEL_TIME = 1f;
+    public static final float FOCUS_CHANNEL_TIME = 1.5f;
     public static final float FOCUS_SOUL_COST = 33f;
     public static final float FOCUS_DISABLED_COOLDOWN = 0.7f;
 
     // Invincibility
-    public static final float INVINCIBILITY_DURATION = 1.5f;
+    public static final float INVINCIBILITY_DURATION = 1f;
     public static final float KNOCKBACK_VELOCITY = 100f;
     private static final float HIT_FREEZE_COOLDOWN = 0.4f;
 
@@ -81,6 +84,7 @@ public class Knight implements Entity {
     private boolean facingRight = true;
     private boolean canDoubleJump = true;
     private boolean canDash = true;
+    private boolean jumpKeyHeld = false;
 
     // --- Combat ---
     private Direction attackDirection = Direction.RIGHT;
@@ -287,6 +291,7 @@ public class Knight implements Entity {
                 velocity.y = JUMP_INITIAL_VELOCITY;
                 grounded = false;
                 canDoubleJump = true;
+                jumpKeyHeld = true;
                 enterState(KnightState.JUMPING);
             } else if(hittingWall) {
                 velocity.y = JUMP_INITIAL_VELOCITY;
@@ -294,12 +299,21 @@ public class Knight implements Entity {
                 hittingWall = false;
                 facingRight = !facingRight;
                 canDoubleJump = true;
+                jumpKeyHeld = true;
                 enterState(KnightState.WALL_JUMP);
             } else if (canDoubleJump) {
                 velocity.y = DOUBLE_JUMP_INITIAL_VELOCITY;
                 canDoubleJump = false;
                 EventBus.getInstance().publish(GameEvent.PLAYER_DOUBLE_JUMP);
                 enterState(KnightState.DOUBLE_JUMPING);
+            }
+        }
+
+        if (jumpKeyHeld && !Gdx.input.isKeyPressed(settings.getKeyJump())) {
+            jumpKeyHeld = false;
+            if (velocity.y > 0f &&
+                (state == KnightState.JUMPING || state == KnightState.WALL_JUMP)) {
+                velocity.y *= JUMP_CUT_MULTIPLIER;
             }
         }
 
@@ -674,6 +688,10 @@ public class Knight implements Entity {
     public void renderEffects(SpriteBatch batch) {
         if(state == KnightState.ATTACKING) {
             renderSlashEffect(batch);
+        } else if(state == KnightState.DASHING) {
+            renderDashEffect(batch);
+        } else if(state == KnightState.VENGEFUL_SPIRIT) {
+            renderBlastEffect(batch);
         }
     }
 
@@ -723,6 +741,56 @@ public class Knight implements Entity {
             frameWidth / 2f, 0,
             frameWidth, frameHeight,
             facingRight ? -1 : 1, 1,
+            0f);
+    }
+
+    private void renderDashEffect(SpriteBatch batch) {
+        Animation<TextureRegion> animation = assets.getAnimation(KnightAnimationType.DASH_EFFECT);
+        if (animation == null) return;
+
+        TextureRegion frame = animation.getKeyFrame(stateTime);
+
+        float frameWidth = frame.getRegionWidth() / 2f;
+        float frameHeight = frame.getRegionHeight() / 2f;
+
+        float centerY = position.y + HEIGHT / 2f - DASH_EFFECT_Y_OFFSET;
+        float centerX;
+        if(facingRight) {
+            centerX = position.x + DASH_EFFECT_X_OFFSET;
+        } else {
+            centerX = position.x + WIDTH - DASH_EFFECT_X_OFFSET;
+        }
+
+        batch.draw(frame,
+            centerX - frameWidth / 2f, centerY - frameHeight / 2f,
+            frameWidth / 2f, 0,
+            frameWidth, frameHeight,
+            facingRight ? 1 : -1, 1,
+            0f);
+    }
+
+    private void renderBlastEffect(SpriteBatch batch) {
+        Animation<TextureRegion> animation = assets.getAnimation(KnightAnimationType.BLAST);
+        if (animation == null) return;
+
+        TextureRegion frame = animation.getKeyFrame(stateTime);
+
+        float frameWidth = frame.getRegionWidth();
+        float frameHeight = frame.getRegionHeight();
+
+        float centerY = position.y + HEIGHT / 2f;
+        float centerX;
+        if(facingRight) {
+            centerX = position.x + WIDTH;
+        } else {
+            centerX = position.x;
+        }
+
+        batch.draw(frame,
+            centerX - frameWidth / 2f, centerY - frameHeight / 2f,
+            frameWidth / 2f, 0,
+            frameWidth, frameHeight,
+            facingRight ? 1 : -1, 1,
             0f);
     }
 

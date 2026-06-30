@@ -26,11 +26,13 @@ public enum KnightAnimationType {
     SCREAM("animation/Scream.png", 7, 1, 7, 1/15f, Animation.PlayMode.NORMAL),
     DEATH("animation/Death.png", 18, 1, 18, 1/15f, Animation.PlayMode.NORMAL),
 
-    // --- Slash ---
+    // --- Effects ---
 
     SLASH_EFFECT("animation//Effects/SlashEffect.png", 6, 1, 6, 1/15f, Animation.PlayMode.NORMAL),
     UP_SLASH_EFFECT("animation//Effects/UpSlashEffect.png", 6, 1, 6, 1/15f, Animation.PlayMode.NORMAL),
     DOWN_SLASH_EFFECT("animation/Effects/DownSlashEffect.png", 6, 1, 6, 1/15f, Animation.PlayMode.NORMAL),
+    DASH_EFFECT("animation/Effects/Dash Effect.png", 8, 1, 8, 1/15f, Animation.PlayMode.NORMAL),
+    BLAST("animation/Effects/BlastSoul.png", 8, 1, 8, 1/15f, Animation.PlayMode.NORMAL),
 
     // --- Spells ---
 
