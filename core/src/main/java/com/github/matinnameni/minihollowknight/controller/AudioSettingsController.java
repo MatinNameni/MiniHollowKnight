@@ -11,9 +11,17 @@ public class AudioSettingsController {
     private final ScreenNavigator navigator;
     private final Settings settings;
 
+    /** Whether this settings screen was opened from the in-game pause menu, rather than the main menu. */
+    private final boolean cameFromPause;
+
     public AudioSettingsController(ScreenNavigator navigator, Settings settings) {
+        this(navigator, settings, false);
+    }
+
+    public AudioSettingsController(ScreenNavigator navigator, Settings settings, boolean cameFromPause) {
         this.navigator = navigator;
         this.settings = settings;
+        this.cameFromPause = cameFromPause;
     }
 
     /** Called when the player toggles music on/off. */
@@ -44,11 +52,24 @@ public class AudioSettingsController {
     public void resetAudioSettings() {
         settings.resetVolumes();
         UiManager.getInstance().applySettings(settings);
-        UiManager.getInstance().goToAudioSettings();
+        if (cameFromPause) {
+            navigator.goToAudioSettingsFromPause();
+        } else {
+            navigator.goToAudioSettings();
+        }
     }
 
     /** Returns to the main settings screen. */
     public void onBack() {
-        navigator.goToSettings();
+        if (cameFromPause) {
+            navigator.goToSettingsFromPause();
+        } else {
+            navigator.goToSettings();
+        }
+    }
+
+    /** Whether the screen should have the menu background or not */
+    public boolean shouldDrawBackground() {
+        return !cameFromPause;
     }
 }

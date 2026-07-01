@@ -34,7 +34,7 @@ public class AudioSettingsScreen extends AbstractScreen {
     public void show() {
         super.show();
 
-        addBackground();
+        if(controller.shouldDrawBackground()) { addBackground(); }
 
         Table rootTable = new Table();
         rootTable.setFillParent(true);

@@ -1,5 +1,9 @@
 package com.github.matinnameni.minihollowknight.view.screens;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -34,7 +38,7 @@ public class SettingsScreen extends AbstractScreen {
     public void show() {
         super.show();
 
-        addBackground();
+        if(controller.shouldDrawBackground()) { addBackground(); }
 
         Table rootTable = new Table();
         rootTable.setFillParent(true);

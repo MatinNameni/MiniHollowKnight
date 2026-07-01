@@ -12,19 +12,35 @@ public class SettingsController {
     private final ScreenNavigator navigator;
     private final Settings settings;
 
+    /** Whether this settings screen was opened from the in-game pause menu, rather than the main menu. */
+    private final boolean cameFromPause;
+
     public SettingsController(ScreenNavigator navigator, Settings settings) {
+        this(navigator, settings, false);
+    }
+
+    public SettingsController(ScreenNavigator navigator, Settings settings, boolean cameFromPause) {
         this.navigator = navigator;
         this.settings = settings;
+        this.cameFromPause = cameFromPause;
     }
 
     /** Called when the player taps the Audio Settings button. */
     public void onAudioSettings() {
-        navigator.goToAudioSettings();
+        if (cameFromPause) {
+            navigator.goToAudioSettingsFromPause();
+        } else {
+            navigator.goToAudioSettings();
+        }
     }
 
     /** Called when the player taps the Key Bindings button. */
     public void onKeyBindings() {
-        navigator.goToKeyBindings();
+        if (cameFromPause) {
+            navigator.goToKeyBindingsFromPause();
+        } else {
+            navigator.goToKeyBindings();
+        }
     }
 
     /** Called when the player picks a different language in the dropdown. */
@@ -33,7 +49,11 @@ public class SettingsController {
 
         settings.setLanguage(language.shortName);
         UiManager.getInstance().applySettings(settings);
-        navigator.goToSettings();
+        if (cameFromPause) {
+            navigator.goToSettingsFromPause();
+        } else {
+            navigator.goToSettings();
+        }
     }
 
     /** Called when the player adjusts the brightness slider. */
@@ -43,6 +63,15 @@ public class SettingsController {
     }
 
     public void onBack() {
-        navigator.goToMainMenu();
+        if (cameFromPause) {
+            navigator.returnToPausedGame();
+        } else {
+            navigator.goToMainMenu();
+        }
+    }
+
+    /** Whether the screen should have the menu background or not */
+    public boolean shouldDrawBackground() {
+        return !cameFromPause;
     }
 }

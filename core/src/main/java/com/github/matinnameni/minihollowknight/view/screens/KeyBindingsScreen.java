@@ -47,7 +47,7 @@ public class KeyBindingsScreen extends AbstractScreen {
     public void show() {
         super.show();
 
-        addBackground();
+        if(controller.shouldDrawBackground()) { addBackground(); }
         installKeyCaptureProcessor();
 
         Table rootTable = new Table();

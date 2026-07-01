@@ -31,6 +31,8 @@ public class UiManager implements ScreenNavigator {
     private boolean knightAssetsLoaded = false;
     private boolean hudAssetsLoaded = false;
 
+    private GameScreen pausedGameScreen;
+
     private static UiManager instance;
 
     private UiManager() {}
@@ -84,6 +86,11 @@ public class UiManager implements ScreenNavigator {
     public void setScreen(Screen screen) {
         Screen old = game.getScreen();
         if (old != null) old.dispose();
+        game.setScreen(screen);
+    }
+
+    /** Swaps to {@code screen} without disposing the currently active screen. */
+    private void setScreenKeepingCurrent(Screen screen) {
         game.setScreen(screen);
     }
 
@@ -191,13 +198,52 @@ public class UiManager implements ScreenNavigator {
     }
 
     @Override
+    public void goToSettingsFromPause(GameScreen pausedGame) {
+        this.pausedGameScreen = pausedGame;
+        goToSettingsFromPause();
+    }
+
+    @Override
+    public void goToSettingsFromPause() {
+        SettingsController controller = new SettingsController(this, settings, true);
+        setScreenKeepingCurrent(new SettingsScreen(registry, settings, controller));
+    }
+
+    @Override
+    public void goToAudioSettingsFromPause() {
+        AudioSettingsController controller = new AudioSettingsController(this, settings, true);
+        setScreenKeepingCurrent(new AudioSettingsScreen(registry, settings, controller));
+    }
+
+    @Override
+    public void goToKeyBindingsFromPause() {
+        KeyBindingsController controller = new KeyBindingsController(this, settings, true);
+        setScreenKeepingCurrent(new KeyBindingsScreen(registry, settings, controller));
+    }
+
+    @Override
+    public void returnToPausedGame() {
+        if (pausedGameScreen == null) {
+            goToMainMenu();
+            return;
+        }
+        GameScreen resumed = pausedGameScreen;
+        pausedGameScreen = null;
+        Screen settingsScreen = game.getScreen();
+        setScreenKeepingCurrent(resumed);
+        if (settingsScreen != null) {
+            settingsScreen.dispose();
+        }
+    }
+
+    @Override
     public void goToGame(GameData data) {
         ensureKnightAssetsLoaded();
         ensureHudAssetsLoaded();
         stopMenuMusic();
         KnightAssetBundle knightAssets = (KnightAssetBundle) registry.get(KnightAssetBundle.KEY);
         HudAssetBundle hudAssets = (HudAssetBundle) registry.get(HudAssetBundle.KEY);
-        setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets));
+        setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets, getMenuAssets()));
     }
 
     /**

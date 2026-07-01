@@ -10,15 +10,19 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.github.matinnameni.minihollowknight.controller.GameScreenController;
+import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
 import com.github.matinnameni.minihollowknight.model.*;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.map.MapLoader;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 import com.github.matinnameni.minihollowknight.model.asset.HudAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
+import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
 import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
 import com.github.matinnameni.minihollowknight.view.hud.GameHud;
+import com.github.matinnameni.minihollowknight.view.hud.PauseOverlay;
 
 /**
  * The main gameplay screen.
@@ -42,23 +46,42 @@ public class GameScreen implements Screen {
     // --- HUD ---
     private GameHud gameHud;
 
+    // --- Pause menu ---
+    private final MenuAssetBundle menuAssets;
+    private PauseOverlay pauseOverlay;
+    private Skin pauseSkin;
+    private boolean paused = false;
+
+    /** True once {@link #show()} has fully initialized the world. */
+    private boolean initialized = false;
+
     // --- Debug ---
     private boolean showDebugInfo = true;
 
     public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
-                      KnightAssetBundle knightAssets, HudAssetBundle hudAssets) {
+                      KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets) {
         this.navigator = navigator;
         this.gameData = gameData;
         this.settings = settings;
         this.knight = new Knight(knightAssets, settings);
         this.controller = new GameScreenController(navigator, settings, gameData, knight);
         this.gameHud = new GameHud(knight, hudAssets);
+        this.menuAssets = menuAssets;
     }
 
     // --- Screen ---
 
     @Override
     public void show() {
+        if (initialized) {
+            if (paused) {
+                Gdx.input.setInputProcessor(pauseOverlay.getStage());
+            } else {
+                Gdx.input.setInputProcessor(null);
+            }
+            return;
+        }
+
         camera = new OrthographicCamera();
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -90,8 +113,16 @@ public class GameScreen implements Screen {
         gameHud.init();
         gameHud.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+        // Initialize the pause menu overlay
+        PauseMenuController pauseController = new PauseMenuController(navigator, this, this::resumeGame);
+        pauseOverlay = new PauseOverlay(pauseController, menuAssets);
+        pauseOverlay.init();
+        pauseOverlay.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
         Gdx.input.setInputProcessor(null);
         // TODO: implement input processors for the game
+
+        initialized = true;
     }
 
     @Override
@@ -99,18 +130,19 @@ public class GameScreen implements Screen {
         // Temporary key bindings
 
         if (Gdx.input.isKeyJustPressed(settings.getKeyPause())) {
-            navigator.goToMainMenu();
-            return;
+            togglePause();
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
             showDebugInfo = !showDebugInfo;
         }
 
-        controller.update(delta, camera);
+        if (!paused) {
+            controller.update(delta, camera);
 
-        // Update HUD
-        gameHud.update(delta);
+            // Update HUD
+            gameHud.update(delta);
+        }
 
         Gdx.gl.glClearColor(16/255f, 13/255f, 143/255f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -147,13 +179,47 @@ public class GameScreen implements Screen {
 
         // HUD
         gameHud.draw();
+
+        // Pause menu overlay (drawn last, on top of everything)
+        if (paused) {
+            pauseOverlay.update(delta);
+            pauseOverlay.draw();
+        }
+    }
+
+    // --- Pause ---
+
+    /** Toggles the paused state. */
+    private void togglePause() {
+        if (paused) {
+            resumeGame();
+        } else {
+            pauseGame();
+        }
+    }
+
+    /** Pauses gameplay. */
+    private void pauseGame() {
+        paused = true;
+        Gdx.input.setInputProcessor(pauseOverlay.getStage());
+    }
+
+    /** Resumes gameplay. */
+    private void resumeGame() {
+        paused = false;
+        Gdx.input.setInputProcessor(null);
     }
 
     @Override
     public void resize(int width, int height) {
+        float previousX = camera.position.x;
+        float previousY = camera.position.y;
+
         camera.setToOrtho(false, width, height);
+        camera.position.set(previousX, previousY, 0f);
         camera.update();
         gameHud.resize(width, height);
+        pauseOverlay.resize(width, height);
     }
 
     @Override
@@ -172,6 +238,8 @@ public class GameScreen implements Screen {
         gameMap.dispose();
         controller.dispose();
         gameHud.dispose();
+        pauseOverlay.dispose();
+        pauseSkin.dispose();
     }
 
     // --- Helpers ---

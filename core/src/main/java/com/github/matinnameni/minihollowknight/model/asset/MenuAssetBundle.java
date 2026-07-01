@@ -10,6 +10,7 @@ import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * Owns all assets used by the main-menu system.
@@ -31,6 +32,9 @@ public class MenuAssetBundle extends AssetBundle {
     private static final String PROFILE_SOUL = "sprites/Inventory & UI/select_game_HUD_0002_health_frame.png";
     private static final String PROFILE_MASK = "sprites/Inventory & UI/select_game_HUD_0001_health.png";
     private static final String PROFILE_FLEUR = "sprites/Inventory & UI/Fleurs/profile_fleur0011.png";
+
+    private static final String PAUSE_OVERLAY_TOP_FLEUR = "sprites/Inventory & UI/Fleurs/pause_top_fleur0008.png";
+    private static final String PAUSE_OVERLAY_BOTTOM_FLEUR = "sprites/Inventory & UI/Fleurs/bottom_fleur0008.png";
 
     private final List<String> assetPaths = new ArrayList<>();
 
@@ -55,6 +59,8 @@ public class MenuAssetBundle extends AssetBundle {
         queue(PROFILE_FLEUR, Texture.class);
         queue(PROFILE_SOUL, Texture.class);
         queue(PROFILE_MASK, Texture.class);
+        queue(PAUSE_OVERLAY_TOP_FLEUR, Texture.class);
+        queue(PAUSE_OVERLAY_BOTTOM_FLEUR, Texture.class);
     }
 
     @Override
@@ -123,6 +129,14 @@ public class MenuAssetBundle extends AssetBundle {
 
     public Texture getProfileSoul() {
         return manager.get(PROFILE_SOUL, Texture.class);
+    }
+
+    public Texture getPauseOverlayTopFleur() {
+        return manager.get(PAUSE_OVERLAY_TOP_FLEUR, Texture.class);
+    }
+
+    public Texture getPauseOverlayBottomFleur() {
+        return manager.get(PAUSE_OVERLAY_BOTTOM_FLEUR, Texture.class);
     }
 
     /** Creates a {@link Skin} from the UI skin file. */
