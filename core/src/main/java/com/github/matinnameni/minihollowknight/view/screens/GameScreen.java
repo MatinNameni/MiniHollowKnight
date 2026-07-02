@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.github.matinnameni.minihollowknight.controller.GameScreenController;
 import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
 import com.github.matinnameni.minihollowknight.model.*;
@@ -21,6 +20,7 @@ import com.github.matinnameni.minihollowknight.model.asset.HudAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
 import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
+import com.github.matinnameni.minihollowknight.view.UiManager;
 import com.github.matinnameni.minihollowknight.view.hud.GameHud;
 import com.github.matinnameni.minihollowknight.view.hud.PauseOverlay;
 
@@ -49,8 +49,10 @@ public class GameScreen implements Screen {
     // --- Pause menu ---
     private final MenuAssetBundle menuAssets;
     private PauseOverlay pauseOverlay;
-    private Skin pauseSkin;
     private boolean paused = false;
+
+    // --- Brightness overlay ---
+    private final ShapeRenderer brightnessOverlayRenderer = new ShapeRenderer();
 
     /** True once {@link #show()} has fully initialized the world. */
     private boolean initialized = false;
@@ -180,11 +182,14 @@ public class GameScreen implements Screen {
         // HUD
         gameHud.draw();
 
-        // Pause menu overlay (drawn last, on top of everything)
+        // Pause menu overlay
         if (paused) {
             pauseOverlay.update(delta);
             pauseOverlay.draw();
         }
+
+        // Brightness overlay
+        drawBrightnessOverlay();
     }
 
     // --- Pause ---
@@ -239,7 +244,6 @@ public class GameScreen implements Screen {
         controller.dispose();
         gameHud.dispose();
         pauseOverlay.dispose();
-        pauseSkin.dispose();
     }
 
     // --- Helpers ---
@@ -274,5 +278,27 @@ public class GameScreen implements Screen {
         }
 
         shapeRenderer.end();
+    }
+
+    /**
+     * Draws a semi-transparent black overlay on top of everything to simulate lower brightness.
+     */
+    private void drawBrightnessOverlay() {
+        float brightness = settings.getBrightness();
+        if (brightness >= 0.99f) return;
+
+        float alpha = 1f - brightness;
+
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        float x = camera.position.x - camera.viewportWidth / 2f;
+        float y = camera.position.y - camera.viewportHeight / 2f;
+
+        brightnessOverlayRenderer.setProjectionMatrix(camera.combined);
+        brightnessOverlayRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        brightnessOverlayRenderer.setColor(0, 0, 0, alpha);
+        brightnessOverlayRenderer.rect(x, y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        brightnessOverlayRenderer.end();
     }
 }
