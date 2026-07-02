@@ -40,7 +40,11 @@ public class TiledGameMap {
     private TiledMapTileLayer spikeLayer3;
 
     private TiledMapTileLayer backgroundLayer;
+
+    private TiledMapTileLayer mainBackgroundLayer;
     private TiledMapTileLayer mainLayer;
+    private TiledMapTileLayer mainForegroundLayer;
+
     private TiledMapTileLayer foregroundLayer;
 
     // --- Extracted data ---
@@ -96,8 +100,14 @@ public class TiledGameMap {
                 case "background":
                     backgroundLayer = tileLayer;
                     break;
+                case "mainBackground":
+                    mainBackgroundLayer = tileLayer;
+                    break;
                 case "main":
                     mainLayer = tileLayer;
+                    break;
+                case "mainForeground":
+                    mainForegroundLayer = tileLayer;
                     break;
                 case "foreground":
                     foregroundLayer = tileLayer;
@@ -151,8 +161,20 @@ public class TiledGameMap {
     // --- Rendering ---
 
     /**
+     * Renders the background tile layer.
+     * Should be called before any other layers.
+     */
+    public void renderBackground(OrthographicCamera camera) {
+        renderer.setView(camera);
+        renderer.getBatch().setProjectionMatrix(camera.combined);
+        renderer.getBatch().begin();
+        if (backgroundLayer != null) renderer.renderTileLayer(backgroundLayer);
+        renderer.getBatch().end();
+    }
+
+    /**
      * Renders the spike layers.
-     * Should be called before drawing background and main layers.
+     * Should be called before drawing main layers.
      */
     public void renderSpikeLayer(OrthographicCamera camera) {
         renderer.setView(camera);
@@ -166,15 +188,16 @@ public class TiledGameMap {
     }
 
     /**
-     * Renders the background and main tile layers.
+     * Renders the main tile layers.
      * Should be called before drawing entities.
      */
-    public void renderBackground(OrthographicCamera camera) {
+    public void renderMain(OrthographicCamera camera) {
         renderer.setView(camera);
         renderer.getBatch().setProjectionMatrix(camera.combined);
         renderer.getBatch().begin();
-        if (backgroundLayer != null) renderer.renderTileLayer(backgroundLayer);
+        if (mainBackgroundLayer != null) renderer.renderTileLayer(mainBackgroundLayer);
         if (mainLayer != null) renderer.renderTileLayer(mainLayer);
+        if (mainForegroundLayer != null) renderer.renderTileLayer(mainForegroundLayer);
         renderer.getBatch().end();
     }
 

@@ -98,6 +98,7 @@ public class Knight implements Entity {
     // --- Focus / Heal ---
     private float focusTimer = 0f;
     private float focusCooldownTimer = 0f;
+    private float consumedSoul = 0f;
 
     // --- Health ---
     private int masks;
@@ -366,11 +367,13 @@ public class Knight implements Entity {
         EventBus.getInstance().publish(GameEvent.PLAYER_FOCUS_COMPLETE);
         focusTimer = 0f;
         focusCooldownTimer = FOCUS_DISABLED_COOLDOWN;
+        consumedSoul = 0f;
         enterState(KnightState.IDLE);
     }
 
     private void cancelFocus() {
         focusTimer = 0f;
+        consumedSoul = 0f;
         EventBus.getInstance().publish(GameEvent.PLAYER_FOCUS_CANCEL);
         enterState(KnightState.IDLE);
     }
@@ -539,7 +542,12 @@ public class Knight implements Entity {
                 break;
 
             case FOCUSING:
-                spendSoul(FOCUS_SOUL_COST * deltaTime / FOCUS_CHANNEL_TIME);
+                float ratio = deltaTime / FOCUS_CHANNEL_TIME;
+                float consumedThisFrame = FOCUS_SOUL_COST * ratio;
+                consumedSoul += consumedThisFrame;
+                float remainingSoul = FOCUS_SOUL_COST - consumedSoul;
+                consumedThisFrame = Math.min(consumedThisFrame, remainingSoul);
+                spendSoul(consumedThisFrame);
                 if (!canFocus()) {
                     cancelFocus();
                     break;
@@ -635,6 +643,10 @@ public class Knight implements Entity {
     }
 
     public void onDownAttackBounce() {
+        if(attackDirection != Direction.DOWN) {
+            return;
+        }
+
         velocity.y = DOUBLE_JUMP_INITIAL_VELOCITY * 0.7f;
         grounded = false;
         canDoubleJump = true;
@@ -643,7 +655,7 @@ public class Knight implements Entity {
 
     // --- Take damage ---
 
-    public void takeDamage(float knockbackDirection) {
+    public void takeDamage(Direction knockbackDirection) {
         if (invincibilityTimer > 0f || state == KnightState.DEAD) return;
 
         masks--;
@@ -657,7 +669,8 @@ public class Knight implements Entity {
         }
 
         // Knockback
-        velocity.x = knockbackDirection * KNOCKBACK_VELOCITY;
+        float knockback = (knockbackDirection == Direction.RIGHT) ? 1f : -1f;
+        velocity.x = knockback * KNOCKBACK_VELOCITY;
         velocity.y = JUMP_INITIAL_VELOCITY * 0.5f;
         grounded = false;
 
@@ -806,6 +819,7 @@ public class Knight implements Entity {
             case DASHING: return assets.getAnimation(KnightAnimationType.DASH);
             case FOCUSING: return assets.getAnimation(KnightAnimationType.FOCUS);
             case HIT: return assets.getAnimation(KnightAnimationType.IDLE);
+            case LANDING: return assets.getAnimation(KnightAnimationType.LANDING);
             case VENGEFUL_SPIRIT: return assets.getAnimation(KnightAnimationType.FIREBALL_CAST);
             case HOWLING_WRAITHS: return assets.getAnimation(KnightAnimationType.SCREAM);
             case DEAD: return assets.getAnimation(KnightAnimationType.DEATH);
@@ -926,5 +940,9 @@ public class Knight implements Entity {
 
     public Direction getAttackDirection() {
         return attackDirection;
+    }
+
+    public Vector2 getLastSafePosition() {
+        return lastSafePosition;
     }
 }

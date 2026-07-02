@@ -20,7 +20,6 @@ import com.github.matinnameni.minihollowknight.model.asset.HudAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
 import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
-import com.github.matinnameni.minihollowknight.view.UiManager;
 import com.github.matinnameni.minihollowknight.view.hud.GameHud;
 import com.github.matinnameni.minihollowknight.view.hud.PauseOverlay;
 
@@ -149,11 +148,14 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(16/255f, 13/255f, 143/255f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        // Background layer
+        gameMap.renderBackground(camera);
+
         // Spike layers
         gameMap.renderSpikeLayer(camera);
 
-        // Background layer
-        gameMap.renderBackground(camera);
+        // Main layers
+        gameMap.renderMain(camera);
 
         // Knight
         batch.setProjectionMatrix(camera.combined);

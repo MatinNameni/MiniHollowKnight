@@ -153,7 +153,7 @@ public class GameScreenController implements EventListener {
 
             if (direction == Direction.UP) {
                 if(platform.isDeadly) {
-                    knight.takeDamage(-1);
+                    knight.takeDamage(resolvePlatformDeathKnockback());
                     knight.goToLastSafePosition();
                     return;
                 }
@@ -162,7 +162,7 @@ public class GameScreenController implements EventListener {
                 knight.setSafePosition(knight.getPosition().x, knight.getPosition().y);
             } else if (direction == Direction.DOWN) {
                 if(platform.isDeadly) {
-                    knight.takeDamage(-1);
+                    knight.takeDamage(resolvePlatformDeathKnockback());
                     knight.goToLastSafePosition();
                     return;
                 }
@@ -170,7 +170,7 @@ public class GameScreenController implements EventListener {
                 knight.onCeilingCollision(resolvedHitboxY - Knight.HITBOX_Y_OFFSET);
             } else if (direction == Direction.LEFT) {
                 if(platform.isDeadly) {
-                    knight.takeDamage(-1);
+                    knight.takeDamage(resolvePlatformDeathKnockback());
                     knight.goToLastSafePosition();
                     return;
                 }
@@ -179,7 +179,7 @@ public class GameScreenController implements EventListener {
                 knight.setHittingWall(true);
             } else {
                 if(platform.isDeadly) {
-                    knight.takeDamage(1);
+                    knight.takeDamage(resolvePlatformDeathKnockback());
                     knight.goToLastSafePosition();
                     return;
                 }
@@ -230,6 +230,14 @@ public class GameScreenController implements EventListener {
 
             if (direction == Direction.UP) {
                 if (platform.canPogo) {
+                    knight.onDownAttackBounce();
+                }
+            } else if(direction == Direction.LEFT) {
+                if (platform.canPogo) {
+                    knight.onDownAttackBounce();
+                }
+            } else if(direction == Direction.RIGHT) {
+                if(platform.canPogo) {
                     knight.onDownAttackBounce();
                 }
             }
@@ -302,6 +310,17 @@ public class GameScreenController implements EventListener {
         }
 
         return overlappingObjects;
+    }
+
+    /**
+     * Whether Knight's knockback direction should be to left
+     * or right based on its current position and safe position.
+     */
+    private Direction resolvePlatformDeathKnockback() {
+        if (knight.getPosition().x - knight.getLastSafePosition().x > 0) {
+            return Direction.LEFT;
+        }
+        return Direction.RIGHT;
     }
 
     // --- Getters ---
