@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.event.EventBus;
 import com.github.matinnameni.minihollowknight.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
+import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightAnimationType;
 import com.github.matinnameni.minihollowknight.model.enums.KnightState;
@@ -46,6 +47,7 @@ public class Knight implements Entity {
     public static final float DASH_EFFECT_X_OFFSET = 10f;
 
     // Attack
+    public static final float SLASH_DAMAGE = 40f;
     public static final float ATTACK_DURATION = 0.30f;
     public static final float ATTACK_HITBOX_WIDTH = 80f;
     public static final float ATTACK_HITBOX_HEIGHT = 50f;
@@ -62,13 +64,15 @@ public class Knight implements Entity {
     private static final float HIT_FREEZE_COOLDOWN = 0.4f;
 
     // Spells
-    private static final float VENGEFUL_SPIRIT_DURATION = KnightAnimationType.FIREBALL_CAST.getDuration();
-    private static final float VENGEFUL_SPIRIT_COOLDOWN = 0.7f;
+    public static final float VENGEFUL_SPIRIT_DAMAGE_PER_FRAME = 1f;
+    public static final float VENGEFUL_SPIRIT_DURATION = KnightAnimationType.FIREBALL_CAST.getDuration();
+    public static final float VENGEFUL_SPIRIT_COOLDOWN = 1f;
     public static final float VENGEFUL_SPIRIT_SOUL_COST = 33f;
     public static final float VENGEFUL_SPIRIT_OFFSET = 40f;
 
-    private static final float HOWLING_WRAITHS_DURATION = KnightAnimationType.SCREAM.getDuration();
-    private static final float HOWLING_WRAITHS_COOLDOWN = 0.7f;
+    public static final float HOWLING_WRAITHS_DAMAGE_PER_FRAME = 0.7f;
+    public static final float HOWLING_WRAITHS_DURATION = KnightAnimationType.SOUL_SCREAM.getDuration();
+    public static final float HOWLING_WRAITHS_COOLDOWN = 0.7f;
     public static final float HOWLING_WRAITHS_SOUL_COST = 33f;
     public static final float HOWLING_WRAITHS_OFFSET = 120f;
 
@@ -638,7 +642,7 @@ public class Knight implements Entity {
 
     // --- Nail ---
 
-    public void onNailHit(Object enemy) {
+    public void onNailHit(Enemy enemy) {
         EventBus.getInstance().publish(GameEvent.PLAYER_NAIL_HIT, enemy);
     }
 

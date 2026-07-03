@@ -13,9 +13,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.controller.GameScreenController;
 import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
 import com.github.matinnameni.minihollowknight.model.*;
+import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.map.MapLoader;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
+import com.github.matinnameni.minihollowknight.model.asset.CrawlidAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.HudAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
@@ -60,12 +62,13 @@ public class GameScreen implements Screen {
     private boolean showDebugInfo = true;
 
     public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
-                      KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets) {
+                      KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets,
+                      CrawlidAssetBundle crawlidAssets) {
         this.navigator = navigator;
         this.gameData = gameData;
         this.settings = settings;
         this.knight = new Knight(knightAssets, settings);
-        this.controller = new GameScreenController(navigator, settings, gameData, knight);
+        this.controller = new GameScreenController(navigator, settings, gameData, knight, crawlidAssets);
         this.gameHud = new GameHud(knight, hudAssets);
         this.menuAssets = menuAssets;
     }
@@ -157,9 +160,15 @@ public class GameScreen implements Screen {
         // Main layers
         gameMap.renderMain(camera);
 
-        // Knight
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
+
+        // Enemies
+        for (Enemy enemy : controller.getEnemies()) {
+            enemy.render(batch);
+        }
+
+        // Knight
         knight.render(batch);
 
         // Projectiles
@@ -277,6 +286,13 @@ public class GameScreen implements Screen {
         for (Projectile projectile : controller.getProjectiles()) {
             Rectangle pBounds = projectile.getBounds();
             shapeRenderer.rect(pBounds.x, pBounds.y, pBounds.width, pBounds.height);
+        }
+
+        // Draw enemy hitboxes
+        shapeRenderer.setColor(Color.ORANGE);
+        for (Enemy enemy : controller.getEnemies()) {
+            Rectangle eBounds = enemy.getBounds();
+            shapeRenderer.rect(eBounds.x, eBounds.y, eBounds.width, eBounds.height);
         }
 
         shapeRenderer.end();

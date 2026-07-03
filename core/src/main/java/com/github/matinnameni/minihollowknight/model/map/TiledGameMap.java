@@ -26,6 +26,7 @@ public class TiledGameMap {
     public static final float UNIT_SCALE = 0.5f;
 
     private static final String SPAWN_POINT_NAME = "playerSpawnPoint";
+    private static final String CRAWLID_SPAWN_NAME = "crawlidSpawn";
 
     // --- Tiled ---
 
@@ -51,6 +52,7 @@ public class TiledGameMap {
 
     private final List<GridObject> colliders = new ArrayList<>();
     private final Vector2 playerSpawn = new Vector2(100f, 100f);
+    private final List<Vector2> crawlidSpawns = new ArrayList<>();
 
     // --- Map dimensions ---
 
@@ -120,42 +122,56 @@ public class TiledGameMap {
     // --- Object extraction ---
 
     /**
-     * Reads every {@link RectangleMapObject} in the map.
+     * Reads every {@link RectangleMapObject} and point {@link MapObject} in the map.
      */
     private void extractObjects(float unitScale) {
         for (MapLayer layer : tiledMap.getLayers()) {
             for (MapObject mapObject : layer.getObjects()) {
-                if (!(mapObject instanceof RectangleMapObject)) continue;
-
-                RectangleMapObject rectangleObject = (RectangleMapObject) mapObject;
-                Rectangle currentRectangle = rectangleObject.getRectangle();
-
-                // Is deadly
-                boolean isDeadly = false;
-                if (rectangleObject.getProperties().containsKey("isDeadly")) {
-                    isDeadly = rectangleObject.getProperties().get("isDeadly", Boolean.class);
-                }
-
-                // Can pogo over it
-                boolean canPogo = false;
-                if(rectangleObject.getProperties().containsKey("canPogo")) {
-                    canPogo = rectangleObject.getProperties().get("canPogo", Boolean.class);
-                }
-
-                if (SPAWN_POINT_NAME.equals(mapObject.getName())) {
-                    playerSpawn.set(currentRectangle.x * unitScale, currentRectangle.y * unitScale);
-                } else {
-                    colliders.add(new GridObject(
-                        currentRectangle.x * unitScale,
-                        currentRectangle.y * unitScale,
-                        currentRectangle.width * unitScale,
-                        currentRectangle.height * unitScale,
-                        isDeadly,
-                        canPogo
-                    ));
+                if (mapObject instanceof RectangleMapObject) {
+                    extractRectangleObject((RectangleMapObject) mapObject, unitScale);
+                } else if (CRAWLID_SPAWN_NAME.equals(mapObject.getName())) {
+                    extractPointObject(mapObject, unitScale);
                 }
             }
         }
+    }
+
+    /** Handles a rectangle-shaped object. */
+    private void extractRectangleObject(RectangleMapObject rectangleObject, float unitScale) {
+        Rectangle currentRectangle = rectangleObject.getRectangle();
+
+        // Is deadly
+        boolean isDeadly = false;
+        if (rectangleObject.getProperties().containsKey("isDeadly")) {
+            isDeadly = rectangleObject.getProperties().get("isDeadly", Boolean.class);
+        }
+
+        // Can pogo over it
+        boolean canPogo = false;
+        if (rectangleObject.getProperties().containsKey("canPogo")) {
+            canPogo = rectangleObject.getProperties().get("canPogo", Boolean.class);
+        }
+
+        if (SPAWN_POINT_NAME.equals(rectangleObject.getName())) {
+            playerSpawn.set(currentRectangle.x * unitScale, currentRectangle.y * unitScale);
+        } else {
+            colliders.add(new GridObject(
+                currentRectangle.x * unitScale,
+                currentRectangle.y * unitScale,
+                currentRectangle.width * unitScale,
+                currentRectangle.height * unitScale,
+                isDeadly,
+                canPogo
+            ));
+        }
+    }
+
+    /** Handles a Tiled Point object. */
+    private void extractPointObject(MapObject mapObject, float unitScale) {
+        MapProperties properties = mapObject.getProperties();
+        float x = properties.get("x", 0f, Float.class);
+        float y = properties.get("y", 0f, Float.class);
+        crawlidSpawns.add(new Vector2(x * unitScale, y * unitScale));
     }
 
     // --- Rendering ---
@@ -221,6 +237,10 @@ public class TiledGameMap {
 
     public Vector2 getPlayerSpawn() {
         return playerSpawn;
+    }
+
+    public List<Vector2> getCrawlidSpawns() {
+        return crawlidSpawns;
     }
 
     public float getMapWidth() {

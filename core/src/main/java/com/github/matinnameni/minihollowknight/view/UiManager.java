@@ -11,6 +11,7 @@ import com.github.matinnameni.minihollowknight.database.DatabaseManager;
 import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
 import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
+import com.github.matinnameni.minihollowknight.model.asset.CrawlidAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.HudAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
@@ -30,6 +31,7 @@ public class UiManager implements ScreenNavigator {
     private Music menuMusic;
     private boolean knightAssetsLoaded = false;
     private boolean hudAssetsLoaded = false;
+    private boolean crawlidAssetsLoaded = false;
 
     private GameScreen pausedGameScreen;
 
@@ -60,6 +62,7 @@ public class UiManager implements ScreenNavigator {
         registry.loadBundle(MenuAssetBundle.KEY);
         registry.register(new KnightAssetBundle(registry.getManager()));
         registry.register(new HudAssetBundle(registry.getManager()));
+        registry.register(new CrawlidAssetBundle(registry.getManager()));
     }
 
     /**
@@ -240,10 +243,12 @@ public class UiManager implements ScreenNavigator {
     public void goToGame(GameData data) {
         ensureKnightAssetsLoaded();
         ensureHudAssetsLoaded();
+        ensureCrawlidAssetsLoaded();
         stopMenuMusic();
         KnightAssetBundle knightAssets = (KnightAssetBundle) registry.get(KnightAssetBundle.KEY);
         HudAssetBundle hudAssets = (HudAssetBundle) registry.get(HudAssetBundle.KEY);
-        setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets, getMenuAssets()));
+        CrawlidAssetBundle crawlidAssets = (CrawlidAssetBundle) registry.get(CrawlidAssetBundle.KEY);
+        setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets, getMenuAssets(), crawlidAssets));
     }
 
     /**
@@ -263,6 +268,16 @@ public class UiManager implements ScreenNavigator {
         if (!hudAssetsLoaded) {
             registry.loadBundle(HudAssetBundle.KEY);
             hudAssetsLoaded = true;
+        }
+    }
+
+    /**
+     * Loads the CrawlidAssetBundle if it hasn't been loaded yet.
+     */
+    private void ensureCrawlidAssetsLoaded() {
+        if (!crawlidAssetsLoaded) {
+            registry.loadBundle(CrawlidAssetBundle.KEY);
+            crawlidAssetsLoaded = true;
         }
     }
 

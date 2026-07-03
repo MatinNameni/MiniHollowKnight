@@ -5,7 +5,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.github.matinnameni.minihollowknight.event.EventBus;
+import com.github.matinnameni.minihollowknight.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
+import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightAnimationType;
 
@@ -113,16 +116,22 @@ public class VengefulSpirit implements Projectile {
     }
 
     @Override
-    public void onHitEnemy() {
+    public void onHitEnemy(Enemy enemy) {
         if (state == State.FLYING) {
             transitionToImpact();
         }
-        // TODO: Write this method after adding enemies to the game
+
+        EventBus.getInstance().publish(GameEvent.PLAYER_VENGEFUL_SPIRIT_HIT, enemy);
     }
 
     @Override
     public boolean isDead() {
         return state == State.DEAD;
+    }
+
+    @Override
+    public boolean hasEffectOnEnemies() {
+        return true;
     }
 
     // --- Actions ---
