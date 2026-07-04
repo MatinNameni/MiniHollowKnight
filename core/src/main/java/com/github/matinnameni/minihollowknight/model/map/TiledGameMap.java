@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
+import com.badlogic.gdx.maps.objects.PointMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -27,6 +28,7 @@ public class TiledGameMap {
 
     private static final String SPAWN_POINT_NAME = "playerSpawnPoint";
     private static final String CRAWLID_SPAWN_NAME = "crawlidSpawn";
+    private static final String MOSSFLY_SPAWN_NAME = "mossflySpawn";
 
     // --- Tiled ---
 
@@ -53,6 +55,7 @@ public class TiledGameMap {
     private final List<GridObject> colliders = new ArrayList<>();
     private final Vector2 playerSpawn = new Vector2(100f, 100f);
     private final List<Vector2> crawlidSpawns = new ArrayList<>();
+    private final List<Vector2> mossflySpawns = new ArrayList<>();
 
     // --- Map dimensions ---
 
@@ -129,7 +132,7 @@ public class TiledGameMap {
             for (MapObject mapObject : layer.getObjects()) {
                 if (mapObject instanceof RectangleMapObject) {
                     extractRectangleObject((RectangleMapObject) mapObject, unitScale);
-                } else if (CRAWLID_SPAWN_NAME.equals(mapObject.getName())) {
+                } else if (mapObject instanceof PointMapObject) {
                     extractPointObject(mapObject, unitScale);
                 }
             }
@@ -171,7 +174,15 @@ public class TiledGameMap {
         MapProperties properties = mapObject.getProperties();
         float x = properties.get("x", 0f, Float.class);
         float y = properties.get("y", 0f, Float.class);
-        crawlidSpawns.add(new Vector2(x * unitScale, y * unitScale));
+
+        switch (mapObject.getName()) {
+            case CRAWLID_SPAWN_NAME:
+                crawlidSpawns.add(new Vector2(x * unitScale, y * unitScale));
+                break;
+            case MOSSFLY_SPAWN_NAME:
+                mossflySpawns.add(new Vector2(x * unitScale, y * unitScale));
+                break;
+        }
     }
 
     // --- Rendering ---
@@ -241,6 +252,10 @@ public class TiledGameMap {
 
     public List<Vector2> getCrawlidSpawns() {
         return crawlidSpawns;
+    }
+
+    public List<Vector2> getMossflySpawns() {
+        return mossflySpawns;
     }
 
     public float getMapWidth() {

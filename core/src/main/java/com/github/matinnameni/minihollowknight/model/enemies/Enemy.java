@@ -16,7 +16,7 @@ public abstract class Enemy implements Entity {
     }
 
     /** Applies {@code damage} to this enemy's health. */
-    public abstract void takeDamage(float damage, Direction appliedDamageDirection);
+    public abstract void takeDamage(float damage, Direction knockbackDirection);
 
     /** @return true while the enemy's hitbox should be able to damage the player on contact. */
     public abstract boolean canDamagePlayer();

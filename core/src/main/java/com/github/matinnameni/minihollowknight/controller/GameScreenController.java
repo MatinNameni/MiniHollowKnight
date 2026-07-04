@@ -8,8 +8,10 @@ import com.github.matinnameni.minihollowknight.event.GameEvent;
 import com.github.matinnameni.minihollowknight.event.EventListener;
 import com.github.matinnameni.minihollowknight.model.*;
 import com.github.matinnameni.minihollowknight.model.asset.CrawlidAssetBundle;
+import com.github.matinnameni.minihollowknight.model.asset.MossflyAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enemies.Crawlid;
 import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.enemies.Mossfly;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightState;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
@@ -31,6 +33,7 @@ public class GameScreenController implements EventListener {
     private Knight knight;
     private TiledGameMap gameMap;
     private final CrawlidAssetBundle crawlidAssets;
+    private final MossflyAssetBundle mossflyAssets;
 
     // --- Projectiles ---
     private final List<Projectile> projectiles = new ArrayList<>();
@@ -45,12 +48,14 @@ public class GameScreenController implements EventListener {
     private final Vector2 cameraTarget = new Vector2();
 
     public GameScreenController(ScreenNavigator navigator, Settings settings,
-                                GameData gameData, Knight knight, CrawlidAssetBundle crawlidAssets) {
+                                GameData gameData, Knight knight, CrawlidAssetBundle crawlidAssets,
+                                MossflyAssetBundle mossflyAssets) {
         this.navigator = navigator;
         this.settings = settings;
         this.gameData = gameData;
         this.knight = knight;
         this.crawlidAssets = crawlidAssets;
+        this.mossflyAssets = mossflyAssets;
 
         EventBus.getInstance().subscribe(GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST, this);
         EventBus.getInstance().subscribe(GameEvent.PLAYER_HOWLING_WRAITHS_CAST, this);
@@ -155,10 +160,18 @@ public class GameScreenController implements EventListener {
     private void spawnEnemiesIfNeeded() {
         if (enemiesSpawned || gameMap == null) return;
 
+        // crawlid
         for (Vector2 spawnPoint : gameMap.getCrawlidSpawns()) {
             Crawlid crawlid = new Crawlid(spawnPoint.x, spawnPoint.y, crawlidAssets);
             enemies.add(crawlid);
             EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, crawlid);
+        }
+
+        // mossfly
+        for (Vector2 spawnPoint : gameMap.getMossflySpawns()) {
+            Mossfly mossfly = new Mossfly(spawnPoint.x, spawnPoint.y, mossflyAssets);
+            enemies.add(mossfly);
+            EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, mossfly);
         }
 
         enemiesSpawned = true;
@@ -172,13 +185,14 @@ public class GameScreenController implements EventListener {
 
             if (enemy instanceof Crawlid) {
                 updateCrawlid(delta, (Crawlid) enemy);
+            } else if (enemy instanceof Mossfly) {
+              updateMossfly(delta, (Mossfly) enemy);
             } else {
                 enemy.update(delta);
             }
         }
     }
 
-    /** Resolves a Crawlid's floor/wall/cliff collisions, then advances its own logic. */
     private void updateCrawlid(float delta, Crawlid crawlid) {
         crawlid.setGrounded(false);
 
@@ -219,6 +233,40 @@ public class GameScreenController implements EventListener {
         }
 
         crawlid.update(delta);
+    }
+
+    private void updateMossfly(float delta, Mossfly mossfly) {
+        Rectangle mossflyHitbox = mossfly.getBounds();
+        Map<GridObject, Direction> collisions = getOverlappingObjects(mossflyHitbox);
+
+        for (Map.Entry<GridObject, Direction> entry : collisions.entrySet()) {
+            GridObject platform = entry.getKey();
+            Direction direction = entry.getValue();
+
+            if(platform.isDeadly && !mossfly.isDead()) {
+                mossfly.takeDamage(Mossfly.MAX_HEALTH, direction);
+            }
+
+            if (direction == Direction.UP) {
+                float resolvedHitboxY = platform.y + platform.height;
+                mossfly.onFloorCollision(resolvedHitboxY - Mossfly.HITBOX_Y_OFFSET);
+            } else if (direction == Direction.DOWN) {
+                float resolvedHitboxY = platform.y - mossflyHitbox.height;
+                mossfly.onCeilingCollision(resolvedHitboxY - Mossfly.HITBOX_Y_OFFSET);
+            } else if (direction == Direction.LEFT) {
+                float resolvedHitboxX = platform.x - mossflyHitbox.width;
+                mossfly.onWallCollision(resolvedHitboxX - Mossfly.HITBOX_X_OFFSET);
+            } else {
+                float resolvedHitboxX = platform.x + platform.width;
+                mossfly.onWallCollision(resolvedHitboxX - Mossfly.HITBOX_X_OFFSET);
+            }
+        }
+
+        if (mossfly.isKnightDetected(knight) || mossfly.hasDetectedKnightAlready()) {
+            mossfly.chaseKnight(knight);
+        }
+
+        mossfly.update(delta);
     }
 
     /** Resolves contact damage between the Knight and any living enemy. */
@@ -267,8 +315,8 @@ public class GameScreenController implements EventListener {
 
     /** Damages {@code enemy} when the Knight's nail hits it. */
     private void resolveNailHitOnEnemy(Enemy enemy) {
-        Direction knockback = (enemy.getBounds().x < knight.getBounds().x) ? Direction.LEFT : Direction.RIGHT;
-        enemy.takeDamage(Knight.SLASH_DAMAGE, knockback);
+        enemy.takeDamage(Knight.SLASH_DAMAGE, knight.getAttackDirection());
+        knight.gainSoul(Knight.SLASH_SOUL_GAIN);
 
         // pogo
         if(knight.getAttackDirection() == Direction.DOWN) {

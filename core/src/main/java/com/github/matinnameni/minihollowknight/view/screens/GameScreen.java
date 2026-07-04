@@ -8,19 +8,18 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.controller.GameScreenController;
 import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
 import com.github.matinnameni.minihollowknight.model.*;
+import com.github.matinnameni.minihollowknight.model.asset.*;
 import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.enemies.Mossfly;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.map.MapLoader;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
-import com.github.matinnameni.minihollowknight.model.asset.CrawlidAssetBundle;
-import com.github.matinnameni.minihollowknight.model.asset.HudAssetBundle;
-import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
-import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
 import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
 import com.github.matinnameni.minihollowknight.view.hud.GameHud;
 import com.github.matinnameni.minihollowknight.view.hud.PauseOverlay;
@@ -63,12 +62,12 @@ public class GameScreen implements Screen {
 
     public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
                       KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets,
-                      CrawlidAssetBundle crawlidAssets) {
+                      CrawlidAssetBundle crawlidAssets, MossflyAssetBundle mossflyAssets) {
         this.navigator = navigator;
         this.gameData = gameData;
         this.settings = settings;
         this.knight = new Knight(knightAssets, settings);
-        this.controller = new GameScreenController(navigator, settings, gameData, knight, crawlidAssets);
+        this.controller = new GameScreenController(navigator, settings, gameData, knight, crawlidAssets, mossflyAssets);
         this.gameHud = new GameHud(knight, hudAssets);
         this.menuAssets = menuAssets;
     }
@@ -293,6 +292,12 @@ public class GameScreen implements Screen {
         for (Enemy enemy : controller.getEnemies()) {
             Rectangle eBounds = enemy.getBounds();
             shapeRenderer.rect(eBounds.x, eBounds.y, eBounds.width, eBounds.height);
+
+            // Draw mossfly detection range
+            if(enemy instanceof Mossfly) {
+                Circle mCircle = ((Mossfly) enemy).getDetectionBounds();
+                shapeRenderer.circle(mCircle.x, mCircle.y, mCircle.radius);
+            }
         }
 
         shapeRenderer.end();

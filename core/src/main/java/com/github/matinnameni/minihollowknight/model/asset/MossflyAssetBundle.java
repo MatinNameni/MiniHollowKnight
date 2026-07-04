@@ -4,31 +4,32 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.github.matinnameni.minihollowknight.model.enums.enemy.CrawlidAnimationType;
+import com.github.matinnameni.minihollowknight.model.enums.enemy.MossflyAnimationType;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-public class CrawlidAssetBundle extends AssetBundle {
+public class MossflyAssetBundle extends AssetBundle {
 
-    public static final String KEY = "crawlid";
+    public static final String KEY = "mossfly";
 
     // --- Asset paths ---
     private final List<String> assetPaths = new ArrayList<>();
 
     // --- Animations ---
     private CrawlidAnimationType currentAnimation;
-    private Map<CrawlidAnimationType, Animation<TextureRegion>> animations = new EnumMap<>(CrawlidAnimationType.class);
+    private Map<MossflyAnimationType, Animation<TextureRegion>> animations = new EnumMap<>(MossflyAnimationType.class);
 
-    public CrawlidAssetBundle(AssetManager manager) {
+    public MossflyAssetBundle(AssetManager manager) {
         super(manager);
     }
 
     @Override
     public void queue() {
         assetPaths.clear();
-        for (CrawlidAnimationType type : CrawlidAnimationType.values()) {
+        for (MossflyAnimationType type : MossflyAnimationType.values()) {
             loadAnimations(type);
         }
     }
@@ -45,7 +46,7 @@ public class CrawlidAssetBundle extends AssetBundle {
 
     // --- Animation loader ---
 
-    public void loadAnimations(CrawlidAnimationType animationType) {
+    public void loadAnimations(MossflyAnimationType animationType) {
         Animation<TextureRegion> animation = buildAnimation(
             animationType.path, animationType.columnCount, animationType.rowCount,
             animationType.frameDuration, animationType.playMode
@@ -55,7 +56,7 @@ public class CrawlidAssetBundle extends AssetBundle {
 
     // --- Accessors ---
 
-    public Animation<TextureRegion> getAnimation(CrawlidAnimationType animationType) {
+    public Animation<TextureRegion> getAnimation(MossflyAnimationType animationType) {
         return animations.get(animationType);
     }
 }

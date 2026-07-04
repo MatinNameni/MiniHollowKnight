@@ -223,7 +223,7 @@ public class Crawlid extends Enemy {
         health -= damage;
 
         // Knockback
-        float knockbackDir;
+        float knockbackDir = 0f;
         switch (knockbackDirection) {
             case LEFT:
                 knockbackDir = -1;
@@ -231,12 +231,10 @@ public class Crawlid extends Enemy {
             case RIGHT:
                 knockbackDir = 1;
                 break;
-            default:
-                knockbackDir = 0;
         }
 
         velocity.x = knockbackDir * KNOCKBACK_VELOCITY;
-        velocity.y = (knockbackDir != 0) ? JUMP_INITIAL_VELOCITY * 0.5f : 0;
+        velocity.y = JUMP_INITIAL_VELOCITY * 0.5f;
 
         if(knockbackDir != 0f) {
             knockbackCooldown = KNOCKBACK_COOLDOWN;

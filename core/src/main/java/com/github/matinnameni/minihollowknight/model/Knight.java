@@ -48,6 +48,7 @@ public class Knight implements Entity {
 
     // Attack
     public static final float SLASH_DAMAGE = 40f;
+    public static final float SLASH_SOUL_GAIN = 11f;
     public static final float ATTACK_DURATION = 0.30f;
     public static final float ATTACK_HITBOX_WIDTH = 80f;
     public static final float ATTACK_HITBOX_HEIGHT = 50f;
