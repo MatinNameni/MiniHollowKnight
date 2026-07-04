@@ -9,6 +9,8 @@ import com.github.matinnameni.minihollowknight.event.EventListener;
 import com.github.matinnameni.minihollowknight.model.*;
 import com.github.matinnameni.minihollowknight.model.asset.EnemiesAssetsManager;
 import com.github.matinnameni.minihollowknight.model.enemies.Crawlid;
+import com.github.matinnameni.minihollowknight.model.enemies.Crystallized;
+import com.github.matinnameni.minihollowknight.model.enemies.CrystallizedLaser;
 import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
 import com.github.matinnameni.minihollowknight.model.enemies.HuskHornhead;
 import com.github.matinnameni.minihollowknight.model.enemies.Mossfly;
@@ -41,6 +43,9 @@ public class GameScreenController implements EventListener {
     private final List<Enemy> enemies = new ArrayList<>();
     private boolean enemiesSpawned = false;
     private final Set<Enemy> attackedEnemiesThisSwing = new HashSet<>();
+
+    // --- Lasers ---
+    private final List<Laser> lasers = new ArrayList<>();
 
     // --- Camera control ---
     private static final float CAMERA_LERP = 4f;
@@ -97,6 +102,10 @@ public class GameScreenController implements EventListener {
         updateEnemies(delta);
 
         resolveKnightEnemyContact();
+
+        updateLasers(delta);
+
+        resolveLaserKnightContact(delta);
 
         updateCamera(delta, camera);
     }
@@ -178,6 +187,13 @@ public class GameScreenController implements EventListener {
             EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, huskHornhead);
         }
 
+        // crystallized
+        for (Vector2 spawnPoint : gameMap.getCrystallizedSpawns()) {
+            Crystallized crystallized = new Crystallized(spawnPoint.x, spawnPoint.y, enemiesAssets.getCrystallizedAssetBundle());
+            enemies.add(crystallized);
+            EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, crystallized);
+        }
+
         enemiesSpawned = true;
     }
 
@@ -193,6 +209,8 @@ public class GameScreenController implements EventListener {
                 updateMossfly(delta, (Mossfly) enemy);
             } else if (enemy instanceof HuskHornhead) {
                 updateHuskHornhead(delta, (HuskHornhead) enemy);
+            } else if (enemy instanceof Crystallized) {
+                updateCrystallized(delta, (Crystallized) enemy);
             } else {
                 enemy.update(delta);
             }
@@ -320,6 +338,101 @@ public class GameScreenController implements EventListener {
         }
 
         huskHornhead.update(delta);
+    }
+
+    private void updateCrystallized(float delta, Crystallized crystallized) {
+        crystallized.setGrounded(false);
+
+        Rectangle hitbox = crystallized.getBounds();
+        Map<GridObject, Direction> collisions = getOverlappingObjects(hitbox);
+
+        for (Map.Entry<GridObject, Direction> entry : collisions.entrySet()) {
+            GridObject platform = entry.getKey();
+            Direction direction = entry.getValue();
+
+            if (platform.isDeadly && !crystallized.isDead()) {
+                crystallized.takeDamage(Crystallized.MAX_HEALTH, direction);
+            }
+
+            if (direction == Direction.UP) {
+                float resolvedHitboxY = platform.y + platform.height;
+                crystallized.onFloorCollision(resolvedHitboxY - Crystallized.HITBOX_Y_OFFSET);
+            } else if (direction == Direction.DOWN) {
+                float resolvedHitboxY = platform.y - hitbox.height;
+                crystallized.onCeilingCollision(resolvedHitboxY - Crystallized.HITBOX_Y_OFFSET);
+            } else if (direction == Direction.LEFT) {
+                float resolvedHitboxX = platform.x - hitbox.width;
+                crystallized.onWallCollision(resolvedHitboxX - Crystallized.HITBOX_X_OFFSET);
+            } else {
+                float resolvedHitboxX = platform.x + platform.width;
+                crystallized.onWallCollision(resolvedHitboxX - Crystallized.HITBOX_X_OFFSET);
+            }
+        }
+
+        // Floor proximity check
+        if (isOnFloor(crystallized.getBounds())) {
+            crystallized.setGrounded(true);
+        }
+
+        // Cliff edge detection
+        if (crystallized.isGrounded() && !hasFloorBelow(crystallized.getCliffProbe())) {
+            crystallized.onHitWall();
+        }
+
+        // Vision
+        if (crystallized.isKnightVisible(knight)) {
+            crystallized.startShooting();
+        }
+
+        // Check if the crystallized wants to fire a laser
+        if (crystallized.wantsToFireLaser()) {
+            crystallized.consumeLaserFire();
+            boolean facingRight = crystallized.getFacingDirection() == Direction.RIGHT;
+            CrystallizedLaser laser = new CrystallizedLaser(
+                crystallized.getLaserOriginX(),
+                crystallized.getLaserOriginY(),
+                facingRight,
+                true
+            );
+            lasers.add(laser);
+        }
+
+        crystallized.update(delta);
+    }
+
+    // --- Lasers ---
+
+    /** Returns the list of active Crystallized lasers for rendering. */
+    public List<Laser> getLasers() {
+        return lasers;
+    }
+
+    /** Updates all active lasers and removes dead ones. */
+    private void updateLasers(float delta) {
+        Iterator<Laser> iterator = lasers.iterator();
+        while (iterator.hasNext()) {
+            Laser laser = iterator.next();
+            laser.update(delta);
+            if (laser.isDead()) {
+                iterator.remove();
+            }
+        }
+    }
+
+    /** Resolves contact damage between the Knight and all active lasers. */
+    private void resolveLaserKnightContact(float delta) {
+        if (knight.isInvincible() || knight.isDead()) return;
+
+        Rectangle knightHitbox = knight.getBounds();
+
+        for (Laser laser : lasers) {
+            if (!laser.isActive()) continue;
+            if (!knightHitbox.overlaps(laser.getBounds())) continue;
+
+            Direction knockback = (knight.getBounds().x < laser.getBounds().x) ? Direction.LEFT : Direction.RIGHT;
+            knight.takeDamage(knockback);
+            break; // only take damage from one laser per frame
+        }
     }
 
     /** Resolves contact damage between the Knight and any living enemy. */
@@ -624,5 +737,11 @@ public class GameScreenController implements EventListener {
         this.enemies.clear();
         this.enemiesSpawned = false;
         this.attackedEnemiesThisSwing.clear();
+        for (Laser laser : lasers) {
+            if (laser instanceof CrystallizedLaser) {
+                ((CrystallizedLaser) laser).dispose();
+            }
+        }
+        this.lasers.clear();
     }
 }

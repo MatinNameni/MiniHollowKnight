@@ -30,6 +30,7 @@ public class TiledGameMap {
     private static final String CRAWLID_SPAWN_NAME = "crawlidSpawn";
     private static final String MOSSFLY_SPAWN_NAME = "mossflySpawn";
     private static final String HUSK_HORNHEAD_SPAWN_NAME = "huskHornheadSpawn";
+    private static final String CRYSTALLIZED_SPAWN_NAME = "crystallizedSpawn";
 
     // --- Tiled ---
 
@@ -58,6 +59,7 @@ public class TiledGameMap {
     private final List<Vector2> crawlidSpawns = new ArrayList<>();
     private final List<Vector2> mossflySpawns = new ArrayList<>();
     private final List<Vector2> huskHornheadSpawns = new ArrayList<>();
+    private final List<Vector2> crystallizedSpawns = new ArrayList<>();
 
     // --- Map dimensions ---
 
@@ -187,6 +189,9 @@ public class TiledGameMap {
             case HUSK_HORNHEAD_SPAWN_NAME:
                 huskHornheadSpawns.add(new Vector2(x * unitScale, y * unitScale));
                 break;
+            case CRYSTALLIZED_SPAWN_NAME:
+                crystallizedSpawns.add(new Vector2(x * unitScale, y * unitScale));
+                break;
         }
     }
 
@@ -265,6 +270,10 @@ public class TiledGameMap {
 
     public List<Vector2> getHuskHornheadSpawns() {
         return huskHornheadSpawns;
+    }
+
+    public List<Vector2> getCrystallizedSpawns() {
+        return crystallizedSpawns;
     }
 
     public float getMapWidth() {
