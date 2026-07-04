@@ -27,8 +27,6 @@ public class UiManager implements ScreenNavigator {
     private Music menuMusic;
     private boolean knightAssetsLoaded = false;
     private boolean hudAssetsLoaded = false;
-    private boolean crawlidAssetsLoaded = false;
-    private boolean mossflyAssetsLoaded = false;
 
     private GameScreen pausedGameScreen;
 
@@ -59,8 +57,7 @@ public class UiManager implements ScreenNavigator {
         registry.loadBundle(MenuAssetBundle.KEY);
         registry.register(new KnightAssetBundle(registry.getManager()));
         registry.register(new HudAssetBundle(registry.getManager()));
-        registry.register(new CrawlidAssetBundle(registry.getManager()));
-        registry.register(new MossflyAssetBundle(registry.getManager()));
+        EnemiesAssetsManager.getInstance(registry).initAssets();
     }
 
     /**
@@ -241,14 +238,14 @@ public class UiManager implements ScreenNavigator {
     public void goToGame(GameData data) {
         ensureKnightAssetsLoaded();
         ensureHudAssetsLoaded();
-        ensureCrawlidAssetsLoaded();
-        ensureMossflyAssetsLoaded();
+        ensureEnemiesAssetsLoaded();
         stopMenuMusic();
         KnightAssetBundle knightAssets = (KnightAssetBundle) registry.get(KnightAssetBundle.KEY);
         HudAssetBundle hudAssets = (HudAssetBundle) registry.get(HudAssetBundle.KEY);
         CrawlidAssetBundle crawlidAssets = (CrawlidAssetBundle) registry.get(CrawlidAssetBundle.KEY);
         MossflyAssetBundle mossflyAssets = (MossflyAssetBundle) registry.get(MossflyAssetBundle.KEY);
-        setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets, getMenuAssets(), crawlidAssets, mossflyAssets));
+        setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets,
+            getMenuAssets(), EnemiesAssetsManager.getInstance(registry)));
     }
 
     /**
@@ -272,23 +269,10 @@ public class UiManager implements ScreenNavigator {
     }
 
     /**
-     * Loads the CrawlidAssetBundle if it hasn't been loaded yet.
+     * Loads all enemies asset bundles if they haven't been loaded yet.
      */
-    private void ensureCrawlidAssetsLoaded() {
-        if (!crawlidAssetsLoaded) {
-            registry.loadBundle(CrawlidAssetBundle.KEY);
-            crawlidAssetsLoaded = true;
-        }
-    }
-
-    /**
-     * Loads the MossflyAssetBundle if it hasn't been loaded yet.
-     */
-    private void ensureMossflyAssetsLoaded() {
-        if (!mossflyAssetsLoaded) {
-            registry.loadBundle(MossflyAssetBundle.KEY);
-            mossflyAssetsLoaded = true;
-        }
+    private void ensureEnemiesAssetsLoaded() {
+        EnemiesAssetsManager.getInstance(registry).loadBundles();
     }
 
     @Override

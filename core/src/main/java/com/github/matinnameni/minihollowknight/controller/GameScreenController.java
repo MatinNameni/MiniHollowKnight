@@ -8,6 +8,7 @@ import com.github.matinnameni.minihollowknight.event.GameEvent;
 import com.github.matinnameni.minihollowknight.event.EventListener;
 import com.github.matinnameni.minihollowknight.model.*;
 import com.github.matinnameni.minihollowknight.model.asset.CrawlidAssetBundle;
+import com.github.matinnameni.minihollowknight.model.asset.EnemiesAssetsManager;
 import com.github.matinnameni.minihollowknight.model.asset.MossflyAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enemies.Crawlid;
 import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
@@ -32,8 +33,7 @@ public class GameScreenController implements EventListener {
     private GameData gameData;
     private Knight knight;
     private TiledGameMap gameMap;
-    private final CrawlidAssetBundle crawlidAssets;
-    private final MossflyAssetBundle mossflyAssets;
+    private final EnemiesAssetsManager enemiesAssets;
 
     // --- Projectiles ---
     private final List<Projectile> projectiles = new ArrayList<>();
@@ -48,14 +48,12 @@ public class GameScreenController implements EventListener {
     private final Vector2 cameraTarget = new Vector2();
 
     public GameScreenController(ScreenNavigator navigator, Settings settings,
-                                GameData gameData, Knight knight, CrawlidAssetBundle crawlidAssets,
-                                MossflyAssetBundle mossflyAssets) {
+                                GameData gameData, Knight knight, EnemiesAssetsManager enemiesAssets) {
         this.navigator = navigator;
         this.settings = settings;
         this.gameData = gameData;
         this.knight = knight;
-        this.crawlidAssets = crawlidAssets;
-        this.mossflyAssets = mossflyAssets;
+        this.enemiesAssets = enemiesAssets;
 
         EventBus.getInstance().subscribe(GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST, this);
         EventBus.getInstance().subscribe(GameEvent.PLAYER_HOWLING_WRAITHS_CAST, this);
@@ -162,14 +160,14 @@ public class GameScreenController implements EventListener {
 
         // crawlid
         for (Vector2 spawnPoint : gameMap.getCrawlidSpawns()) {
-            Crawlid crawlid = new Crawlid(spawnPoint.x, spawnPoint.y, crawlidAssets);
+            Crawlid crawlid = new Crawlid(spawnPoint.x, spawnPoint.y, enemiesAssets.getCrawlidAssetBundle());
             enemies.add(crawlid);
             EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, crawlid);
         }
 
         // mossfly
         for (Vector2 spawnPoint : gameMap.getMossflySpawns()) {
-            Mossfly mossfly = new Mossfly(spawnPoint.x, spawnPoint.y, mossflyAssets);
+            Mossfly mossfly = new Mossfly(spawnPoint.x, spawnPoint.y, enemiesAssets.getMossflyAssetBundle());
             enemies.add(mossfly);
             EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, mossfly);
         }

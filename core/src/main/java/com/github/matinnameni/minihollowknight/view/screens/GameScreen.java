@@ -62,12 +62,12 @@ public class GameScreen implements Screen {
 
     public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
                       KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets,
-                      CrawlidAssetBundle crawlidAssets, MossflyAssetBundle mossflyAssets) {
+                      EnemiesAssetsManager enemiesAssets) {
         this.navigator = navigator;
         this.gameData = gameData;
         this.settings = settings;
         this.knight = new Knight(knightAssets, settings);
-        this.controller = new GameScreenController(navigator, settings, gameData, knight, crawlidAssets, mossflyAssets);
+        this.controller = new GameScreenController(navigator, settings, gameData, knight, enemiesAssets);
         this.gameHud = new GameHud(knight, hudAssets);
         this.menuAssets = menuAssets;
     }
