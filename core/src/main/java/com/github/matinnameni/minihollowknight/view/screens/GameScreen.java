@@ -16,6 +16,7 @@ import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
 import com.github.matinnameni.minihollowknight.model.*;
 import com.github.matinnameni.minihollowknight.model.asset.*;
 import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.enemies.HuskHornhead;
 import com.github.matinnameni.minihollowknight.model.enemies.Mossfly;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.map.MapLoader;
@@ -297,6 +298,12 @@ public class GameScreen implements Screen {
             if(enemy instanceof Mossfly) {
                 Circle mCircle = ((Mossfly) enemy).getDetectionBounds();
                 shapeRenderer.circle(mCircle.x, mCircle.y, mCircle.radius);
+            }
+
+            // Draw husk hornhead vision rectangle
+            if(enemy instanceof HuskHornhead) {
+                Rectangle vision = ((HuskHornhead) enemy).getVisionBounds();
+                shapeRenderer.rect(vision.x, vision.y, vision.width, vision.height);
             }
         }
 

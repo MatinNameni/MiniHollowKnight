@@ -7,11 +7,10 @@ import com.github.matinnameni.minihollowknight.event.EventBus;
 import com.github.matinnameni.minihollowknight.event.GameEvent;
 import com.github.matinnameni.minihollowknight.event.EventListener;
 import com.github.matinnameni.minihollowknight.model.*;
-import com.github.matinnameni.minihollowknight.model.asset.CrawlidAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.EnemiesAssetsManager;
-import com.github.matinnameni.minihollowknight.model.asset.MossflyAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enemies.Crawlid;
 import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.enemies.HuskHornhead;
 import com.github.matinnameni.minihollowknight.model.enemies.Mossfly;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightState;
@@ -172,6 +171,13 @@ public class GameScreenController implements EventListener {
             EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, mossfly);
         }
 
+        // husk hornhead
+        for (Vector2 spawnPoint : gameMap.getHuskHornheadSpawns()) {
+            HuskHornhead huskHornhead = new HuskHornhead(spawnPoint.x, spawnPoint.y, enemiesAssets.getHuskHornheadAssetBundle());
+            enemies.add(huskHornhead);
+            EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, huskHornhead);
+        }
+
         enemiesSpawned = true;
     }
 
@@ -184,7 +190,9 @@ public class GameScreenController implements EventListener {
             if (enemy instanceof Crawlid) {
                 updateCrawlid(delta, (Crawlid) enemy);
             } else if (enemy instanceof Mossfly) {
-              updateMossfly(delta, (Mossfly) enemy);
+                updateMossfly(delta, (Mossfly) enemy);
+            } else if (enemy instanceof HuskHornhead) {
+                updateHuskHornhead(delta, (HuskHornhead) enemy);
             } else {
                 enemy.update(delta);
             }
@@ -265,6 +273,53 @@ public class GameScreenController implements EventListener {
         }
 
         mossfly.update(delta);
+    }
+
+    private void updateHuskHornhead(float delta, HuskHornhead huskHornhead) {
+        huskHornhead.setGrounded(false);
+
+        Rectangle hitbox = huskHornhead.getBounds();
+        Map<GridObject, Direction> collisions = getOverlappingObjects(hitbox);
+
+        for (Map.Entry<GridObject, Direction> entry : collisions.entrySet()) {
+            GridObject platform = entry.getKey();
+            Direction direction = entry.getValue();
+
+            if (platform.isDeadly && !huskHornhead.isDead()) {
+                huskHornhead.takeDamage(HuskHornhead.MAX_HEALTH, direction);
+            }
+
+            if (direction == Direction.UP) {
+                float resolvedHitboxY = platform.y + platform.height;
+                huskHornhead.onFloorCollision(resolvedHitboxY - HuskHornhead.HITBOX_Y_OFFSET);
+            } else if (direction == Direction.DOWN) {
+                float resolvedHitboxY = platform.y - hitbox.height;
+                huskHornhead.onCeilingCollision(resolvedHitboxY - HuskHornhead.HITBOX_Y_OFFSET);
+            } else if (direction == Direction.LEFT) {
+                float resolvedHitboxX = platform.x - hitbox.width;
+                huskHornhead.onWallCollision(resolvedHitboxX - HuskHornhead.HITBOX_X_OFFSET);
+            } else {
+                float resolvedHitboxX = platform.x + platform.width;
+                huskHornhead.onWallCollision(resolvedHitboxX - HuskHornhead.HITBOX_X_OFFSET);
+            }
+        }
+
+        // Floor proximity check
+        if (isOnFloor(huskHornhead.getBounds())) {
+            huskHornhead.setGrounded(true);
+        }
+
+        // Cliff edge detection
+        if (huskHornhead.isGrounded() && !hasFloorBelow(huskHornhead.getCliffProbe())) {
+            huskHornhead.onObstacleReached();
+        }
+
+        // Vision
+        if (!huskHornhead.isCharging() && huskHornhead.isKnightVisible(knight)) {
+            huskHornhead.startCharge();
+        }
+
+        huskHornhead.update(delta);
     }
 
     /** Resolves contact damage between the Knight and any living enemy. */

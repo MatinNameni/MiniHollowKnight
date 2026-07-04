@@ -9,6 +9,7 @@ public class EnemiesAssetsManager {
     private Map<String, AssetBundle> enemiesAssets = new HashMap<>();
     private boolean crawlidAssetsLoaded = false;
     private boolean mossflyAssetsLoaded = false;
+    private boolean huskHornheadAssetsLoaded = false;
 
     private EnemiesAssetsManager(AssetRegistry registry) {
         this.registry = registry;
@@ -25,6 +26,7 @@ public class EnemiesAssetsManager {
     public void initAssets() {
         registry.register(new CrawlidAssetBundle(registry.getManager()));
         registry.register(new MossflyAssetBundle(registry.getManager()));
+        registry.register(new HuskHornheadAssetBundle(registry.getManager()));
     }
 
     /** Loads all enemies asset bundles if they haven't been loaded yet. */
@@ -38,6 +40,11 @@ public class EnemiesAssetsManager {
             registry.loadBundle(MossflyAssetBundle.KEY);
             mossflyAssetsLoaded = true;
         }
+
+        if (!huskHornheadAssetsLoaded) {
+            registry.loadBundle(HuskHornheadAssetBundle.KEY);
+            huskHornheadAssetsLoaded = true;
+        }
     }
 
     // --- Enemies asset bundles ---
@@ -48,5 +55,9 @@ public class EnemiesAssetsManager {
 
     public MossflyAssetBundle getMossflyAssetBundle() {
         return (MossflyAssetBundle) registry.get(MossflyAssetBundle.KEY);
+    }
+
+    public HuskHornheadAssetBundle getHuskHornheadAssetBundle() {
+        return (HuskHornheadAssetBundle) registry.get(HuskHornheadAssetBundle.KEY);
     }
 }
