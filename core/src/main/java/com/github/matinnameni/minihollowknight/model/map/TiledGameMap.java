@@ -52,6 +52,8 @@ public class TiledGameMap {
 
     private TiledMapTileLayer backgroundLayer;
 
+    private TiledMapTileLayer blackMaskBGLayer;
+
     private TiledMapTileLayer spikeLayer0;
     private TiledMapTileLayer spikeLayer1;
     private TiledMapTileLayer spikeLayer2;
@@ -60,6 +62,8 @@ public class TiledGameMap {
     private TiledMapTileLayer mainBackgroundLayer;
     private TiledMapTileLayer mainLayer;
     private TiledMapTileLayer mainForegroundLayer;
+
+    private TiledMapTileLayer blackMaskFGLayer;
 
     private TiledMapTileLayer foregroundLayer;
 
@@ -77,6 +81,10 @@ public class TiledGameMap {
 
     private final float mapWidth;
     private final float mapHeight;
+
+    // --- Hidden room ---
+
+    private boolean blackMaskRemoved = false;
 
     // --- Current environment ---
     private GameEnvironment currentEnvironment;
@@ -114,6 +122,9 @@ public class TiledGameMap {
                 case "background":
                     backgroundLayer = tileLayer;
                     break;
+                case "blackMaskBG":
+                    blackMaskBGLayer = tileLayer;
+                    break;
                 case "spikeLayer0":
                     spikeLayer0 = tileLayer;
                     break;
@@ -134,6 +145,9 @@ public class TiledGameMap {
                     break;
                 case "mainForeground":
                     mainForegroundLayer = tileLayer;
+                    break;
+                case "blackMaskFG":
+                    blackMaskFGLayer = tileLayer;
                     break;
                 case "foreground":
                     foregroundLayer = tileLayer;
@@ -266,6 +280,7 @@ public class TiledGameMap {
         renderer.getBatch().setProjectionMatrix(camera.combined);
         renderer.getBatch().begin();
         if (backgroundLayer != null) renderer.renderTileLayer(backgroundLayer);
+        if (blackMaskBGLayer != null) renderer.renderTileLayer(blackMaskBGLayer);
         renderer.getBatch().end();
     }
 
@@ -306,6 +321,7 @@ public class TiledGameMap {
         renderer.setView(camera);
         renderer.getBatch().setProjectionMatrix(camera.combined);
         renderer.getBatch().begin();
+        if (blackMaskFGLayer != null) renderer.renderTileLayer(blackMaskFGLayer);
         if (foregroundLayer != null) renderer.renderTileLayer(foregroundLayer);
         renderer.getBatch().end();
     }
@@ -355,6 +371,20 @@ public class TiledGameMap {
     /** Called by the controller when a breakable wall is fully destroyed. */
     public void removeBreakableWallCollider(BreakableWall wall) {
         colliders.remove(wall.getCollider());
+    }
+
+    /** Removes the black mask covering the hidden room. */
+    public void removeBlackMask() {
+        if (blackMaskRemoved) return;
+        blackMaskRemoved = true;
+        if (blackMaskBGLayer != null) {
+            blackMaskBGLayer.setVisible(false);
+            blackMaskBGLayer.setOpacity(0f);
+        }
+        if (blackMaskFGLayer != null) {
+            blackMaskFGLayer.setVisible(false);
+            blackMaskFGLayer.setOpacity(0f);
+        }
     }
 
     // --- Lifecycle ---

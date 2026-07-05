@@ -150,7 +150,7 @@ public class GameScreen implements Screen {
             gameHud.update(delta);
         }
 
-        Gdx.gl.glClearColor(16/255f, 13/255f, 143/255f, 1f);
+        Gdx.gl.glClearColor(1/255f, 0/255f, 35/255f, 0.8f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // Background layer

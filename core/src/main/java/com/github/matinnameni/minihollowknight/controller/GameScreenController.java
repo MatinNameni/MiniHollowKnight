@@ -634,6 +634,7 @@ public class GameScreenController implements EventListener {
 
             if (stateChanged && wall.isPassable()) {
                 gameMap.removeBreakableWallCollider(wall);
+                gameMap.removeBlackMask();
             }
         }
     }
