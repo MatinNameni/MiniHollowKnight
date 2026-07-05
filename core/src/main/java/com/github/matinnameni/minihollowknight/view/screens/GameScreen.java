@@ -159,6 +159,14 @@ public class GameScreen implements Screen {
         // Spike layers
         gameMap.renderSpikeLayer(camera);
 
+        // Breakable walls
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+        for (BreakableWall wall : gameMap.getBreakableWalls()) {
+            wall.render(batch);
+        }
+        batch.end();
+
         // Main layers
         gameMap.renderMain(camera);
 

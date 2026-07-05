@@ -1,7 +1,7 @@
 package com.github.matinnameni.minihollowknight.model.enums;
 
 public enum GameEnvironment {
-    FORGOTTEN_CROSSROADS(1, "Forgotton Crossroads", "maps/forgotten_crossroads/spawnPoint.tmx"),
+    FORGOTTEN_CROSSROADS(1, "Forgotten Crossroads", "maps/forgotten_crossroads/spawnPoint.tmx"),
     GREENPATH(2, "Greenpath", "");
 
     public final int id;

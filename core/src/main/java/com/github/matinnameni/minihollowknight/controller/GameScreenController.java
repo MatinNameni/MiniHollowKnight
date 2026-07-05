@@ -43,6 +43,7 @@ public class GameScreenController implements EventListener {
     private final List<Enemy> enemies = new ArrayList<>();
     private boolean enemiesSpawned = false;
     private final Set<Enemy> attackedEnemiesThisSwing = new HashSet<>();
+    private final Set<BreakableWall> attackedWallsThisSwing = new HashSet<>();
 
     // --- Lasers ---
     private final List<Laser> lasers = new ArrayList<>();
@@ -581,10 +582,12 @@ public class GameScreenController implements EventListener {
     public void resolveNailAttack() {
         if(knight.getState() != KnightState.ATTACKING) {
             attackedEnemiesThisSwing.clear();
+            attackedWallsThisSwing.clear();
             return;
         }
 
         resolvePlatformAttack();
+        resolveBreakableWallAttack();
         resolveEnemyAttack();
     }
 
@@ -610,6 +613,27 @@ public class GameScreenController implements EventListener {
                 if(platform.canPogo) {
                     knight.onDownAttackBounce();
                 }
+            }
+        }
+    }
+
+    /** Resolves collisions between the Knight's attack hitbox and all breakable walls. */
+    private void resolveBreakableWallAttack() {
+        if (gameMap == null) return;
+
+        Rectangle attackHitbox = knight.getAttackHitbox();
+        if (attackHitbox == null) return;
+
+        for (BreakableWall wall : gameMap.getBreakableWalls()) {
+            if (wall.isPassable()) continue;
+            if (attackedWallsThisSwing.contains(wall)) continue;
+            if (!attackHitbox.overlaps(wall.getBounds())) continue;
+
+            attackedWallsThisSwing.add(wall);
+            boolean stateChanged = wall.hit();
+
+            if (stateChanged && wall.isPassable()) {
+                gameMap.removeBreakableWallCollider(wall);
             }
         }
     }

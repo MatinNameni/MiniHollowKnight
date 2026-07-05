@@ -7,6 +7,6 @@ import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
  */
 public class MapLoader {
     public static TiledGameMap loadMap(GameEnvironment environment) {
-        return new TiledGameMap(environment.path);
+        return new TiledGameMap(environment);
     }
 }

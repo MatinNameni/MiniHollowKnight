@@ -1,6 +1,7 @@
 package com.github.matinnameni.minihollowknight.model.map;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
@@ -12,7 +13,9 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.github.matinnameni.minihollowknight.model.BreakableWall;       // <<< BREAKABLE WALL >>>
 import com.github.matinnameni.minihollowknight.model.GridObject;
+import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +25,7 @@ import java.util.List;
  */
 public class TiledGameMap {
 
-    // --- Constats ---
+    // --- Constants ---
 
     public static final float UNIT_SCALE = 0.5f;
 
@@ -32,6 +35,14 @@ public class TiledGameMap {
     private static final String HUSK_HORNHEAD_SPAWN_NAME = "huskHornheadSpawn";
     private static final String CRYSTALLIZED_SPAWN_NAME = "crystallizedSpawn";
 
+    private static final String PROP_CAN_POGO = "canPogo";
+    private static final String PROP_IS_DEADLY = "isDeadly";
+    private static final String PROP_IS_BREAKABLE = "isBreakable";
+    private static final String PROP_TEX_DEFAULT = "textureDefault";
+    private static final String PROP_TEX_CRACKED = "textureCracked";
+    private static final String PROP_TEX_BROKEN = "textureBroken";
+    private static final String PROP_HITS_TO_BREAK = "hitsToBreak";
+
     // --- Tiled ---
 
     private final TiledMap tiledMap;
@@ -39,12 +50,12 @@ public class TiledGameMap {
 
     // --- Cached layers ---
 
+    private TiledMapTileLayer backgroundLayer;
+
     private TiledMapTileLayer spikeLayer0;
     private TiledMapTileLayer spikeLayer1;
     private TiledMapTileLayer spikeLayer2;
     private TiledMapTileLayer spikeLayer3;
-
-    private TiledMapTileLayer backgroundLayer;
 
     private TiledMapTileLayer mainBackgroundLayer;
     private TiledMapTileLayer mainLayer;
@@ -60,18 +71,22 @@ public class TiledGameMap {
     private final List<Vector2> mossflySpawns = new ArrayList<>();
     private final List<Vector2> huskHornheadSpawns = new ArrayList<>();
     private final List<Vector2> crystallizedSpawns = new ArrayList<>();
+    private final List<BreakableWall> breakableWalls = new ArrayList<>();
 
     // --- Map dimensions ---
 
     private final float mapWidth;
     private final float mapHeight;
 
-    public TiledGameMap(String path) {
-        this(path, UNIT_SCALE);
+    // --- Current environment ---
+    private GameEnvironment currentEnvironment;
+
+    public TiledGameMap(GameEnvironment environment) {
+        this(environment, UNIT_SCALE);
     }
 
-    public TiledGameMap(String path, float unitScale) {
-        tiledMap = new TmxMapLoader().load(path);
+    public TiledGameMap(GameEnvironment environment, float unitScale) {
+        tiledMap = new TmxMapLoader().load(environment.path);
         renderer = new OrthogonalTiledMapRenderer(tiledMap, unitScale);
 
         MapProperties properties = tiledMap.getProperties();
@@ -82,6 +97,8 @@ public class TiledGameMap {
 
         this.mapWidth = tilesHorizontalCount * tileWidth * unitScale;
         this.mapHeight = tilesVerticalCount * tileHeight * unitScale;
+
+        this.currentEnvironment = environment;
 
         cacheLayers();
         extractObjects(unitScale);
@@ -94,6 +111,9 @@ public class TiledGameMap {
             if (!(layer instanceof TiledMapTileLayer)) continue;
             TiledMapTileLayer tileLayer = (TiledMapTileLayer) layer;
             switch (tileLayer.getName()) {
+                case "background":
+                    backgroundLayer = tileLayer;
+                    break;
                 case "spikeLayer0":
                     spikeLayer0 = tileLayer;
                     break;
@@ -105,9 +125,6 @@ public class TiledGameMap {
                     break;
                 case "spikeLayer3":
                     spikeLayer3 = tileLayer;
-                    break;
-                case "background":
-                    backgroundLayer = tileLayer;
                     break;
                 case "mainBackground":
                     mainBackgroundLayer = tileLayer;
@@ -147,16 +164,32 @@ public class TiledGameMap {
     private void extractRectangleObject(RectangleMapObject rectangleObject, float unitScale) {
         Rectangle currentRectangle = rectangleObject.getRectangle();
 
+        // Is breakable
+        boolean isBreakable = false;
+        if (rectangleObject.getProperties().containsKey(PROP_IS_BREAKABLE)) {
+            isBreakable = rectangleObject.getProperties().get(PROP_IS_BREAKABLE, Boolean.class);
+        }
+
+        if (isBreakable) {
+            BreakableWall wall = createBreakableWall(rectangleObject, currentRectangle, unitScale);
+            breakableWalls.add(wall);
+
+            if (wall.getCollider() != null) {
+                colliders.add(wall.getCollider());
+            }
+            return;
+        }
+
         // Is deadly
         boolean isDeadly = false;
-        if (rectangleObject.getProperties().containsKey("isDeadly")) {
-            isDeadly = rectangleObject.getProperties().get("isDeadly", Boolean.class);
+        if (rectangleObject.getProperties().containsKey(PROP_IS_DEADLY)) {
+            isDeadly = rectangleObject.getProperties().get(PROP_IS_DEADLY, Boolean.class);
         }
 
         // Can pogo over it
         boolean canPogo = false;
-        if (rectangleObject.getProperties().containsKey("canPogo")) {
-            canPogo = rectangleObject.getProperties().get("canPogo", Boolean.class);
+        if (rectangleObject.getProperties().containsKey(PROP_CAN_POGO)) {
+            canPogo = rectangleObject.getProperties().get(PROP_CAN_POGO, Boolean.class);
         }
 
         if (SPAWN_POINT_NAME.equals(rectangleObject.getName())) {
@@ -171,6 +204,33 @@ public class TiledGameMap {
                 canPogo
             ));
         }
+    }
+
+    /** Creates a {@link BreakableWall} from a Tiled rectangle object. */
+    private BreakableWall createBreakableWall(RectangleMapObject obj, Rectangle rect, float unitScale) {
+        MapProperties props = obj.getProperties();
+
+        String texDefault = props.get(PROP_TEX_DEFAULT, String.class);
+        String texCracked = props.get(PROP_TEX_CRACKED, String.class);
+        String texBroken = props.get(PROP_TEX_BROKEN,  String.class);
+
+        int hitsToBreak = 3;
+        if (props.containsKey(PROP_HITS_TO_BREAK)) {
+            hitsToBreak = props.get(PROP_HITS_TO_BREAK, Integer.class);
+        }
+
+        return new BreakableWall(
+            rect.x * unitScale,
+            rect.y * unitScale,
+            rect.width * unitScale,
+            rect.height * unitScale,
+            -1, 1,
+            currentEnvironment,
+            texDefault,
+            texCracked,
+            texBroken,
+            hitsToBreak
+        );
     }
 
     /** Handles a Tiled Point object. */
@@ -288,9 +348,21 @@ public class TiledGameMap {
         return renderer;
     }
 
+    public List<BreakableWall> getBreakableWalls() {
+        return breakableWalls;
+    }
+
+    /** Called by the controller when a breakable wall is fully destroyed. */
+    public void removeBreakableWallCollider(BreakableWall wall) {
+        colliders.remove(wall.getCollider());
+    }
+
     // --- Lifecycle ---
 
     public void dispose() {
+        for (BreakableWall wall : breakableWalls) {
+            wall.dispose();
+        }
         tiledMap.dispose();
         renderer.dispose();
     }
