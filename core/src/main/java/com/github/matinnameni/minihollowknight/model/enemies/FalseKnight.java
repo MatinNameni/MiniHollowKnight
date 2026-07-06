@@ -38,6 +38,12 @@ public class FalseKnight extends Boss {
     public static final float JUMP_VELOCITY = 650f;
     public static final float KNOCKBACK_VELOCITY = 80f;
 
+    // Initial state
+    public static final float INITIAL_X_OFFSET = 0f;
+    public static final float INITIAL_Y_OFFSET = 500f;
+    public static final float ENTRANCE_NOCLIP_DURATION = 2f;
+    public static final float ENTRANCE_NOT_RENDERING_DURATION = 1f;
+
     // Health
     public static final float MAX_HEALTH = 1500f;
     public static final float STUN_HP_THRESHOLD = MAX_HEALTH * 0.5f;
@@ -52,7 +58,7 @@ public class FalseKnight extends Boss {
 
     // AI decision-making
     public static final float CLOSE_DISTANCE = 250f;
-    public static final float FAR_DISTANCE = 500f;
+    public static final float FAR_DISTANCE = 600f;
     public static final float DECISION_COOLDOWN_BASE = 0.6f;
     public static final float RANDOM_OFFSET_RANGE = 0.3f;
 
@@ -84,12 +90,15 @@ public class FalseKnight extends Boss {
     private State lastAttackMove = null;
     private int stunHits = 0;
     private int hitsInADuration;
+    private Vector2 initialPosition = new Vector2();
+    private boolean noclipEnabled = true;
 
     // Timing
     private float stateTime = 0f;
     private float decisionCooldown = 0f;
     private float stunTimer = 0f;
     private float hitTimer = 0f;
+    private float entranceTimer = 0f;
 
     // Camera shake
     private float cameraShakeIntensity = 0f;
@@ -112,6 +121,8 @@ public class FalseKnight extends Boss {
         super(x, y);
         this.assets = assets;
         this.health = MAX_HEALTH;
+        this.initialPosition.set(x + INITIAL_X_OFFSET, y + INITIAL_Y_OFFSET);
+        entranceTimer = ENTRANCE_NOCLIP_DURATION;
     }
 
     //  --- Boss phase ---
@@ -125,6 +136,11 @@ public class FalseKnight extends Boss {
 
     @Override
     public void update(float deltaTime) {
+        if (!fightStarted) {
+            position.set(initialPosition);
+            return;
+        }
+
         updateTimers(deltaTime);
 
         if (state == State.STUNNED && stunTimer <= 0f) {
@@ -138,6 +154,11 @@ public class FalseKnight extends Boss {
 
     @Override
     public void render(SpriteBatch batch) {
+        if (!fightStarted ||
+            entranceTimer >= ENTRANCE_NOCLIP_DURATION - ENTRANCE_NOT_RENDERING_DURATION) {
+            return;
+        }
+
         Animation<TextureRegion> animation = getCurrentAnimation();
         if (animation == null) return;
 
@@ -160,11 +181,28 @@ public class FalseKnight extends Boss {
         );
     }
 
+    // --- Starting the fight ---
+
+    public void startFight() {
+        fightStarted = true;
+        EventBus.getInstance().publish(GameEvent.FALSE_KNIGHT_FIGHT_STARTED, this);
+    }
+
     //  --- AI decision-making ---
 
     public void decideNextAction(Knight knight) {
         if (!fightStarted || state != State.IDLE) return;
         if (decisionCooldown > 0f) return;
+
+        if(noclipEnabled) {
+            enterState(State.JUMP_ANTIC);
+            return;
+        }
+
+        // Face the knight before attacking
+        if (faceKnight(knight)) {
+            return;
+        }
 
         float distance = getDistanceTo(knight);
         lastKnightPos = new Vector2(
@@ -208,9 +246,9 @@ public class FalseKnight extends Boss {
 
         // Anti-spam
         if (lastAttackMove != null) {
-            boolean lastAttackIsACandidate = candidates.remove(lastAttackMove);
+            candidates.removeIf(state -> state == lastAttackMove);
             // Add it back only once so it has lower probability
-            if (MathUtils.random() < 0.1f && lastAttackIsACandidate) {
+            if (MathUtils.random() < 0.1f) {
                 candidates.add(lastAttackMove);
             }
         }
@@ -225,9 +263,6 @@ public class FalseKnight extends Boss {
         // Decision cooldown
         float baseCooldown = DECISION_COOLDOWN_BASE / (phase >= 2 ? PHASE2_AI_MULTIPLIER : 1f);
         decisionCooldown = baseCooldown + MathUtils.random(-RANDOM_OFFSET_RANGE, RANDOM_OFFSET_RANGE);
-
-        // Face the knight before attacking
-        faceKnight(knight);
     }
 
     //  --- Damage ---
@@ -235,12 +270,6 @@ public class FalseKnight extends Boss {
     @Override
     public void takeDamage(float damage, Direction knockbackDirection) {
         if (state == State.DEAD) return;
-
-        // Start fight on first hit
-        if (!fightStarted) {
-            fightStarted = true;
-            EventBus.getInstance().publish(GameEvent.FALSE_KNIGHT_FIGHT_STARTED, this);
-        }
 
         // changing state while false knight is stunned and
         // it's taking damage (for changing its animation).
@@ -300,7 +329,7 @@ public class FalseKnight extends Boss {
     @Override
     public boolean canDamagePlayer() {
         if (isDead()) return false;
-        return !stunned;
+        return !stunned && isFightStarted() && state != State.IDLE;
     }
 
     //  --- Camera shake ---
@@ -361,6 +390,12 @@ public class FalseKnight extends Boss {
             hitTimer -= deltaTime;
         } else {
             hitsInADuration = 0;
+        }
+
+        // Noclip timer
+        if(entranceTimer > 0) {
+            entranceTimer -= deltaTime;
+            noclipEnabled = entranceTimer > 0f;
         }
     }
 
@@ -570,14 +605,18 @@ public class FalseKnight extends Boss {
         }
     }
 
-    /** Face toward the given position. */
-    public void faceKnight(Knight knight) {
+    /** Face toward the given position.
+     * @return true if the boss started turning, false if already facing the correct way.
+     */
+    public boolean faceKnight(Knight knight) {
         float bossCenterX = position.x + WIDTH / 2f;
         float knightCenterX = knight.getPosition().x + Knight.WIDTH / 2f;
         Direction newFacingDirection = (knightCenterX > bossCenterX) ? Direction.RIGHT : Direction.LEFT;
         if(newFacingDirection != facingDirection) {
             enterState(State.TURNING);
+            return true;
         }
+        return false;
     }
 
     //  --- Attack hitboxes ---
@@ -633,6 +672,10 @@ public class FalseKnight extends Boss {
 
     public float getStateTime() {
         return stateTime;
+    }
+
+    public boolean isNoclipEnabled() {
+        return noclipEnabled;
     }
 
     //  --- Helpers ---

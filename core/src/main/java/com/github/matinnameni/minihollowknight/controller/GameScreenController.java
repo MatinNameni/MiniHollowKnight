@@ -16,6 +16,7 @@ import com.github.matinnameni.minihollowknight.model.enemies.FalseKnight;
 import com.github.matinnameni.minihollowknight.model.enemies.HuskHornhead;
 import com.github.matinnameni.minihollowknight.model.enemies.Mossfly;
 import com.github.matinnameni.minihollowknight.model.enemies.Shockwave;
+import com.github.matinnameni.minihollowknight.model.enums.BossType;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightState;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
@@ -59,6 +60,9 @@ public class GameScreenController implements EventListener {
 
     // --- Camera shake state ---
     private float cameraShakeIntensity = 0f;
+
+    // --- Display text ---
+    private String displayText;
 
     public GameScreenController(ScreenNavigator navigator, Settings settings,
                                 GameData gameData, Knight knight, EnemiesAssetsManager enemiesAssets) {
@@ -227,10 +231,15 @@ public class GameScreenController implements EventListener {
 
         // False Knight (boss)
         for (Vector2 spawnPoint : gameMap.getFalseKnightSpawns()) {
-            FalseKnight falseKnight = new FalseKnight(spawnPoint.x, spawnPoint.y, enemiesAssets.getFalseKnightAssetBundle());
-            enemies.add(falseKnight);
-            activeFalseKnight = falseKnight;
-            EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, falseKnight);
+            for(Arena arena : gameMap.getArenas()) {
+                if (arena.arenaBossType == BossType.FALSE_KNIGHT) {
+                    FalseKnight falseKnight = new FalseKnight(spawnPoint.x, spawnPoint.y, enemiesAssets.getFalseKnightAssetBundle());
+                    enemies.add(falseKnight);
+                    arena.arenaBoss = falseKnight;
+                    activeFalseKnight = falseKnight;
+                    EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, falseKnight);
+                }
+            }
         }
 
         enemiesSpawned = true;
@@ -449,6 +458,11 @@ public class GameScreenController implements EventListener {
             return;
         }
 
+        if (falseKnight.isNoclipEnabled()) {
+            falseKnight.update(delta);
+            return;
+        }
+
         falseKnight.setGrounded(false);
 
         Rectangle hitbox = falseKnight.getBounds();
@@ -620,7 +634,7 @@ public class GameScreenController implements EventListener {
         } else if (event == GameEvent.PLAYER_NAIL_HIT && payload instanceof Enemy) {
             resolveNailHitOnEnemy((Enemy) payload);
         }  else if (event == GameEvent.FALSE_KNIGHT_FIGHT_STARTED) {
-            // TODO: implement false knight boss start pop up
+            displayText = "False Knight";
         } else if (event == GameEvent.FALSE_KNIGHT_DEFEATED) {
             activeFalseKnight = null;
         }
@@ -700,20 +714,27 @@ public class GameScreenController implements EventListener {
 
         boolean lockedOnArea = false;
 
-        for (Rectangle arenaBounds : gameMap.getArenas()) {
-            if (knight.getBounds().overlaps(arenaBounds)) {
-                float arenaHalfWidth = arenaBounds.width / 2f;
-                float arenaHalfHeight = arenaBounds.height / 2f;
-                float arenaCenterX = arenaBounds.x + arenaHalfWidth;
-                float arenaCenterY = arenaBounds.y + arenaHalfHeight;
+        for (Arena arena : gameMap.getArenas()) {
+            if (knight.getBounds().overlaps(arena)) {
+                float arenaHalfWidth = arena.width / 2f;
+                float arenaHalfHeight = arena.height / 2f;
+                float arenaCenterX = arena.x + arenaHalfWidth;
+                float arenaCenterY = arena.y + arenaHalfHeight;
 
                 cameraTarget.x = arenaCenterX;
                 cameraTarget.y = arenaCenterY;
 
+                // lock the camera on center of the arena
                 camera.position.x += (cameraTarget.x - camera.position.x) * CAMERA_LERP * delta;
                 camera.position.y += (cameraTarget.y - camera.position.y) * CAMERA_LERP * delta;
 
                 lockedOnArea = true;
+
+                // start the boss fight if it's a boss arena
+                if (activeFalseKnight != null && !activeFalseKnight.isFightStarted()) {
+                    activeFalseKnight.startFight();
+                }
+
                 break;
             }
         }
@@ -928,6 +949,10 @@ public class GameScreenController implements EventListener {
         return activeFalseKnight;
     }
 
+    public String getDisplayText() {
+        return displayText;
+    }
+
     // --- Setters ---
 
     /** Should be called after each time a new map was loaded in {@link GameScreen}. */
@@ -944,5 +969,9 @@ public class GameScreenController implements EventListener {
             }
         }
         this.lasers.clear();
+    }
+
+    public void resetDisplayText() {
+        displayText = null;
     }
 }

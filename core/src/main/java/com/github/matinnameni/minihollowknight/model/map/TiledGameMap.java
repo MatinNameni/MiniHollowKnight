@@ -13,6 +13,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.github.matinnameni.minihollowknight.model.Arena;
 import com.github.matinnameni.minihollowknight.model.BreakableWall;
 import com.github.matinnameni.minihollowknight.model.GridObject;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
@@ -39,6 +40,8 @@ public class TiledGameMap {
     private static final String PROP_CAN_POGO = "canPogo";
     private static final String PROP_IS_DEADLY = "isDeadly";
     private static final String PROP_IS_BREAKABLE = "isBreakable";
+    private static final String PROP_HAVE_BOSS = "haveBoss";
+    private static final String PROP_BOSS_NAME = "bossName";
     private static final String PROP_TEX_DEFAULT = "textureDefault";
     private static final String PROP_TEX_CRACKED = "textureCracked";
     private static final String PROP_TEX_BROKEN = "textureBroken";
@@ -83,7 +86,7 @@ public class TiledGameMap {
     private final List<BreakableWall> breakableWalls = new ArrayList<>();
 
     // --- Arenas bounds ---
-    private List<Rectangle> arenas = new ArrayList<>();
+    private List<Arena> arenas = new ArrayList<>();
 
     // --- Map dimensions ---
 
@@ -219,12 +222,25 @@ public class TiledGameMap {
         if (SPAWN_POINT_NAME.equals(rectangleObject.getName())) {
             playerSpawn.set(currentRectangle.x * unitScale, currentRectangle.y * unitScale);
         } else if (ARENA_NAME.equals(rectangleObject.getName())) {
-            arenas.add(new Rectangle(
+            boolean haveBoss = false;
+            if(rectangleObject.getProperties().containsKey(PROP_HAVE_BOSS)) {
+                haveBoss = rectangleObject.getProperties().get(PROP_HAVE_BOSS, Boolean.class);
+            }
+
+            Arena newArena = new Arena(
                 currentRectangle.x * unitScale,
                 currentRectangle.y * unitScale,
                 currentRectangle.width * unitScale,
-                currentRectangle.height * unitScale
-            ));
+                currentRectangle.height * unitScale,
+                haveBoss
+            );
+
+            if (newArena.haveBoss) {
+                newArena.resolveBossName(rectangleObject.getProperties().get(PROP_BOSS_NAME, String.class));
+            }
+
+            arenas.add(newArena);
+
         } else {
             colliders.add(new GridObject(
                 currentRectangle.x * unitScale,
@@ -393,7 +409,7 @@ public class TiledGameMap {
     }
 
     /** @return the boss arenas bounds, or null if no arena is defined in the map. */
-    public List<Rectangle> getArenas() {
+    public List<Arena> getArenas() {
         return arenas;
     }
 

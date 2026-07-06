@@ -24,6 +24,7 @@ import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.map.MapLoader;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
+import com.github.matinnameni.minihollowknight.view.hud.DisplayTextOverlay;
 import com.github.matinnameni.minihollowknight.view.hud.GameHud;
 import com.github.matinnameni.minihollowknight.view.hud.PauseOverlay;
 
@@ -48,6 +49,9 @@ public class GameScreen implements Screen {
 
     // --- HUD ---
     private GameHud gameHud;
+
+    // --- Display overlay ---
+    private DisplayTextOverlay displayOverlay;
 
     // --- Pause menu ---
     private final MenuAssetBundle menuAssets;
@@ -118,6 +122,11 @@ public class GameScreen implements Screen {
         // Initialize and position HUD elements
         gameHud.init();
         gameHud.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        // Initialize the display text overlay
+        displayOverlay = new DisplayTextOverlay(menuAssets);
+        displayOverlay.init();
+        displayOverlay.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // Initialize the pause menu overlay
         PauseMenuController pauseController = new PauseMenuController(navigator, this, this::resumeGame);
@@ -208,6 +217,19 @@ public class GameScreen implements Screen {
         // HUD
         gameHud.draw();
 
+        // Display Overlay
+        if (controller.getDisplayText() != null) {
+            displayOverlay.setBodyText(controller.getDisplayText());
+            controller.resetDisplayText();
+
+            displayOverlay.startDisplay();
+        }
+
+        if (displayOverlay.isDisplaying()) {
+            displayOverlay.update(delta);
+            displayOverlay.draw();
+        }
+
         // Pause menu overlay
         if (paused) {
             pauseOverlay.update(delta);
@@ -250,6 +272,7 @@ public class GameScreen implements Screen {
         camera.position.set(previousX, previousY, 0f);
         camera.update();
         gameHud.resize(width, height);
+        displayOverlay.resize(width, height);
         pauseOverlay.resize(width, height);
     }
 
@@ -269,6 +292,7 @@ public class GameScreen implements Screen {
         gameMap.dispose();
         controller.dispose();
         gameHud.dispose();
+        displayOverlay.dispose();
         pauseOverlay.dispose();
     }
 
