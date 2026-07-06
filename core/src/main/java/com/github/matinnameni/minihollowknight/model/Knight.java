@@ -689,6 +689,12 @@ public class Knight implements Entity {
         }
     }
 
+    public void takeDamage(Direction knockbackDirection, int numOfMasks) {
+        if (numOfMasks <= 0) return;
+        masks -= numOfMasks - 1;
+        takeDamage(knockbackDirection);
+    }
+
     // --- Soul ---
 
     public void gainSoul(float amount) {

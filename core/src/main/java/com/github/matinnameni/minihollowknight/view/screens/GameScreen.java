@@ -16,8 +16,8 @@ import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
 import com.github.matinnameni.minihollowknight.model.*;
 import com.github.matinnameni.minihollowknight.model.asset.*;
 import com.github.matinnameni.minihollowknight.model.enemies.Crystallized;
-import com.github.matinnameni.minihollowknight.model.enemies.CrystallizedLaser;
 import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.enemies.FalseKnight;
 import com.github.matinnameni.minihollowknight.model.enemies.HuskHornhead;
 import com.github.matinnameni.minihollowknight.model.enemies.Mossfly;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
@@ -326,6 +326,25 @@ public class GameScreen implements Screen {
                 shapeRenderer.setColor(Color.CYAN);
                 Rectangle vision = ((Crystallized) enemy).getVisionBounds();
                 shapeRenderer.rect(vision.x, vision.y, vision.width, vision.height);
+            }
+
+            // Draw False Knight debug info
+            if (enemy instanceof FalseKnight) {
+                FalseKnight fk = (FalseKnight) enemy;
+                shapeRenderer.setColor(Color.PURPLE);
+
+                // Slam hitbox
+                Rectangle slamHB = fk.getSlamHitbox();
+                if (slamHB != null) {
+                    shapeRenderer.rect(slamHB.x, slamHB.y, slamHB.width, slamHB.height);
+                }
+
+                // Jump attack hitbox
+                shapeRenderer.setColor(Color.MAGENTA);
+                Rectangle jumpHB = fk.getJumpAttackHitbox();
+                if (jumpHB != null) {
+                    shapeRenderer.rect(jumpHB.x, jumpHB.y, jumpHB.width, jumpHB.height);
+                }
             }
         }
 

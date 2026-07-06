@@ -117,11 +117,12 @@ public class VengefulSpirit implements Projectile {
 
     @Override
     public void onHitEnemy(Enemy enemy) {
-        if (state == State.FLYING) {
-            transitionToImpact();
-        }
+        enemy.takeDamage(getDamage(), getDirection());
+    }
 
-        EventBus.getInstance().publish(GameEvent.PLAYER_VENGEFUL_SPIRIT_HIT, enemy);
+    @Override
+    public float getDamage() {
+        return Knight.VENGEFUL_SPIRIT_DAMAGE_PER_FRAME;
     }
 
     @Override
@@ -130,8 +131,23 @@ public class VengefulSpirit implements Projectile {
     }
 
     @Override
+    public Direction getDirection() {
+        return direction;
+    }
+
+    @Override
     public boolean hasEffectOnEnemies() {
         return true;
+    }
+
+    @Override
+    public void onHitKnight(Knight knight) {
+
+    }
+
+    @Override
+    public boolean hasEffectOnKnight() {
+        return false;
     }
 
     // --- Actions ---
@@ -146,10 +162,6 @@ public class VengefulSpirit implements Projectile {
 
     public State getState() {
         return state;
-    }
-
-    public Direction getDirection() {
-        return direction;
     }
 
     public boolean isFlying() {

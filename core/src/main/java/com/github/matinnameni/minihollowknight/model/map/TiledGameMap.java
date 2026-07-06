@@ -13,7 +13,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.github.matinnameni.minihollowknight.model.BreakableWall;       // <<< BREAKABLE WALL >>>
+import com.github.matinnameni.minihollowknight.model.BreakableWall;
 import com.github.matinnameni.minihollowknight.model.GridObject;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 
@@ -34,6 +34,7 @@ public class TiledGameMap {
     private static final String MOSSFLY_SPAWN_NAME = "mossflySpawn";
     private static final String HUSK_HORNHEAD_SPAWN_NAME = "huskHornheadSpawn";
     private static final String CRYSTALLIZED_SPAWN_NAME = "crystallizedSpawn";
+    private static final String FALSE_KNIGHT_SPAWN_NAME = "falseKnightSpawn";
 
     private static final String PROP_CAN_POGO = "canPogo";
     private static final String PROP_IS_DEADLY = "isDeadly";
@@ -42,6 +43,9 @@ public class TiledGameMap {
     private static final String PROP_TEX_CRACKED = "textureCracked";
     private static final String PROP_TEX_BROKEN = "textureBroken";
     private static final String PROP_HITS_TO_BREAK = "hitsToBreak";
+
+    // --- Arena ---
+    private static final String ARENA_NAME = "arena";
 
     // --- Tiled ---
 
@@ -75,7 +79,11 @@ public class TiledGameMap {
     private final List<Vector2> mossflySpawns = new ArrayList<>();
     private final List<Vector2> huskHornheadSpawns = new ArrayList<>();
     private final List<Vector2> crystallizedSpawns = new ArrayList<>();
+    private final List<Vector2> falseKnightSpawns = new ArrayList<>();
     private final List<BreakableWall> breakableWalls = new ArrayList<>();
+
+    // --- Arenas bounds ---
+    private List<Rectangle> arenas = new ArrayList<>();
 
     // --- Map dimensions ---
 
@@ -124,6 +132,7 @@ public class TiledGameMap {
                     break;
                 case "blackMaskBG":
                     blackMaskBGLayer = tileLayer;
+                    blackMaskBGLayer.setOpacity(0f);
                     break;
                 case "spikeLayer0":
                     spikeLayer0 = tileLayer;
@@ -148,6 +157,7 @@ public class TiledGameMap {
                     break;
                 case "blackMaskFG":
                     blackMaskFGLayer = tileLayer;
+                    blackMaskFGLayer.setOpacity(0f);
                     break;
                 case "foreground":
                     foregroundLayer = tileLayer;
@@ -208,6 +218,13 @@ public class TiledGameMap {
 
         if (SPAWN_POINT_NAME.equals(rectangleObject.getName())) {
             playerSpawn.set(currentRectangle.x * unitScale, currentRectangle.y * unitScale);
+        } else if (ARENA_NAME.equals(rectangleObject.getName())) {
+            arenas.add(new Rectangle(
+                currentRectangle.x * unitScale,
+                currentRectangle.y * unitScale,
+                currentRectangle.width * unitScale,
+                currentRectangle.height * unitScale
+            ));
         } else {
             colliders.add(new GridObject(
                 currentRectangle.x * unitScale,
@@ -265,6 +282,9 @@ public class TiledGameMap {
                 break;
             case CRYSTALLIZED_SPAWN_NAME:
                 crystallizedSpawns.add(new Vector2(x * unitScale, y * unitScale));
+                break;
+            case FALSE_KNIGHT_SPAWN_NAME:
+                falseKnightSpawns.add(new Vector2(x * unitScale, y * unitScale));
                 break;
         }
     }
@@ -352,6 +372,10 @@ public class TiledGameMap {
         return crystallizedSpawns;
     }
 
+    public List<Vector2> getFalseKnightSpawns() {
+        return falseKnightSpawns;
+    }
+
     public float getMapWidth() {
         return mapWidth;
     }
@@ -366,6 +390,11 @@ public class TiledGameMap {
 
     public List<BreakableWall> getBreakableWalls() {
         return breakableWalls;
+    }
+
+    /** @return the boss arenas bounds, or null if no arena is defined in the map. */
+    public List<Rectangle> getArenas() {
+        return arenas;
     }
 
     /** Called by the controller when a breakable wall is fully destroyed. */

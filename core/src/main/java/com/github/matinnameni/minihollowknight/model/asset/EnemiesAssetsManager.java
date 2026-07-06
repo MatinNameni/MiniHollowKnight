@@ -11,6 +11,7 @@ public class EnemiesAssetsManager {
     private boolean mossflyAssetsLoaded = false;
     private boolean huskHornheadAssetsLoaded = false;
     private boolean crystallizedAssetsLoaded = false;
+    private boolean falseKnightAssetsLoaded = false;
 
     private EnemiesAssetsManager(AssetRegistry registry) {
         this.registry = registry;
@@ -29,6 +30,7 @@ public class EnemiesAssetsManager {
         registry.register(new MossflyAssetBundle(registry.getManager()));
         registry.register(new HuskHornheadAssetBundle(registry.getManager()));
         registry.register(new CrystallizedAssetBundle(registry.getManager()));
+        registry.register(new FalseKnightAssetBundle(registry.getManager()));
     }
 
     /** Loads all enemies asset bundles if they haven't been loaded yet. */
@@ -52,6 +54,11 @@ public class EnemiesAssetsManager {
             registry.loadBundle(CrystallizedAssetBundle.KEY);
             crystallizedAssetsLoaded = true;
         }
+
+        if (!falseKnightAssetsLoaded) {
+            registry.loadBundle(FalseKnightAssetBundle.KEY);
+            falseKnightAssetsLoaded = true;
+        }
     }
 
     // --- Enemies asset bundles ---
@@ -70,5 +77,9 @@ public class EnemiesAssetsManager {
 
     public CrystallizedAssetBundle getCrystallizedAssetBundle() {
         return (CrystallizedAssetBundle) registry.get(CrystallizedAssetBundle.KEY);
+    }
+
+    public FalseKnightAssetBundle getFalseKnightAssetBundle() {
+        return (FalseKnightAssetBundle) registry.get(FalseKnightAssetBundle.KEY);
     }
 }

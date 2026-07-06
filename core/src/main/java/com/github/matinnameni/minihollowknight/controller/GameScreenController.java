@@ -12,8 +12,10 @@ import com.github.matinnameni.minihollowknight.model.enemies.Crawlid;
 import com.github.matinnameni.minihollowknight.model.enemies.Crystallized;
 import com.github.matinnameni.minihollowknight.model.enemies.CrystallizedLaser;
 import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.enemies.FalseKnight;
 import com.github.matinnameni.minihollowknight.model.enemies.HuskHornhead;
 import com.github.matinnameni.minihollowknight.model.enemies.Mossfly;
+import com.github.matinnameni.minihollowknight.model.enemies.Shockwave;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightState;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
@@ -48,9 +50,15 @@ public class GameScreenController implements EventListener {
     // --- Lasers ---
     private final List<Laser> lasers = new ArrayList<>();
 
+    // --- False Knight boss reference ---
+    private FalseKnight activeFalseKnight;
+
     // --- Camera control ---
     private static final float CAMERA_LERP = 4f;
     private final Vector2 cameraTarget = new Vector2();
+
+    // --- Camera shake state ---
+    private float cameraShakeIntensity = 0f;
 
     public GameScreenController(ScreenNavigator navigator, Settings settings,
                                 GameData gameData, Knight knight, EnemiesAssetsManager enemiesAssets) {
@@ -63,8 +71,10 @@ public class GameScreenController implements EventListener {
         EventBus.getInstance().subscribe(GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST, this);
         EventBus.getInstance().subscribe(GameEvent.PLAYER_HOWLING_WRAITHS_CAST, this);
         EventBus.getInstance().subscribe(GameEvent.PLAYER_NAIL_HIT, this);
-        EventBus.getInstance().subscribe(GameEvent.PLAYER_VENGEFUL_SPIRIT_HIT, this);
-        EventBus.getInstance().subscribe(GameEvent.PLAYER_HOWLING_WRAITHS_HIT, this);
+
+        // False Knight events
+        EventBus.getInstance().subscribe(GameEvent.FALSE_KNIGHT_FIGHT_STARTED, this);
+        EventBus.getInstance().subscribe(GameEvent.FALSE_KNIGHT_DEFEATED, this);
     }
 
     public void initializeCameraTarget() {
@@ -108,6 +118,10 @@ public class GameScreenController implements EventListener {
 
         resolveLaserKnightContact(delta);
 
+        // False Knight
+        updateFalseKnightAI(delta);
+        resolveFalseKnightAttackHitboxes();
+
         updateCamera(delta, camera);
     }
 
@@ -128,6 +142,8 @@ public class GameScreenController implements EventListener {
                 updateVengefulSpirit(delta, (VengefulSpirit) projectile);
             } else if(projectile instanceof HowlingWraiths) {
                 updateHowlingWraiths(delta, (HowlingWraiths) projectile);
+            } else if(projectile instanceof Shockwave) {
+                updateShockwave(delta, (Shockwave) projectile);
             }
 
             if (projectile.isDead()) {
@@ -156,6 +172,20 @@ public class GameScreenController implements EventListener {
         projectile.update(delta);
     }
 
+    private void updateShockwave(float delta, Shockwave shockwave) {
+        Rectangle shockwaveBounds = shockwave.getBounds();
+        for (GridObject platform : gameMap.getColliders()) {
+            if (shockwaveBounds.y >= platform.y &&
+                shockwaveBounds.y + shockwaveBounds.height <= platform.y + platform.height &&
+                shockwaveBounds.overlaps(platform)) {
+                shockwave.onHitWall();
+                break;
+            }
+        }
+
+        shockwave.update(delta);
+    }
+
     // --- Enemies ---
 
     /** Returns the list of active enemies. */
@@ -163,7 +193,7 @@ public class GameScreenController implements EventListener {
         return enemies;
     }
 
-    /** Spawns one Crawlid per {@code crawlidSpawn} point in the current map. */
+    /** Spawns enemies per spawn points in the current map. */
     private void spawnEnemiesIfNeeded() {
         if (enemiesSpawned || gameMap == null) return;
 
@@ -195,6 +225,14 @@ public class GameScreenController implements EventListener {
             EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, crystallized);
         }
 
+        // False Knight (boss)
+        for (Vector2 spawnPoint : gameMap.getFalseKnightSpawns()) {
+            FalseKnight falseKnight = new FalseKnight(spawnPoint.x, spawnPoint.y, enemiesAssets.getFalseKnightAssetBundle());
+            enemies.add(falseKnight);
+            activeFalseKnight = falseKnight;
+            EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, falseKnight);
+        }
+
         enemiesSpawned = true;
     }
 
@@ -212,6 +250,8 @@ public class GameScreenController implements EventListener {
                 updateHuskHornhead(delta, (HuskHornhead) enemy);
             } else if (enemy instanceof Crystallized) {
                 updateCrystallized(delta, (Crystallized) enemy);
+            } else if (enemy instanceof FalseKnight) {
+                updateFalseKnight(delta, (FalseKnight) enemy);
             } else {
                 enemy.update(delta);
             }
@@ -401,6 +441,112 @@ public class GameScreenController implements EventListener {
         crystallized.update(delta);
     }
 
+    // --- False Knight ---
+
+    private void updateFalseKnight(float delta, FalseKnight falseKnight) {
+        if (falseKnight.getState() == FalseKnight.State.STUNNED || falseKnight.getState() == FalseKnight.State.DEAD) {
+            falseKnight.update(delta);
+            return;
+        }
+
+        falseKnight.setGrounded(false);
+
+        Rectangle hitbox = falseKnight.getBounds();
+        Map<GridObject, Direction> collisions = getOverlappingObjects(hitbox);
+
+        for (Map.Entry<GridObject, Direction> entry : collisions.entrySet()) {
+            GridObject platform = entry.getKey();
+            Direction direction = entry.getValue();
+
+            if (platform.isDeadly && !falseKnight.isDead()) {
+                falseKnight.takeDamage(FalseKnight.MAX_HEALTH, direction);
+            }
+
+            if (direction == Direction.UP) {
+                float resolvedHitboxY = platform.y + platform.height;
+                falseKnight.onFloorCollision(resolvedHitboxY - FalseKnight.HITBOX_Y_OFFSET);
+            } else if (direction == Direction.DOWN) {
+                float resolvedHitboxY = platform.y - hitbox.height;
+                falseKnight.onCeilingCollision(resolvedHitboxY - FalseKnight.HITBOX_Y_OFFSET);
+            } else if (direction == Direction.LEFT) {
+                float resolvedHitboxX = platform.x - hitbox.width;
+                falseKnight.onWallCollision(resolvedHitboxX - FalseKnight.HITBOX_X_OFFSET);
+            } else {
+                float resolvedHitboxX = platform.x + platform.width;
+                falseKnight.onWallCollision(resolvedHitboxX - FalseKnight.HITBOX_X_OFFSET);
+            }
+        }
+
+        // Floor proximity check
+        if (isOnFloor(falseKnight.getBounds())) {
+            falseKnight.setGrounded(true);
+        }
+
+        falseKnight.update(delta);
+    }
+
+    /**
+     * Feeds the False Knight's AI decision system each frame when the fight
+     * is active and the boss is idle.
+     */
+    private void updateFalseKnightAI(float delta) {
+        if (activeFalseKnight == null) return;
+        if (activeFalseKnight.isDead()) return;
+
+        // Feed AI
+        activeFalseKnight.decideNextAction(knight);
+
+        // Collect camera shake from boss
+        float shake = activeFalseKnight.getCameraShakeIntensity();
+        if (shake > cameraShakeIntensity) {
+            cameraShakeIntensity = shake;
+        }
+
+        // Spawn shockwaves
+        if (activeFalseKnight.wantsShockwave()) {
+            activeFalseKnight.consumeShockwave();
+            spawnShockwaves(activeFalseKnight);
+        }
+    }
+
+    /** Resolves damage from the False Knight's special attack hitboxes against the Knight. */
+    private void resolveFalseKnightAttackHitboxes() {
+        if (activeFalseKnight == null) return;
+        if (knight.isInvincible() || knight.isDead()) return;
+
+        Rectangle knightHitbox = knight.getBounds();
+
+        // Mace slam hitbox
+        Rectangle slamHitbox = activeFalseKnight.getSlamHitbox();
+        if (slamHitbox != null && knightHitbox.overlaps(slamHitbox)) {
+            Direction knockback = (knightHitbox.x < slamHitbox.x) ? Direction.LEFT : Direction.RIGHT;
+            knight.takeDamage(knockback);
+            return;
+        }
+
+        // Jump attack hitbox
+        Rectangle jumpHitbox = activeFalseKnight.getJumpAttackHitbox();
+        if (jumpHitbox != null && knightHitbox.overlaps(jumpHitbox)) {
+            Direction knockback = (knightHitbox.x < jumpHitbox.x) ? Direction.LEFT : Direction.RIGHT;
+            knight.takeDamage(knockback);
+        }
+    }
+
+    // --- Shockwaves ---
+
+    /** Spawns two shockwaves from the boss's position. */
+    private void spawnShockwaves(FalseKnight falseKnight) {
+        float originX = (falseKnight.getFacingDirection() == Direction.RIGHT) ?
+            falseKnight.getBounds().x + FalseKnight.HITBOX_WIDTH :
+            falseKnight.getBounds().x;
+        float originY = falseKnight.getBounds().y;
+
+        Shockwave wave = new Shockwave(originX, originY, falseKnight.getFacingDirection(),
+            enemiesAssets.getFalseKnightAssetBundle());
+
+        projectiles.add(wave);
+    }
+
     // --- Lasers ---
 
     /** Returns the list of active Crystallized lasers for rendering. */
@@ -473,10 +619,10 @@ public class GameScreenController implements EventListener {
             projectiles.add(new HowlingWraiths(info.x, info.y, info.assets));
         } else if (event == GameEvent.PLAYER_NAIL_HIT && payload instanceof Enemy) {
             resolveNailHitOnEnemy((Enemy) payload);
-        } else if (event == GameEvent.PLAYER_VENGEFUL_SPIRIT_HIT && payload instanceof Enemy) {
-            resolveVengefulSpiritHit((Enemy) payload);
-        } else if (event == GameEvent.PLAYER_HOWLING_WRAITHS_HIT && payload instanceof Enemy) {
-            resolveHowlingWraithsHit((Enemy) payload);
+        }  else if (event == GameEvent.FALSE_KNIGHT_FIGHT_STARTED) {
+            // TODO: implement false knight boss start pop up
+        } else if (event == GameEvent.FALSE_KNIGHT_DEFEATED) {
+            activeFalseKnight = null;
         }
     }
 
@@ -491,21 +637,12 @@ public class GameScreenController implements EventListener {
         }
     }
 
-    /** Damages {@code enemy} when the Knight's vengeful spirit spell hits it. */
-    private void resolveVengefulSpiritHit(Enemy enemy) {
-        Direction knockback = (enemy.getBounds().x < knight.getBounds().x) ? Direction.LEFT : Direction.RIGHT;
-        enemy.takeDamage(Knight.VENGEFUL_SPIRIT_DAMAGE_PER_FRAME, knockback);
-    }
-
-    /** Damages {@code enemy} when the Knight's howling wraiths spell hits it. */
-    private void resolveHowlingWraithsHit(Enemy enemy) {
-        enemy.takeDamage(Knight.HOWLING_WRAITHS_DAMAGE_PER_FRAME, Direction.UP);
-    }
-
     public void dispose() {
         EventBus.getInstance().unsubscribe(GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST, this);
         EventBus.getInstance().unsubscribe(GameEvent.PLAYER_HOWLING_WRAITHS_CAST, this);
         EventBus.getInstance().unsubscribe(GameEvent.PLAYER_NAIL_HIT, this);
+        EventBus.getInstance().unsubscribe(GameEvent.FALSE_KNIGHT_FIGHT_STARTED, this);
+        EventBus.getInstance().unsubscribe(GameEvent.FALSE_KNIGHT_DEFEATED, this);
     }
 
     // --- Update Helpers ---
@@ -561,19 +698,51 @@ public class GameScreenController implements EventListener {
     private void updateCamera(float delta, OrthographicCamera camera) {
         Vector2 knightPos = knight.getPosition();
 
-        cameraTarget.x = knightPos.x + Knight.WIDTH / 2f;
-        cameraTarget.y = knightPos.y + Knight.HEIGHT / 2f;
+        boolean lockedOnArea = false;
 
-        // for smoother display, the camera stays a little behind the knight
-        camera.position.x += (cameraTarget.x - camera.position.x) * CAMERA_LERP * delta;
-        camera.position.y += (cameraTarget.y - camera.position.y) * CAMERA_LERP * delta;
+        for (Rectangle arenaBounds : gameMap.getArenas()) {
+            if (knight.getBounds().overlaps(arenaBounds)) {
+                float arenaHalfWidth = arenaBounds.width / 2f;
+                float arenaHalfHeight = arenaBounds.height / 2f;
+                float arenaCenterX = arenaBounds.x + arenaHalfWidth;
+                float arenaCenterY = arenaBounds.y + arenaHalfHeight;
 
-        // Clamp camera so it doesn't show outside the map
-        float halfWidth = camera.viewportWidth / 2f;
-        float halfHeight = camera.viewportHeight / 2f;
+                cameraTarget.x = arenaCenterX;
+                cameraTarget.y = arenaCenterY;
 
-        camera.position.x = Math.max(halfWidth, Math.min(gameMap.getMapWidth() - halfWidth, camera.position.x));
-        camera.position.y = Math.max(halfHeight, Math.min(gameMap.getMapHeight() - halfHeight, camera.position.y));
+                camera.position.x += (cameraTarget.x - camera.position.x) * CAMERA_LERP * delta;
+                camera.position.y += (cameraTarget.y - camera.position.y) * CAMERA_LERP * delta;
+
+                lockedOnArea = true;
+                break;
+            }
+        }
+
+         if (!lockedOnArea) {
+             cameraTarget.x = knightPos.x + Knight.WIDTH / 2f;
+             cameraTarget.y = knightPos.y + Knight.HEIGHT / 2f;
+
+             // for smoother display, the camera stays a little behind the knight
+             camera.position.x += (cameraTarget.x - camera.position.x) * CAMERA_LERP * delta;
+             camera.position.y += (cameraTarget.y - camera.position.y) * CAMERA_LERP * delta;
+
+             // Clamp camera
+             float halfWidth = camera.viewportWidth / 2f;
+             float halfHeight = camera.viewportHeight / 2f;
+
+            // Normal map clamping
+            camera.position.x = Math.max(halfWidth, Math.min(gameMap.getMapWidth() - halfWidth, camera.position.x));
+            camera.position.y = Math.max(halfHeight, Math.min(gameMap.getMapHeight() - halfHeight, camera.position.y));
+        }
+
+        // Apply camera shake
+        if (cameraShakeIntensity > 0.1f) {
+            camera.position.x += (float) ((Math.random() * 2 - 1) * cameraShakeIntensity);
+            camera.position.y += (float) ((Math.random() * 2 - 1) * cameraShakeIntensity);
+            cameraShakeIntensity *= 0.9f; // decay
+        } else {
+            cameraShakeIntensity = 0f;
+        }
 
         camera.update();
     }
@@ -642,15 +811,15 @@ public class GameScreenController implements EventListener {
     /** Resolves collision between projectiles and game entities. */
     public void resolveProjectilesHit() {
         for (Projectile projectile : projectiles) {
-            for (Enemy enemy : enemies) {
-                if(enemy.isDead()) continue;
-                if(!enemy.getBounds().overlaps(projectile.getBounds())) continue;
-
-                if(projectile instanceof VengefulSpirit) {
-                    resolveVengefulSpiritHit(enemy);
-                } else if (projectile instanceof HowlingWraiths) {
-                    resolveHowlingWraithsHit(enemy);
+            if (projectile.hasEffectOnEnemies()) {
+                for (Enemy enemy : enemies) {
+                    if (enemy.isDead()) continue;
+                    if (!enemy.getBounds().overlaps(projectile.getBounds())) continue;
+                    projectile.onHitEnemy(enemy);
                 }
+            } else if (projectile.hasEffectOnKnight()) {
+                if (!projectile.getBounds().overlaps(knight.getBounds())) continue;
+                projectile.onHitKnight(knight);
             }
         }
     }
@@ -754,6 +923,11 @@ public class GameScreenController implements EventListener {
         return cameraTarget;
     }
 
+    /** @return the active False Knight boss, or null. */
+    public FalseKnight getActiveFalseKnight() {
+        return activeFalseKnight;
+    }
+
     // --- Setters ---
 
     /** Should be called after each time a new map was loaded in {@link GameScreen}. */
@@ -762,6 +936,8 @@ public class GameScreenController implements EventListener {
         this.enemies.clear();
         this.enemiesSpawned = false;
         this.attackedEnemiesThisSwing.clear();
+        this.activeFalseKnight = null;
+        this.cameraShakeIntensity = 0f;
         for (Laser laser : lasers) {
             if (laser instanceof CrystallizedLaser) {
                 ((CrystallizedLaser) laser).dispose();

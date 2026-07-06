@@ -9,6 +9,7 @@ import com.github.matinnameni.minihollowknight.event.EventBus;
 import com.github.matinnameni.minihollowknight.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightAnimationType;
 
 public class HowlingWraiths implements Projectile {
@@ -81,7 +82,12 @@ public class HowlingWraiths implements Projectile {
 
     @Override
     public void onHitEnemy(Enemy enemy) {
-        EventBus.getInstance().publish(GameEvent.PLAYER_HOWLING_WRAITHS_HIT, enemy);
+        enemy.takeDamage(getDamage(), getDirection());
+    }
+
+    @Override
+    public float getDamage() {
+        return Knight.VENGEFUL_SPIRIT_DAMAGE_PER_FRAME;
     }
 
     @Override
@@ -90,8 +96,23 @@ public class HowlingWraiths implements Projectile {
     }
 
     @Override
+    public Direction getDirection() {
+        return Direction.UP;
+    }
+
+    @Override
     public boolean hasEffectOnEnemies() {
         return true;
+    }
+
+    @Override
+    public void onHitKnight(Knight knight) {
+
+    }
+
+    @Override
+    public boolean hasEffectOnKnight() {
+        return false;
     }
 
     // --- Helpers ---
