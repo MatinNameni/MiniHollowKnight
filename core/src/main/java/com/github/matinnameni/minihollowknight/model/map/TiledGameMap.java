@@ -2,6 +2,7 @@ package com.github.matinnameni.minihollowknight.model.map;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
@@ -15,7 +16,9 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.model.Arena;
 import com.github.matinnameni.minihollowknight.model.BreakableWall;
+import com.github.matinnameni.minihollowknight.model.Door;
 import com.github.matinnameni.minihollowknight.model.GridObject;
+import com.github.matinnameni.minihollowknight.model.asset.TiledMapAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 
 import java.util.ArrayList;
@@ -29,6 +32,9 @@ public class TiledGameMap {
     // --- Constants ---
 
     public static final float UNIT_SCALE = 0.5f;
+
+    private static final String MAIN_LAYER_NAME = "MainLayer";
+    private static final String DOORS_LAYER_NAME = "Doors";
 
     private static final String SPAWN_POINT_NAME = "playerSpawnPoint";
     private static final String CRAWLID_SPAWN_NAME = "crawlidSpawn";
@@ -84,6 +90,7 @@ public class TiledGameMap {
     private final List<Vector2> crystallizedSpawns = new ArrayList<>();
     private final List<Vector2> falseKnightSpawns = new ArrayList<>();
     private final List<BreakableWall> breakableWalls = new ArrayList<>();
+    private final List<Door> doors = new ArrayList<>();
 
     // --- Arenas bounds ---
     private List<Arena> arenas = new ArrayList<>();
@@ -100,11 +107,14 @@ public class TiledGameMap {
     // --- Current environment ---
     private GameEnvironment currentEnvironment;
 
-    public TiledGameMap(GameEnvironment environment) {
-        this(environment, UNIT_SCALE);
+    // --- Assets ---
+    private TiledMapAssetBundle mapAssets;
+
+    public TiledGameMap(GameEnvironment environment, TiledMapAssetBundle mapAssets) {
+        this(environment, UNIT_SCALE, mapAssets);
     }
 
-    public TiledGameMap(GameEnvironment environment, float unitScale) {
+    public TiledGameMap(GameEnvironment environment, float unitScale, TiledMapAssetBundle mapAssets) {
         tiledMap = new TmxMapLoader().load(environment.path);
         renderer = new OrthogonalTiledMapRenderer(tiledMap, unitScale);
 
@@ -118,6 +128,7 @@ public class TiledGameMap {
         this.mapHeight = tilesVerticalCount * tileHeight * unitScale;
 
         this.currentEnvironment = environment;
+        this.mapAssets = mapAssets;
 
         cacheLayers();
         extractObjects(unitScale);
@@ -135,7 +146,6 @@ public class TiledGameMap {
                     break;
                 case "blackMaskBG":
                     blackMaskBGLayer = tileLayer;
-                    blackMaskBGLayer.setOpacity(0f);
                     break;
                 case "spikeLayer0":
                     spikeLayer0 = tileLayer;
@@ -160,7 +170,6 @@ public class TiledGameMap {
                     break;
                 case "blackMaskFG":
                     blackMaskFGLayer = tileLayer;
-                    blackMaskFGLayer.setOpacity(0f);
                     break;
                 case "foreground":
                     foregroundLayer = tileLayer;
@@ -176,12 +185,32 @@ public class TiledGameMap {
      * Reads every {@link RectangleMapObject} and point {@link MapObject} in the map.
      */
     private void extractObjects(float unitScale) {
-        for (MapLayer layer : tiledMap.getLayers()) {
-            for (MapObject mapObject : layer.getObjects()) {
+        // Main layer
+        MapLayer doorsLayer = tiledMap.getLayers().get(MAIN_LAYER_NAME);
+        if (doorsLayer != null) {
+            for (MapObject mapObject : doorsLayer.getObjects()) {
                 if (mapObject instanceof RectangleMapObject) {
                     extractRectangleObject((RectangleMapObject) mapObject, unitScale);
                 } else if (mapObject instanceof PointMapObject) {
                     extractPointObject(mapObject, unitScale);
+                }
+            }
+        }
+
+        // Doors
+        MapLayer mainLayer = tiledMap.getLayers().get(DOORS_LAYER_NAME);
+        if (mainLayer != null) {
+            for (MapObject mapObject : mainLayer.getObjects()) {
+                if (mapObject instanceof RectangleMapObject) {
+                    Rectangle rect = ((RectangleMapObject) mapObject).getRectangle();
+
+                    Door door = new Door(
+                        rect.x * unitScale,
+                        rect.y * unitScale,
+                        rect.width * unitScale,
+                        rect.height * unitScale,
+                        mapAssets);
+                    doors.add(door);
                 }
             }
         }
@@ -408,9 +437,12 @@ public class TiledGameMap {
         return breakableWalls;
     }
 
-    /** @return the boss arenas bounds, or null if no arena is defined in the map. */
     public List<Arena> getArenas() {
         return arenas;
+    }
+
+    public List<Door> getDoors() {
+        return doors;
     }
 
     /** Called by the controller when a breakable wall is fully destroyed. */

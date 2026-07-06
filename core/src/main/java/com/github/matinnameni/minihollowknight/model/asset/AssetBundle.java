@@ -1,5 +1,6 @@
 package com.github.matinnameni.minihollowknight.model.asset;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -82,6 +83,10 @@ public abstract class AssetBundle {
 
         for (int i = startFrame; i <= endFrame; i++) {
             String frameNum = String.format("%03d", i);
+            if(!Gdx.files.internal(path + frameNum + suffix).exists()) {
+                frameNum = String.format("%04d", i);
+            }
+
             keyFrames.add(
                 new TextureRegion(
                     new Texture(path + frameNum + suffix)

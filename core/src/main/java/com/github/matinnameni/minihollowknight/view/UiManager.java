@@ -27,6 +27,7 @@ public class UiManager implements ScreenNavigator {
     private Music menuMusic;
     private boolean knightAssetsLoaded = false;
     private boolean hudAssetsLoaded = false;
+    private boolean tiledMapAssetsLoaded = false;
 
     private GameScreen pausedGameScreen;
 
@@ -57,6 +58,7 @@ public class UiManager implements ScreenNavigator {
         registry.loadBundle(MenuAssetBundle.KEY);
         registry.register(new KnightAssetBundle(registry.getManager()));
         registry.register(new HudAssetBundle(registry.getManager()));
+        registry.register(new TiledMapAssetBundle(registry.getManager()));
         EnemiesAssetsManager.getInstance(registry).initAssets();
     }
 
@@ -239,13 +241,15 @@ public class UiManager implements ScreenNavigator {
         ensureKnightAssetsLoaded();
         ensureHudAssetsLoaded();
         ensureEnemiesAssetsLoaded();
+        ensureTiledMapAssetsLoaded();
         stopMenuMusic();
         KnightAssetBundle knightAssets = (KnightAssetBundle) registry.get(KnightAssetBundle.KEY);
         HudAssetBundle hudAssets = (HudAssetBundle) registry.get(HudAssetBundle.KEY);
         CrawlidAssetBundle crawlidAssets = (CrawlidAssetBundle) registry.get(CrawlidAssetBundle.KEY);
         MossflyAssetBundle mossflyAssets = (MossflyAssetBundle) registry.get(MossflyAssetBundle.KEY);
+        TiledMapAssetBundle mapAssets = (TiledMapAssetBundle) registry.get(TiledMapAssetBundle.KEY);
         setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets,
-            getMenuAssets(), EnemiesAssetsManager.getInstance(registry)));
+            getMenuAssets(), mapAssets, EnemiesAssetsManager.getInstance(registry)));
     }
 
     /**
@@ -273,6 +277,16 @@ public class UiManager implements ScreenNavigator {
      */
     private void ensureEnemiesAssetsLoaded() {
         EnemiesAssetsManager.getInstance(registry).loadBundles();
+    }
+
+    /**
+     * Loads the TiledMapAssetBundle if it hasn't been loaded yet.
+     */
+    private void ensureTiledMapAssetsLoaded() {
+        if (!tiledMapAssetsLoaded) {
+            registry.loadBundle(TiledMapAssetBundle.KEY);
+            tiledMapAssetsLoaded = true;
+        }
     }
 
     @Override

@@ -126,6 +126,8 @@ public class GameScreenController implements EventListener {
         updateFalseKnightAI(delta);
         resolveFalseKnightAttackHitboxes();
 
+        updateDoors(delta);
+
         updateCamera(delta, camera);
     }
 
@@ -546,6 +548,18 @@ public class GameScreenController implements EventListener {
         }
     }
 
+    // --- Doors ---
+
+    private void updateDoors(float delta) {
+        for (Door door : gameMap.getDoors()) {
+            door.update(delta);
+
+            if (door.isSolid() && knight.getBounds().overlaps(door)) {
+                resolveCollisionWithObstacle(knight, door);
+            }
+        }
+    }
+
     // --- Shockwaves ---
 
     /** Spawns two shockwaves from the boss's position. */
@@ -634,9 +648,15 @@ public class GameScreenController implements EventListener {
         } else if (event == GameEvent.PLAYER_NAIL_HIT && payload instanceof Enemy) {
             resolveNailHitOnEnemy((Enemy) payload);
         }  else if (event == GameEvent.FALSE_KNIGHT_FIGHT_STARTED) {
-            displayText = "False Knight";
+            displayText = Lang.get("boss.falseKnight");
+            for (Door door : gameMap.getDoors()) {
+                door.closeDoor();
+            }
         } else if (event == GameEvent.FALSE_KNIGHT_DEFEATED) {
             activeFalseKnight = null;
+            for (Door door : gameMap.getDoors()) {
+                door.openDoor();
+            }
         }
     }
 
@@ -730,9 +750,12 @@ public class GameScreenController implements EventListener {
 
                 lockedOnArea = true;
 
-                // start the boss fight if it's a boss arena
-                if (activeFalseKnight != null && !activeFalseKnight.isFightStarted()) {
-                    activeFalseKnight.startFight();
+                // start the boss fight if the Knight is in the boss arena
+                if (arena.contains(knight.getBounds())) {
+                    if (activeFalseKnight != null && !activeFalseKnight.isFightStarted() &&
+                        arena.haveBoss && arena.arenaBossType == BossType.FALSE_KNIGHT) {
+                        activeFalseKnight.startFight();
+                    }
                 }
 
                 break;
@@ -885,6 +908,14 @@ public class GameScreenController implements EventListener {
             float gap = Math.abs(rect.y - (platform.y + platform.height));
             if (gap >= 0f && gap <= EPSILON) return true;
         }
+        for (Door door : gameMap.getDoors()) {
+            if(!door.isSolid()) continue;
+            if (rect.x + rect.width <= door.x) continue;
+            if (rect.x >= door.x + door.width) continue;
+
+            float gap = Math.abs(rect.y - (door.y + door.height));
+            if (gap >= 0f && gap <= EPSILON) return true;
+        }
         return false;
     }
 
@@ -925,6 +956,64 @@ public class GameScreenController implements EventListener {
         }
 
         return overlappingObjects;
+    }
+
+    private void resolveCollisionWithObstacle(Knight knight, GridObject obstacle) {
+        if (!obstacle.overlaps(knight.getBounds())) {
+            return;
+        }
+
+        if(obstacle.isDeadly) {
+            knight.takeDamage(resolvePlatformDeathKnockback());
+            knight.goToLastSafePosition();
+            return;
+        }
+
+        knight.setGrounded(false);
+
+        Rectangle entityHitbox = knight.getBounds();
+
+        float x = entityHitbox.x;
+        float y = entityHitbox.y;
+        float width = entityHitbox.width;
+        float height = entityHitbox.height;
+
+        float pushLeft = (x + width) - obstacle.x;
+        float pushRight = (obstacle.x + obstacle.width) - x;
+        float pushUp = (obstacle.y + obstacle.height) - y;
+        float pushDown = (y + height) - obstacle.y;
+
+        float minPush = Math.min(
+            Math.min(pushLeft, pushRight),
+            Math.min(pushUp, pushDown)
+        );
+
+        if (minPush == pushUp) {
+            float resolvedHitboxY = obstacle.y + obstacle.height;
+            knight.onFloorCollision(resolvedHitboxY - Knight.HITBOX_Y_OFFSET);
+            knight.setSafePosition(knight.getPosition().x, knight.getPosition().y);
+        } else if (minPush == pushDown) {
+            float resolvedHitboxY = obstacle.y - entityHitbox.height;
+            knight.onCeilingCollision(resolvedHitboxY - Knight.HITBOX_Y_OFFSET);
+            knight.setSafePosition(knight.getPosition().x, knight.getPosition().y);
+        } else if (minPush == pushLeft) {
+            float resolvedHitboxX = obstacle.x - entityHitbox.width;
+            knight.onWallCollision(resolvedHitboxX - Knight.HITBOX_X_OFFSET);
+        } else {
+            float resolvedHitboxX = obstacle.x + obstacle.width;
+            knight.onWallCollision(resolvedHitboxX - Knight.HITBOX_X_OFFSET);
+        }
+
+        // wall proximity check
+        if (isAdjacentToWall(knight.getBounds())) {
+            knight.setHittingWall(true);
+        }
+
+        // floor proximity check
+        if(isOnFloor(knight.getBounds())) {
+            knight.setGrounded(true);
+        }
+
     }
 
     /**

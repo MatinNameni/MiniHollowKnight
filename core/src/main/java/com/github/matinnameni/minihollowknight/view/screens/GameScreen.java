@@ -46,6 +46,7 @@ public class GameScreen implements Screen {
     // --- World ---
     private Knight knight;
     private TiledGameMap gameMap;
+    private TiledMapAssetBundle mapAssets;
 
     // --- HUD ---
     private GameHud gameHud;
@@ -69,7 +70,7 @@ public class GameScreen implements Screen {
 
     public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
                       KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets,
-                      EnemiesAssetsManager enemiesAssets) {
+                      TiledMapAssetBundle mapAssets, EnemiesAssetsManager enemiesAssets) {
         this.navigator = navigator;
         this.gameData = gameData;
         this.settings = settings;
@@ -77,6 +78,7 @@ public class GameScreen implements Screen {
         this.controller = new GameScreenController(navigator, settings, gameData, knight, enemiesAssets);
         this.gameHud = new GameHud(knight, hudAssets);
         this.menuAssets = menuAssets;
+        this.mapAssets = mapAssets;
     }
 
     // --- Screen ---
@@ -101,8 +103,8 @@ public class GameScreen implements Screen {
         // Load the Tiled map
         GameEnvironment currentEnvironment = GameEnvironment.fromId(gameData.currentEnvironment);
         gameMap = (currentEnvironment == null) ?
-            MapLoader.loadMap(GameEnvironment.FORGOTTEN_CROSSROADS) :
-            MapLoader.loadMap(currentEnvironment);
+            MapLoader.loadMap(GameEnvironment.FORGOTTEN_CROSSROADS, mapAssets) :
+            MapLoader.loadMap(currentEnvironment, mapAssets);
         controller.setGameMap(gameMap);
 
         // Initialize knight from save data
@@ -181,6 +183,11 @@ public class GameScreen implements Screen {
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
+
+        // Doors
+        for (Door door : gameMap.getDoors()) {
+            door.render(batch);
+        }
 
         // Enemies
         for (Enemy enemy : controller.getEnemies()) {
@@ -311,6 +318,20 @@ public class GameScreen implements Screen {
         shapeRenderer.setColor(Color.WHITE);
         for (Rectangle collider : gameMap.getColliders()) {
             shapeRenderer.rect(collider.x, collider.y, collider.width, collider.height);
+        }
+
+        // Draw doors collisions
+        shapeRenderer.setColor(Color.WHITE);
+        for (Door door : gameMap.getDoors()) {
+            if (door.isSolid()) {
+                shapeRenderer.rect(door.x, door.y, door.width, door.height);
+            }
+        }
+
+        // Draw arenas
+        shapeRenderer.setColor(Color.WHITE);
+        for (Arena arena : gameMap.getArenas()) {
+            shapeRenderer.rect(arena.x, arena.y, arena.width, arena.height);
         }
 
         // Draw attack hitbox if attacking
