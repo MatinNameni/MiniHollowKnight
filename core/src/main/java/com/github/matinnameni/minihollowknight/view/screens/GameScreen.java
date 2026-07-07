@@ -75,7 +75,7 @@ public class GameScreen implements Screen {
         this.gameData = gameData;
         this.settings = settings;
         this.knight = new Knight(knightAssets, settings);
-        this.controller = new GameScreenController(navigator, settings, gameData, knight, enemiesAssets);
+        this.controller = new GameScreenController(knight, enemiesAssets);
         this.gameHud = new GameHud(knight, hudAssets);
         this.menuAssets = menuAssets;
         this.mapAssets = mapAssets;
