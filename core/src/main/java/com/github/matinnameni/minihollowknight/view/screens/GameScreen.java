@@ -27,6 +27,7 @@ import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
 import com.github.matinnameni.minihollowknight.view.hud.DisplayTextOverlay;
 import com.github.matinnameni.minihollowknight.view.hud.GameHud;
 import com.github.matinnameni.minihollowknight.view.hud.PauseOverlay;
+import com.github.matinnameni.minihollowknight.view.renderer.KnightRenderer;
 
 /**
  * The main gameplay screen.
@@ -45,6 +46,7 @@ public class GameScreen implements Screen {
 
     // --- World ---
     private Knight knight;
+    private KnightRenderer knightRenderer;
     private TiledGameMap gameMap;
     private TiledMapAssetBundle mapAssets;
 
@@ -75,6 +77,7 @@ public class GameScreen implements Screen {
         this.gameData = gameData;
         this.settings = settings;
         this.knight = new Knight(knightAssets, settings);
+        this.knightRenderer = new KnightRenderer(knight, knightAssets);
         this.controller = new GameScreenController(knight, enemiesAssets);
         this.gameHud = new GameHud(knight, hudAssets);
         this.menuAssets = menuAssets;
@@ -200,7 +203,7 @@ public class GameScreen implements Screen {
         }
 
         // Knight
-        knight.render(batch);
+        knightRenderer.render(batch);
 
         // Projectiles
         for (Projectile projectile : controller.getProjectiles()) {
@@ -213,7 +216,7 @@ public class GameScreen implements Screen {
 
         // Knight effects
         batch.begin();
-        knight.renderEffects(batch);
+        knightRenderer.renderEffects(batch);
         batch.end();
 
         // Debug overlay

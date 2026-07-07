@@ -2,10 +2,9 @@ package com.github.matinnameni.minihollowknight.controller;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
-import com.github.matinnameni.minihollowknight.controller.system.*;
 import com.github.matinnameni.minihollowknight.controller.system.CameraSystem;
-import com.github.matinnameni.minihollowknight.controller.system.CollisionSystem;
 import com.github.matinnameni.minihollowknight.controller.system.CombatSystem;
+import com.github.matinnameni.minihollowknight.controller.system.CollisionSystem;
 import com.github.matinnameni.minihollowknight.controller.system.EnemySystem;
 import com.github.matinnameni.minihollowknight.controller.system.KnightPhysicsSystem;
 import com.github.matinnameni.minihollowknight.controller.system.ProjectileSystem;
@@ -34,6 +33,7 @@ public class GameScreenController implements EventListener {
     private final EnemiesAssetsManager enemiesAssets;
 
     // --- Subsystems ---
+    private final KnightInputProcessor knightInputProcessor;
     private final CollisionSystem collisionSystem;
     private final KnightPhysicsSystem knightPhysicsSystem;
     private final EnemySystem enemySystem;
@@ -47,6 +47,7 @@ public class GameScreenController implements EventListener {
         this.enemiesAssets = enemiesAssets;
 
         // Build subsystems
+        this.knightInputProcessor = new KnightInputProcessor(knight, knight.getSettings());
         this.collisionSystem = new CollisionSystem();
         this.knightPhysicsSystem = new KnightPhysicsSystem(collisionSystem);
         this.enemySystem = new EnemySystem(collisionSystem, enemiesAssets);
@@ -98,24 +99,27 @@ public class GameScreenController implements EventListener {
             knight.setGrounded(true);
         }
 
-        // 6. Knight logic update
+        // 6. Process player input
+        knightInputProcessor.processInput(delta);
+
+        // 7. Knight logic update (timers, state machine, physics)
         knight.update(delta);
 
-        // 7. Projectiles
+        // 8. Projectiles
         projectileSystem.updateProjectiles(delta);
         projectileSystem.resolveProjectilesHit(enemySystem.getEnemies(), knight);
 
-        // 8. Enemies
+        // 9. Enemies
         enemySystem.updateEnemies(delta, knight);
 
-        // 9. Knight and enemy contact damage
+        // 10. Knight ↔ enemy contact damage
         combatSystem.resolveKnightEnemyContact(knight, enemySystem.getEnemies());
 
-        // 10. Lasers
+        // 11. Lasers
         enemySystem.updateLasers(delta);
         combatSystem.resolveLaserKnightContact(knight, enemySystem.getLasers());
 
-        // 11. False Knight AI + attack hitboxes
+        // 12. False Knight AI + attack hitboxes
         FalseKnight falseKnight = enemySystem.getActiveFalseKnight();
         enemySystem.updateFalseKnightAI(delta, knight);
 
@@ -133,17 +137,17 @@ public class GameScreenController implements EventListener {
 
         combatSystem.resolveFalseKnightAttackHitboxes(knight, falseKnight);
 
-        // 12. Doors
+        // 13. Doors
         if (gameMap != null) {
             worldSystem.updateDoors(delta, knight, gameMap, knightPhysicsSystem);
         }
 
-        // 13. Camera
+        // 14. Camera
         if (gameMap != null) {
             cameraSystem.updateCamera(delta, camera, knight, gameMap);
 
             // Arena boss-fight start check
-            for (Arena arena : gameMap.getArenas()) {
+            for (var arena : gameMap.getArenas()) {
                 if (knight.getBounds().overlaps(arena) && arena.contains(knight.getBounds())) {
                     if (falseKnight != null && !falseKnight.isFightStarted() &&
                         arena.haveBoss && arena.arenaBossType == BossType.FALSE_KNIGHT) {
@@ -182,7 +186,7 @@ public class GameScreenController implements EventListener {
         } else if (event == GameEvent.PLAYER_NAIL_HIT && payload instanceof Enemy) {
             combatSystem.resolveNailHitOnEnemy(knight, (Enemy) payload);
         } else if (event == GameEvent.FALSE_KNIGHT_FIGHT_STARTED) {
-            worldSystem.setDisplayText(com.github.matinnameni.minihollowknight.model.Lang.get("boss.falseKnight"));
+            worldSystem.setDisplayText(Lang.get("boss.falseKnight"));
             TiledGameMap gameMap = collisionSystem.getGameMap();
             if (gameMap != null) {
                 worldSystem.closeAllDoors(gameMap);

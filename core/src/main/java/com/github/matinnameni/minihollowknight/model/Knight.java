@@ -1,9 +1,6 @@
 package com.github.matinnameni.minihollowknight.model;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.event.EventBus;
@@ -22,7 +19,7 @@ public class Knight implements Entity {
     public static final float WIDTH = 200f;
     public static final float HEIGHT = 100f;
 
-     // Knight hitbox
+    // Knight hitbox
     public static final float HITBOX_WIDTH = 30f;
     public static final float HITBOX_HEIGHT = 50f;
 
@@ -89,7 +86,6 @@ public class Knight implements Entity {
     private boolean facingRight = true;
     private boolean canDoubleJump = true;
     private boolean canDash = true;
-    private boolean jumpKeyHeld = false;
 
     // --- Combat ---
     private Direction attackDirection = Direction.RIGHT;
@@ -144,36 +140,8 @@ public class Knight implements Entity {
             return;
         }
 
-        boolean inputLocked = (state == KnightState.DASHING)
-            || (state == KnightState.HIT)
-            || (state == KnightState.VENGEFUL_SPIRIT)
-            || (state == KnightState.HOWLING_WRAITHS);
-
-        if (!inputLocked) {
-            handleInput(deltaTime);
-        }
-
         updateState(deltaTime);
         applyPhysics(deltaTime);
-    }
-
-    @Override
-    public void render(SpriteBatch batch) {
-        Animation<TextureRegion> animation = getCurrentAnimation();
-        if (animation == null) return;
-
-        TextureRegion frame = animation.getKeyFrame(stateTime);
-
-        // Blink effect during invincibility frames
-        if (invincibilityTimer > 0f && shouldSkipRenderFrame()) {
-            return;
-        }
-
-        batch.draw(frame,
-            position.x, position.y,
-            WIDTH / 2f, 0,
-            WIDTH, HEIGHT,
-            facingRight ? -1 : 1, 1, 0);
     }
 
     @Override
@@ -184,7 +152,13 @@ public class Knight implements Entity {
     @Override
     public Rectangle getBounds() {
         return new Rectangle(position.x + HITBOX_X_OFFSET, position.y + HITBOX_Y_OFFSET,
-                                HITBOX_WIDTH, HITBOX_HEIGHT);
+            HITBOX_WIDTH, HITBOX_HEIGHT);
+    }
+
+
+    @Override
+    public void render(SpriteBatch batch) {
+        // Rendering is handled by KnightRenderer
     }
 
     // --- Game data load/save ---
@@ -245,118 +219,9 @@ public class Knight implements Entity {
         }
     }
 
-    // --- Input Handler ---
-
-    private void handleInput(float deltaTime) {
-        // Focus
-        if(Gdx.input.isKeyPressed(settings.getKeyFocus()) && canFocus()) {
-            if (state != KnightState.FOCUSING) {
-                enterState(KnightState.FOCUSING);
-                focusTimer = 0f;
-                velocity.x = 0f;
-                velocity.y = 0f;
-                EventBus.getInstance().publish(GameEvent.PLAYER_FOCUS_START);
-            }
-            return; // blocking other inputs
-        }
-
-        // Released focus key while focusing
-        if(state == KnightState.FOCUSING) {
-            cancelFocus();
-        }
-
-        // Quick cast
-        if(Gdx.input.isKeyJustPressed(settings.getKeyCast())) {
-            if (Gdx.input.isKeyPressed(settings.getKeyUp())) {
-                if(canCastHowlingWraiths()) {
-                    castHowlingWraiths();
-                }
-
-            } else if (canCastVengefulSpirit()) {
-                castVengefulSpirit();
-            }
-            return; // blocking other inputs
-        }
-
-        // Attack
-        if(Gdx.input.isKeyJustPressed(settings.getKeyAttack()) && canAttack()) {
-            startAttack();
-            return;
-        }
-
-        // Dash
-        if (Gdx.input.isKeyJustPressed(settings.getKeyDash()) && canDash()) {
-            if(!grounded && !hittingWall) { canDash = false; }
-            startDash();
-            return;
-        }
-
-        // Jump
-        if (Gdx.input.isKeyJustPressed(settings.getKeyJump())) {
-            if (grounded) {
-                velocity.y = JUMP_INITIAL_VELOCITY;
-                grounded = false;
-                canDoubleJump = true;
-                jumpKeyHeld = true;
-                enterState(KnightState.JUMPING);
-            } else if(hittingWall) {
-                velocity.y = JUMP_INITIAL_VELOCITY;
-                velocity.x = facingRight ? -WALL_JUMP_INITIAL_VELOCITY : WALL_JUMP_INITIAL_VELOCITY;
-                hittingWall = false;
-                facingRight = !facingRight;
-                canDoubleJump = true;
-                jumpKeyHeld = true;
-                enterState(KnightState.WALL_JUMP);
-            } else if (canDoubleJump) {
-                velocity.y = DOUBLE_JUMP_INITIAL_VELOCITY;
-                canDoubleJump = false;
-                EventBus.getInstance().publish(GameEvent.PLAYER_DOUBLE_JUMP);
-                enterState(KnightState.DOUBLE_JUMPING);
-            }
-        }
-
-        if (jumpKeyHeld && !Gdx.input.isKeyPressed(settings.getKeyJump())) {
-            jumpKeyHeld = false;
-            if (velocity.y > 0f &&
-                (state == KnightState.JUMPING || state == KnightState.WALL_JUMP)) {
-                velocity.y *= JUMP_CUT_MULTIPLIER;
-            }
-        }
-
-        // movement
-        if (state != KnightState.WALL_JUMP) {
-            if (state == KnightState.ATTACKING) {
-                if (grounded) {
-                    // root the knight on the ground during the slash
-                    velocity.x = 0f;
-                } else {
-                    float moveInput = 0f;
-                    if (Gdx.input.isKeyPressed(settings.getKeyLeft()))  moveInput -= 1f;
-                    if (Gdx.input.isKeyPressed(settings.getKeyRight())) moveInput += 1f;
-                    velocity.x = moveInput * MOVE_SPEED;
-                }
-            } else {
-                float moveInput = 0f;
-                if (Gdx.input.isKeyPressed(settings.getKeyLeft()))  moveInput -= 1f;
-                if (Gdx.input.isKeyPressed(settings.getKeyRight())) moveInput += 1f;
-
-                velocity.x = moveInput * MOVE_SPEED;
-
-                if (moveInput != 0f) {
-                    facingRight = moveInput > 0f;
-                    if (grounded && state != KnightState.RUNNING) {
-                        enterState(KnightState.RUNNING);
-                    }
-                } else if (grounded && state == KnightState.RUNNING) {
-                    enterState(KnightState.IDLE);
-                }
-            }
-        }
-    }
-
     // --- Focus ---
 
-    private boolean canFocus() {
+    public boolean canFocus() {
         return grounded
             && state != KnightState.ATTACKING
             && state != KnightState.DASHING
@@ -376,7 +241,8 @@ public class Knight implements Entity {
         enterState(KnightState.IDLE);
     }
 
-    private void cancelFocus() {
+    /** Cancels an in-progress focus. */
+    public void cancelFocus() {
         focusTimer = 0f;
         consumedSoul = 0f;
         EventBus.getInstance().publish(GameEvent.PLAYER_FOCUS_CANCEL);
@@ -385,35 +251,30 @@ public class Knight implements Entity {
 
     // --- Attack ---
 
-    private boolean canAttack() {
+    public boolean canAttack() {
         return attackCooldownTimer <= 0 &&
             state != KnightState.FOCUSING &&
             state != KnightState.DASHING;
     }
 
-    private void startAttack() {
+    /** Starts a nail attack. The attack direction should be set by the caller. */
+    public void startAttack() {
         attackCooldownTimer = ATTACK_DURATION;
         attackTimer = 0f;
-        attackDirection = resolveAttackDirection();
         enterState(KnightState.ATTACKING);
-    }
-
-    private Direction resolveAttackDirection() {
-        if (Gdx.input.isKeyPressed(settings.getKeyDown()) && !grounded) { return Direction.DOWN; }
-        if (Gdx.input.isKeyPressed(settings.getKeyUp())) { return Direction.UP; }
-        return facingRight ? Direction.RIGHT : Direction.LEFT;
     }
 
     // --- Dash ---
 
-    private boolean canDash() {
+    public boolean canDash() {
         return canDash
             && dashCooldownTimer <= 0f
             && state != KnightState.FOCUSING
             && state != KnightState.ATTACKING;
     }
 
-    private void startDash() {
+    /** Starts a dash in the current facing direction. */
+    public void startDash() {
         dashCooldownTimer = DASH_COOLDOWN;
         velocity.y = 0f;
         velocity.x = (facingRight ? 1f : -1f) * DASH_SPEED;
@@ -423,12 +284,13 @@ public class Knight implements Entity {
 
     // --- Spells ---
 
-    private boolean canCastHowlingWraiths() {
+    public boolean canCastHowlingWraiths() {
         return howlingWraithsCooldownTimer <= 0
             && soul >= HOWLING_WRAITHS_SOUL_COST;
     }
 
-    private void castHowlingWraiths() {
+    /** Casts Howling Wraiths and publishes the spawn event. */
+    public void castHowlingWraiths() {
         howlingWraithsCooldownTimer = HOWLING_WRAITHS_COOLDOWN;
         enterState(KnightState.HOWLING_WRAITHS);
         velocity.x = 0;
@@ -442,12 +304,13 @@ public class Knight implements Entity {
             new HowlingWraiths.SpawnInfo(spawnX, spawnY, assets));
     }
 
-    private boolean canCastVengefulSpirit() {
+    public boolean canCastVengefulSpirit() {
         return vengefulSpiritCooldownTimer <= 0
             && soul >= VENGEFUL_SPIRIT_SOUL_COST;
     }
 
-    private void castVengefulSpirit() {
+    /** Casts Vengeful Spirit and publishes the spawn event. */
+    public void castVengefulSpirit() {
         vengefulSpiritCooldownTimer = VENGEFUL_SPIRIT_COOLDOWN;
         enterState(KnightState.VENGEFUL_SPIRIT);
         velocity.x = 0;
@@ -465,7 +328,8 @@ public class Knight implements Entity {
 
     // --- State ---
 
-    private void enterState(KnightState newState) {
+    /** Transitions to a new state and resets {@link #stateTime}. */
+    public void enterState(KnightState newState) {
         this.state = newState;
         this.stateTime = 0f;
     }
@@ -480,6 +344,7 @@ public class Knight implements Entity {
                 if(!grounded) {
                     enterState(KnightState.FALLING);
                 }
+                break;
 
             case ATTACKING:
                 attackTimer += deltaTime;
@@ -592,7 +457,7 @@ public class Knight implements Entity {
         position.x += velocity.x * delta;
         position.y += velocity.y * delta;
 
-        // Reset ait abilities
+        // Reset air abilities
         if (grounded) {
             canDoubleJump = true;
             canDash = true;
@@ -707,143 +572,6 @@ public class Knight implements Entity {
         EventBus.getInstance().publish(GameEvent.PLAYER_SOUL_SPENT, amount);
     }
 
-    // --- Render ---
-
-    public void renderEffects(SpriteBatch batch) {
-        if(state == KnightState.ATTACKING) {
-            renderSlashEffect(batch);
-        } else if(state == KnightState.DASHING) {
-            renderDashEffect(batch);
-        } else if(state == KnightState.VENGEFUL_SPIRIT) {
-            renderBlastEffect(batch);
-        }
-    }
-
-    /** Helper method for the blinking effect that plays when the knight gets hit */
-    private boolean shouldSkipRenderFrame() {
-        return ((int) (invincibilityTimer * 8f) % 2) == 0;
-    }
-
-    private void renderSlashEffect(SpriteBatch batch) {
-        KnightAnimationType effectType;
-        switch (attackDirection) {
-            case UP:
-                effectType = KnightAnimationType.UP_SLASH_EFFECT;
-                break;
-            case DOWN:
-                effectType = KnightAnimationType.DOWN_SLASH_EFFECT;
-                break;
-            default:
-                effectType = KnightAnimationType.SLASH_EFFECT;
-                break;
-        }
-
-        Animation<TextureRegion> animation = assets.getAnimation(effectType);
-        if (animation == null) return;
-
-        TextureRegion frame = animation.getKeyFrame(stateTime);
-
-        float frameWidth = frame.getRegionWidth();
-        float frameHeight = frame.getRegionHeight();
-
-        float centerX = position.x + WIDTH / 2f;
-        float centerY;
-        switch (attackDirection) {
-            case UP:
-                centerY = position.y + HEIGHT;
-                break;
-            case DOWN:
-                centerY = position.y;
-                break;
-            default:
-                centerY = position.y + HEIGHT / 2f;
-                break;
-        }
-
-        batch.draw(frame,
-            centerX - frameWidth / 2f, centerY - frameHeight / 2f,
-            frameWidth / 2f, 0,
-            frameWidth, frameHeight,
-            facingRight ? -1 : 1, 1,
-            0f);
-    }
-
-    private void renderDashEffect(SpriteBatch batch) {
-        Animation<TextureRegion> animation = assets.getAnimation(KnightAnimationType.DASH_EFFECT);
-        if (animation == null) return;
-
-        TextureRegion frame = animation.getKeyFrame(stateTime);
-
-        float frameWidth = frame.getRegionWidth() / 2f;
-        float frameHeight = frame.getRegionHeight() / 2f;
-
-        float centerY = position.y + HEIGHT / 2f - DASH_EFFECT_Y_OFFSET;
-        float centerX;
-        if(facingRight) {
-            centerX = position.x + DASH_EFFECT_X_OFFSET;
-        } else {
-            centerX = position.x + WIDTH - DASH_EFFECT_X_OFFSET;
-        }
-
-        batch.draw(frame,
-            centerX - frameWidth / 2f, centerY - frameHeight / 2f,
-            frameWidth / 2f, 0,
-            frameWidth, frameHeight,
-            facingRight ? 1 : -1, 1,
-            0f);
-    }
-
-    private void renderBlastEffect(SpriteBatch batch) {
-        Animation<TextureRegion> animation = assets.getAnimation(KnightAnimationType.BLAST);
-        if (animation == null) return;
-
-        TextureRegion frame = animation.getKeyFrame(stateTime);
-
-        float frameWidth = frame.getRegionWidth();
-        float frameHeight = frame.getRegionHeight();
-
-        float centerY = position.y + HEIGHT / 2f;
-        float centerX;
-        if(facingRight) {
-            centerX = position.x + WIDTH;
-        } else {
-            centerX = position.x;
-        }
-
-        batch.draw(frame,
-            centerX - frameWidth / 2f, centerY - frameHeight / 2f,
-            frameWidth / 2f, 0,
-            frameWidth, frameHeight,
-            facingRight ? 1 : -1, 1,
-            0f);
-    }
-
-    private Animation<TextureRegion> getCurrentAnimation() {
-        switch (state) {
-            case IDLE: return assets.getAnimation(KnightAnimationType.IDLE);
-            case RUNNING: return assets.getAnimation(KnightAnimationType.RUN);
-            case JUMPING: return assets.getAnimation(KnightAnimationType.AIR_BORNE);
-            case DOUBLE_JUMPING: return assets.getAnimation(KnightAnimationType.DOUBLE_JUMP);
-            case FALLING: return assets.getAnimation(KnightAnimationType.FALL);
-            case WALL_SLIDE: return assets.getAnimation(KnightAnimationType.WALL_SLIDE);
-            case WALL_JUMP: return assets.getAnimation(KnightAnimationType.WALL_JUMP);
-            case DASHING: return assets.getAnimation(KnightAnimationType.DASH);
-            case FOCUSING: return assets.getAnimation(KnightAnimationType.FOCUS);
-            case HIT: return assets.getAnimation(KnightAnimationType.IDLE);
-            case LANDING: return assets.getAnimation(KnightAnimationType.LANDING);
-            case VENGEFUL_SPIRIT: return assets.getAnimation(KnightAnimationType.FIREBALL_CAST);
-            case HOWLING_WRAITHS: return assets.getAnimation(KnightAnimationType.SCREAM);
-            case DEAD: return assets.getAnimation(KnightAnimationType.DEATH);
-            case ATTACKING:
-                switch (attackDirection) {
-                    case UP: return assets.getAnimation(KnightAnimationType.UP_SLASH);
-                    case DOWN: return assets.getAnimation(KnightAnimationType.DOWN_SLASH);
-                    default: return assets.getAnimation(KnightAnimationType.SLASH);
-                }
-            default: return assets.getAnimation(KnightAnimationType.IDLE);
-        }
-    }
-
     // --- External collision hooks ---
 
     public void setGrounded(boolean grounded) {
@@ -893,6 +621,10 @@ public class Knight implements Entity {
         return state;
     }
 
+    public float getStateTime() {
+        return stateTime;
+    }
+
     public boolean isFacingRight() {
         return facingRight;
     }
@@ -901,8 +633,16 @@ public class Knight implements Entity {
         return grounded;
     }
 
+    public boolean isHittingWall() {
+        return hittingWall;
+    }
+
     public boolean isInvincible() {
         return invincibilityTimer > 0f;
+    }
+
+    public float getInvincibilityTimer() {
+        return invincibilityTimer;
     }
 
     public float isFreeze() {
@@ -923,6 +663,10 @@ public class Knight implements Entity {
 
     public boolean isFocusing() {
         return state == KnightState.FOCUSING;
+    }
+
+    public boolean canDoubleJump() {
+        return canDoubleJump;
     }
 
     public int getMasks() {
@@ -955,5 +699,37 @@ public class Knight implements Entity {
 
     public Vector2 getLastSafePosition() {
         return lastSafePosition;
+    }
+
+    // --- Setters ---
+
+    public void setFacingRight(boolean facingRight) {
+        this.facingRight = facingRight;
+    }
+
+    public void setCanDoubleJump(boolean canDoubleJump) {
+        this.canDoubleJump = canDoubleJump;
+    }
+
+    public void setCanDash(boolean canDash) {
+        this.canDash = canDash;
+    }
+
+    public void setAttackDirection(Direction attackDirection) {
+        this.attackDirection = attackDirection;
+    }
+
+    public void setFocusTimer(float focusTimer) {
+        this.focusTimer = focusTimer;
+    }
+
+    /** Returns the Settings reference (used by KnightInputProcessor for key bindings). */
+    public Settings getSettings() {
+        return settings;
+    }
+
+    /** Returns the asset bundle (used for spell spawn events). */
+    public KnightAssetBundle getAssets() {
+        return assets;
     }
 }
