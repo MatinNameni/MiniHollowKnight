@@ -114,6 +114,7 @@ public class GameScreenController implements EventListener {
 
         // 10. Knight ↔ enemy contact damage
         combatSystem.resolveKnightEnemyContact(knight, enemySystem.getEnemies());
+        combatSystem.resolveSharpShadowDashDamage(knight, enemySystem.getEnemies());
 
         // 11. Lasers
         enemySystem.updateLasers(delta);
@@ -179,10 +180,10 @@ public class GameScreenController implements EventListener {
     public void onEvent(GameEvent event, Object payload) {
         if (event == GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST && payload instanceof VengefulSpirit.SpawnInfo) {
             VengefulSpirit.SpawnInfo info = (VengefulSpirit.SpawnInfo) payload;
-            projectileSystem.addProjectile(new VengefulSpirit(info.x, info.y, info.direction, info.assets));
+            projectileSystem.addProjectile(new VengefulSpirit(info.x, info.y, info.direction, info.assets, info.damageMultiplier));
         } else if (event == GameEvent.PLAYER_HOWLING_WRAITHS_CAST && payload instanceof HowlingWraiths.SpawnInfo) {
             HowlingWraiths.SpawnInfo info = (HowlingWraiths.SpawnInfo) payload;
-            projectileSystem.addProjectile(new HowlingWraiths(info.x, info.y, info.assets));
+            projectileSystem.addProjectile(new HowlingWraiths(info.x, info.y, info.assets, info.damageMultiplier));
         } else if (event == GameEvent.PLAYER_NAIL_HIT && payload instanceof Enemy) {
             combatSystem.resolveNailHitOnEnemy(knight, (Enemy) payload);
         } else if (event == GameEvent.FALSE_KNIGHT_FIGHT_STARTED) {

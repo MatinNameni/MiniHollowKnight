@@ -27,14 +27,20 @@ public class HowlingWraiths implements Projectile {
     private final Vector2 position = new Vector2();
     private float stateTime = 0f;
     private boolean isDead;
+    private final float damageMultiplier;
 
     // --- Dependencies ---
 
     private KnightAssetBundle assets;
 
     public HowlingWraiths(float x, float y, KnightAssetBundle assets) {
+        this(x, y, assets, 1f);
+    }
+
+    public HowlingWraiths(float x, float y, KnightAssetBundle assets, float damageMultiplier) {
         this.position.set(x, y);
         this.assets = assets;
+        this.damageMultiplier = damageMultiplier;
     }
 
     @Override
@@ -75,7 +81,7 @@ public class HowlingWraiths implements Projectile {
     @Override
     public Rectangle getBounds() {
         return new Rectangle(
-          position.x - HITBOX_WIDTH / 2, position.y - HITBOX_HEIGHT / 2,
+            position.x - HITBOX_WIDTH / 2, position.y - HITBOX_HEIGHT / 2,
             HITBOX_WIDTH, HITBOX_HEIGHT
         );
     }
@@ -87,7 +93,7 @@ public class HowlingWraiths implements Projectile {
 
     @Override
     public float getDamage() {
-        return Knight.VENGEFUL_SPIRIT_DAMAGE_PER_FRAME;
+        return Knight.HOWLING_WRAITHS_DAMAGE_PER_FRAME * damageMultiplier;
     }
 
     @Override
@@ -130,11 +136,17 @@ public class HowlingWraiths implements Projectile {
         public final float x;
         public final float y;
         public final KnightAssetBundle assets;
+        public final float damageMultiplier;
 
         public SpawnInfo(float x, float y, KnightAssetBundle assets) {
+            this(x, y, assets, 1f);
+        }
+
+        public SpawnInfo(float x, float y, KnightAssetBundle assets, float damageMultiplier) {
             this.x = x;
             this.y = y;
             this.assets = assets;
+            this.damageMultiplier = damageMultiplier;
         }
     }
 }

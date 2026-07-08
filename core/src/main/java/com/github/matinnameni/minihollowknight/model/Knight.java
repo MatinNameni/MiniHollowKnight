@@ -7,9 +7,13 @@ import com.github.matinnameni.minihollowknight.event.EventBus;
 import com.github.matinnameni.minihollowknight.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.asset.KnightAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.enums.CharmType;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightAnimationType;
 import com.github.matinnameni.minihollowknight.model.enums.KnightState;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /** The player-controlled Knight entity. */
 public class Knight implements Entity {
@@ -121,6 +125,12 @@ public class Knight implements Entity {
     private final KnightAssetBundle assets;
     private final Settings settings;
 
+    // --- Charms ---
+    private CharmEffects charmEffects = CharmEffects.NONE;
+
+    // --- Sharp Shadow ---
+    private final Set<Enemy> dashHitEnemiesThisDash = new HashSet<>();
+
     // --- Safe Spots ---
     private Vector2 lastSafePosition = new Vector2();
 
@@ -171,6 +181,7 @@ public class Knight implements Entity {
         this.masks = data.masks;
         this.maxMasks = data.maxMasks;
         this.soul = data.soul;
+        applyEquippedCharms(data.equippedCharms);
 
         // Reset runtime state
         state = KnightState.IDLE;
@@ -191,6 +202,22 @@ public class Knight implements Entity {
         data.masks = masks;
         data.maxMasks = maxMasks;
         data.soul = soul;
+    }
+
+    // --- Charms ---
+
+    /**
+     * Recomputes the active {@link CharmEffects} from the given equipped-charm set.
+     * Should be called whenever the equipped charms change (on load and whenever
+     * the player equips/unequips a charm from the inventory menu).
+     */
+    public void applyEquippedCharms(Set<CharmType> equippedCharms) {
+        this.charmEffects = CharmEffects.of(equippedCharms);
+    }
+
+    /** Returns the currently active charm effects. */
+    public CharmEffects getCharmEffects() {
+        return charmEffects;
     }
 
     // --- Timer ---
@@ -257,9 +284,14 @@ public class Knight implements Entity {
             state != KnightState.DASHING;
     }
 
+    /** Returns the current effective attack duration/cooldown. */
+    public float getEffectiveAttackDuration() {
+        return ATTACK_DURATION * charmEffects.getAttackDurationMultiplier();
+    }
+
     /** Starts a nail attack. The attack direction should be set by the caller. */
     public void startAttack() {
-        attackCooldownTimer = ATTACK_DURATION;
+        attackCooldownTimer = getEffectiveAttackDuration();
         attackTimer = 0f;
         enterState(KnightState.ATTACKING);
     }
@@ -273,13 +305,40 @@ public class Knight implements Entity {
             && state != KnightState.ATTACKING;
     }
 
+    /** Returns the current effective dash cooldown. */
+    public float getEffectiveDashCooldown() {
+        return DASH_COOLDOWN * charmEffects.getDashCooldownMultiplier();
+    }
+
+    /** Returns the current effective dash duration. */
+    public float getEffectiveDashDuration() {
+        return DASH_DURATION * charmEffects.getDashDurationMultiplier();
+    }
+
     /** Starts a dash in the current facing direction. */
     public void startDash() {
-        dashCooldownTimer = DASH_COOLDOWN;
+        dashCooldownTimer = getEffectiveDashCooldown();
         velocity.y = 0f;
         velocity.x = (facingRight ? 1f : -1f) * DASH_SPEED;
         enterState(KnightState.DASHING);
+        dashHitEnemiesThisDash.clear();
         EventBus.getInstance().publish(GameEvent.PLAYER_DASH);
+    }
+
+    /**
+     * @return true while the Knight should be immune to enemy contact damage and pass through enemies.
+     */
+    public boolean isDashingThroughEnemies() {
+        return state == KnightState.DASHING && charmEffects.hasSharpShadow();
+    }
+
+    /**
+     * Records that {@code enemy} was already damaged by the current Sharp Shadow dash pass,
+     * so it isn't hit multiple times by the same dash.
+     * @return true if this enemy had not been hit yet this dash.
+     */
+    public boolean tryMarkDashHit(Enemy enemy) {
+        return dashHitEnemiesThisDash.add(enemy);
     }
 
     // --- Spells ---
@@ -301,7 +360,7 @@ public class Knight implements Entity {
         float spawnY = position.y + HEIGHT / 2f + HOWLING_WRAITHS_OFFSET;
 
         EventBus.getInstance().publish(GameEvent.PLAYER_HOWLING_WRAITHS_CAST,
-            new HowlingWraiths.SpawnInfo(spawnX, spawnY, assets));
+            new HowlingWraiths.SpawnInfo(spawnX, spawnY, assets, charmEffects.getSpellDamageMultiplier()));
     }
 
     public boolean canCastVengefulSpirit() {
@@ -323,7 +382,7 @@ public class Knight implements Entity {
         Direction fireDir = facingRight ? Direction.RIGHT : Direction.LEFT;
 
         EventBus.getInstance().publish(GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST,
-            new VengefulSpirit.SpawnInfo(spawnX, spawnY, fireDir, assets));
+            new VengefulSpirit.SpawnInfo(spawnX, spawnY, fireDir, assets, charmEffects.getSpellDamageMultiplier()));
     }
 
     // --- State ---
@@ -348,7 +407,7 @@ public class Knight implements Entity {
 
             case ATTACKING:
                 attackTimer += deltaTime;
-                if (attackTimer >= ATTACK_DURATION) {
+                if (attackTimer >= getEffectiveAttackDuration()) {
                     attackTimer = 0f;
                     enterState(resolvePostActionState());
                 }
@@ -356,9 +415,10 @@ public class Knight implements Entity {
 
             case DASHING:
                 dashTimer += deltaTime;
-                if (dashTimer >= DASH_DURATION) {
+                if (dashTimer >= getEffectiveDashDuration()) {
                     dashTimer = 0f;
                     velocity.x = 0f;
+                    dashHitEnemiesThisDash.clear();
                     enterState(grounded ? KnightState.IDLE : KnightState.FALLING);
                 }
                 break;
@@ -412,7 +472,8 @@ public class Knight implements Entity {
                 break;
 
             case FOCUSING:
-                float ratio = deltaTime / FOCUS_CHANNEL_TIME;
+                float effectiveFocusTime = FOCUS_CHANNEL_TIME * charmEffects.getFocusChannelTimeMultiplier();
+                float ratio = deltaTime / effectiveFocusTime;
                 float consumedThisFrame = FOCUS_SOUL_COST * ratio;
                 consumedSoul += consumedThisFrame;
                 float remainingSoul = FOCUS_SOUL_COST - consumedSoul;
@@ -423,7 +484,7 @@ public class Knight implements Entity {
                     break;
                 }
                 focusTimer += deltaTime;
-                if (focusTimer >= FOCUS_CHANNEL_TIME) {
+                if (focusTimer >= effectiveFocusTime) {
                     completeFocus();
                 }
                 break;

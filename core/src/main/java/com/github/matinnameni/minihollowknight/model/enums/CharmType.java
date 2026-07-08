@@ -4,23 +4,21 @@ package com.github.matinnameni.minihollowknight.model.enums;
  * All Charms in the game.
  */
 public enum CharmType {
-    SOUL_CATCHER (1, 2, "Soul Catcher"),
-    DASHMASTER (2, 2, "Dashmaster"),
-    UNBREAKABLE_STRENGTH(3, 2, "Unbreakable Strength"),
-    QUICK_SLASH (4, 3, "Quick Slash"),
-    QUICK_FOCUS (5, 3, "Quick Focus"),
-    HEAVY_BLOW (6, 2, "Heavy Blow"),
-    SHARP_SHADOW (7, 2, "Sharp Shadow"),
-    VOID_HEART (8, 1, "Void Heart");
+    SOUL_CATCHER (1, 1),
+    DASHMASTER (2, 1),
+    UNBREAKABLE_STRENGTH(3, 1),
+    QUICK_SLASH (4, 1),
+    QUICK_FOCUS (5, 1),
+    HEAVY_BLOW (6, 1),
+    SHARP_SHADOW (7, 1),
+    VOID_HEART (8, 1);
 
     public final int id;
     public final int notches;
-    public final String displayName;
 
-    CharmType(int id, int notches, String displayName) {
+    CharmType(int id, int notches) {
         this.id = id;
         this.notches = notches;
-        this.displayName = displayName;
     }
 
     public static CharmType fromId(int id) {

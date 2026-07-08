@@ -2,6 +2,7 @@ package com.github.matinnameni.minihollowknight.controller.system;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.github.matinnameni.minihollowknight.model.BreakableWall;
+import com.github.matinnameni.minihollowknight.model.CharmEffects;
 import com.github.matinnameni.minihollowknight.model.GridObject;
 import com.github.matinnameni.minihollowknight.model.Knight;
 import com.github.matinnameni.minihollowknight.model.Laser;
@@ -116,8 +117,13 @@ public class CombatSystem {
 
     /** Called via EventBus when the Knight's nail hits an enemy. */
     public void resolveNailHitOnEnemy(Knight knight, Enemy enemy) {
-        enemy.takeDamage(Knight.SLASH_DAMAGE, knight.getAttackDirection());
-        knight.gainSoul(Knight.SLASH_SOUL_GAIN);
+        CharmEffects charms = knight.getCharmEffects();
+
+        float damage = Knight.SLASH_DAMAGE * charms.getNailDamageMultiplier();
+        float soulGain = Knight.SLASH_SOUL_GAIN * charms.getSoulGainMultiplier();
+
+        enemy.takeDamage(damage, knight.getAttackDirection(), charms.getEnemyKnockbackMultiplier());
+        knight.gainSoul(soulGain);
 
         // pogo
         if (knight.getAttackDirection() == Direction.DOWN) {
@@ -130,6 +136,7 @@ public class CombatSystem {
     /** Resolves contact damage between the Knight and any living enemy. */
     public void resolveKnightEnemyContact(Knight knight, List<Enemy> enemies) {
         if (knight.isInvincible() || knight.isDead()) return;
+        if (knight.isDashingThroughEnemies()) return;
 
         Rectangle knightHitbox = knight.getBounds();
 
@@ -140,6 +147,28 @@ public class CombatSystem {
             Direction knockback = (knight.getBounds().x < enemy.getBounds().x) ? Direction.LEFT : Direction.RIGHT;
             knight.takeDamage(knockback);
             break;
+        }
+    }
+
+    /**
+     * Sharp Shadow: while the Knight dashes through enemies, damages every living enemy
+     * overlapping the Knight's hitbox.
+     */
+    public void resolveSharpShadowDashDamage(Knight knight, List<Enemy> enemies) {
+        if (!knight.isDashingThroughEnemies()) return;
+
+        Rectangle knightHitbox = knight.getBounds();
+        CharmEffects charms = knight.getCharmEffects();
+
+        for (Enemy enemy : enemies) {
+            if (enemy.isDead()) continue;
+            if (!knightHitbox.overlaps(enemy.getBounds())) continue;
+            if (!knight.tryMarkDashHit(enemy)) continue;
+
+            float damage = Knight.SLASH_DAMAGE * charms.getNailDamageMultiplier();
+            Direction knockback = (knight.getBounds().x < enemy.getBounds().x) ? Direction.LEFT : Direction.RIGHT;
+            enemy.takeDamage(damage, knockback, charms.getEnemyKnockbackMultiplier());
+            knight.gainSoul(Knight.SLASH_SOUL_GAIN * charms.getSoulGainMultiplier());
         }
     }
 

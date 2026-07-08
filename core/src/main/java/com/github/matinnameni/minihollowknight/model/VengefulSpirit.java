@@ -39,15 +39,21 @@ public class VengefulSpirit implements Projectile {
     private State state = State.FLYING;
     private float stateTime = 0f;
     private float lifetime = 0f;
+    private final float damageMultiplier;
 
     // --- Dependencies ---
 
     private KnightAssetBundle assets;
 
     public VengefulSpirit(float x, float y, Direction direction, KnightAssetBundle assets) {
+        this(x, y, direction, assets, 1f);
+    }
+
+    public VengefulSpirit(float x, float y, Direction direction, KnightAssetBundle assets, float damageMultiplier) {
         this.position.set(x, y);
         this.direction = (direction == Direction.LEFT) ? Direction.LEFT : Direction.RIGHT;
         this.assets = assets;
+        this.damageMultiplier = damageMultiplier;
     }
 
     // --- Projectile ---
@@ -122,7 +128,7 @@ public class VengefulSpirit implements Projectile {
 
     @Override
     public float getDamage() {
-        return Knight.VENGEFUL_SPIRIT_DAMAGE_PER_FRAME;
+        return Knight.VENGEFUL_SPIRIT_DAMAGE_PER_FRAME * damageMultiplier;
     }
 
     @Override
@@ -196,12 +202,18 @@ public class VengefulSpirit implements Projectile {
         public final float y;
         public final Direction direction;
         public final KnightAssetBundle assets;
+        public final float damageMultiplier;
 
         public SpawnInfo(float x, float y, Direction direction, KnightAssetBundle assets) {
+            this(x, y, direction, assets, 1f);
+        }
+
+        public SpawnInfo(float x, float y, Direction direction, KnightAssetBundle assets, float damageMultiplier) {
             this.x = x;
             this.y = y;
             this.direction = direction;
             this.assets = assets;
+            this.damageMultiplier = damageMultiplier;
         }
     }
 }

@@ -18,6 +18,17 @@ public abstract class Enemy implements Entity {
     /** Applies {@code damage} to this enemy's health. */
     public abstract void takeDamage(float damage, Direction knockbackDirection);
 
+    /**
+     * Applies {@code damage} to this enemy's health, scaling the resulting horizontal
+     * knockback velocity by {@code knockbackMultiplier}.
+     */
+    public void takeDamage(float damage, Direction knockbackDirection, float knockbackMultiplier) {
+        takeDamage(damage, knockbackDirection);
+        if (knockbackMultiplier != 1f) {
+            velocity.x *= knockbackMultiplier;
+        }
+    }
+
     /** @return true while the enemy's hitbox should be able to damage the player on contact. */
     public abstract boolean canDamagePlayer();
 
