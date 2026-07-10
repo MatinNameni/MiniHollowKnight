@@ -5,6 +5,8 @@ import com.github.matinnameni.minihollowknight.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.CharmCatalog;
 import com.github.matinnameni.minihollowknight.model.GameData;
 import com.github.matinnameni.minihollowknight.model.Knight;
+import com.github.matinnameni.minihollowknight.model.achievement.AchievementManager;
+import com.github.matinnameni.minihollowknight.model.enums.AchievementType;
 import com.github.matinnameni.minihollowknight.model.enums.CharmType;
 
 import java.util.EnumSet;
@@ -123,6 +125,12 @@ public class InventoryController {
             return false;
         }
         applyCharms();
+
+        // "Charmed" achievement
+        AchievementManager manager = AchievementManager.getInstance();
+        if (manager != null) {
+            manager.unlock(AchievementType.CHARMED);
+        }
         return true;
     }
 

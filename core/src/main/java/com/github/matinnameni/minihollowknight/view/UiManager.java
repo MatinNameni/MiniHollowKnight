@@ -4,12 +4,14 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
+import com.github.matinnameni.minihollowknight.controller.AchievementController;
 import com.github.matinnameni.minihollowknight.controller.AudioSettingsController;
 import com.github.matinnameni.minihollowknight.controller.KeyBindingsController;
 import com.github.matinnameni.minihollowknight.controller.SettingsController;
 import com.github.matinnameni.minihollowknight.database.DatabaseManager;
 import com.github.matinnameni.minihollowknight.model.Lang;
 import com.github.matinnameni.minihollowknight.model.Settings;
+import com.github.matinnameni.minihollowknight.model.achievement.AchievementManager;
 import com.github.matinnameni.minihollowknight.model.asset.*;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
 import com.github.matinnameni.minihollowknight.controller.MainMenuController;
@@ -29,6 +31,10 @@ public class UiManager implements ScreenNavigator {
     private boolean hudAssetsLoaded = false;
     private boolean tiledMapAssetsLoaded = false;
     private boolean charmAssetsLoaded = false;
+    private boolean achievementAssetsLoaded = false;
+
+    /** App-lifetime observer that turns gameplay events into achievement unlocks. */
+    private AchievementController achievementController;
 
     private GameScreen pausedGameScreen;
 
@@ -46,6 +52,7 @@ public class UiManager implements ScreenNavigator {
             instance.setGame(game);
             instance.initAssetRegistry();
             instance.initDatabaseAndSettings();
+            instance.initAchievements();
             instance.playMenuMusic();
         }
     }
@@ -61,6 +68,7 @@ public class UiManager implements ScreenNavigator {
         registry.register(new HudAssetBundle(registry.getManager()));
         registry.register(new TiledMapAssetBundle(registry.getManager()));
         registry.register(new CharmAssetBundle(registry.getManager()));
+        registry.register(new AchievementAssetBundle(registry.getManager()));
         EnemiesAssetsManager.getInstance(registry).initAssets();
     }
 
@@ -83,6 +91,12 @@ public class UiManager implements ScreenNavigator {
             settings = new Settings();
         }
         Lang.load(SupportedLanguage.fromShortName(settings.getLanguage()));
+    }
+
+    /** Initializes the global {@link AchievementManager}. */
+    private void initAchievements() {
+        AchievementManager.init(database);
+        achievementController = new AchievementController();
     }
 
     public void setScreen(Screen screen) {
@@ -170,6 +184,10 @@ public class UiManager implements ScreenNavigator {
 
     @Override
     public void goToMainMenu() {
+        AchievementManager manager = AchievementManager.getInstance();
+        if (manager != null) {
+            manager.clearActiveGameData();
+        }
         playMenuMusic();
         MainMenuController controller = new MainMenuController(this);
         setScreen(new MainMenuScreen(registry, settings, controller));
@@ -245,15 +263,21 @@ public class UiManager implements ScreenNavigator {
         ensureEnemiesAssetsLoaded();
         ensureTiledMapAssetsLoaded();
         ensureCharmAssetsLoaded();
+        ensureAchievementAssetsLoaded();
         stopMenuMusic();
+
+        AchievementManager manager = AchievementManager.getInstance();
+        if (manager != null) {
+            manager.setActiveGameData(data);
+        }
+
         KnightAssetBundle knightAssets = (KnightAssetBundle) registry.get(KnightAssetBundle.KEY);
         HudAssetBundle hudAssets = (HudAssetBundle) registry.get(HudAssetBundle.KEY);
-        CrawlidAssetBundle crawlidAssets = (CrawlidAssetBundle) registry.get(CrawlidAssetBundle.KEY);
-        MossflyAssetBundle mossflyAssets = (MossflyAssetBundle) registry.get(MossflyAssetBundle.KEY);
         TiledMapAssetBundle mapAssets = (TiledMapAssetBundle) registry.get(TiledMapAssetBundle.KEY);
         CharmAssetBundle charmAssets = (CharmAssetBundle) registry.get(CharmAssetBundle.KEY);
+        AchievementAssetBundle achievementAssets = (AchievementAssetBundle) registry.get(AchievementAssetBundle.KEY);
         setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets,
-            getMenuAssets(), mapAssets, EnemiesAssetsManager.getInstance(registry), charmAssets));
+            getMenuAssets(), mapAssets, EnemiesAssetsManager.getInstance(registry), charmAssets, achievementAssets));
     }
 
     /**
@@ -303,6 +327,16 @@ public class UiManager implements ScreenNavigator {
         }
     }
 
+    /**
+     * Loads the AchievementAssetBundle if it hasn't been loaded yet.
+     */
+    private void ensureAchievementAssetsLoaded() {
+        if (!achievementAssetsLoaded) {
+            registry.loadBundle(AchievementAssetBundle.KEY);
+            achievementAssetsLoaded = true;
+        }
+    }
+
     @Override
     public void goToGuide() {
         // TODO: write this method after implementing GuideScreen
@@ -310,7 +344,15 @@ public class UiManager implements ScreenNavigator {
 
     @Override
     public void goToAchievements() {
-        // TODO: write this method after implementing AchievementsScreen
+        ensureAchievementAssetsLoaded();
+        AchievementAssetBundle achievementAssets =
+            (AchievementAssetBundle) registry.get(AchievementAssetBundle.KEY);
+        setScreen(new AchievementsScreen(
+            registry,
+            this,
+            AchievementManager.getInstance(),
+            achievementAssets
+        ));
     }
 
     @Override

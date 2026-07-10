@@ -4,8 +4,7 @@ import com.github.matinnameni.minihollowknight.model.enums.AchievementType;
 import com.github.matinnameni.minihollowknight.model.enums.CharmType;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The complete state of one save slot.

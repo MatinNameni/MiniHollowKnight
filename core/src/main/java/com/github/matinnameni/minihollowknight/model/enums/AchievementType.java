@@ -4,11 +4,11 @@ package com.github.matinnameni.minihollowknight.model.enums;
  * Every achievement the player can unlock.
  */
 public enum AchievementType {
-    COMPLETION (1, "Completion", "Complete the game"),
-    SPEEDRUN (2, "Speedrun", "Complete the game in under 2 hours"),
-    TRUE_HUNTER (3, "True Hunter", "Defeat every type of enemy"),
-    DEFEAT_FALSE_KNIGHT (4, "Defeat False Knight", "Defeat the False Knight boss"),
-    CHARMED (5, "Charmed", "Acquire your first Charm");
+    COMPLETION (1, "achievements.completion", "achievements.completionDescription"),
+    SPEEDRUN (2, "achievements.speedrun", "achievements.speedrunDescription"),
+    TRUE_HUNTER (3, "achievements.trueHunter", "achievements.trueHunterDescription"),
+    DEFEAT_FALSE_KNIGHT (4, "achievements.defeatFalseKnight", "achievements.defeatFalseKnightDescription"),
+    CHARMED (5, "achievements.charmed", "achievements.charmedDescription");
 
     public final int id;
     public final String displayName;

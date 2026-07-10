@@ -27,6 +27,7 @@ import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.map.MapLoader;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
+import com.github.matinnameni.minihollowknight.view.hud.AchievementPopupOverlay;
 import com.github.matinnameni.minihollowknight.view.hud.DisplayTextOverlay;
 import com.github.matinnameni.minihollowknight.view.hud.GameHud;
 import com.github.matinnameni.minihollowknight.view.hud.InventoryOverlay;
@@ -78,6 +79,10 @@ public class GameScreen implements Screen {
     private InventoryController inventoryController;
     private boolean inventoryOpen = false;
 
+    // --- Achievement popup ---
+    private final AchievementAssetBundle achievementAssets;
+    private AchievementPopupOverlay achievementPopup;
+
     // --- Brightness overlay ---
     private final ShapeRenderer brightnessOverlayRenderer = new ShapeRenderer();
 
@@ -95,7 +100,7 @@ public class GameScreen implements Screen {
     public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
                       KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets,
                       TiledMapAssetBundle mapAssets, EnemiesAssetsManager enemiesAssets,
-                      CharmAssetBundle charmAssets) {
+                      CharmAssetBundle charmAssets, AchievementAssetBundle achievementAssets) {
         this.navigator = navigator;
         this.gameData = gameData;
         this.settings = settings;
@@ -106,6 +111,7 @@ public class GameScreen implements Screen {
         this.menuAssets = menuAssets;
         this.mapAssets = mapAssets;
         this.charmAssets = charmAssets;
+        this.achievementAssets = achievementAssets;
     }
 
     // --- Screen ---
@@ -177,6 +183,11 @@ public class GameScreen implements Screen {
         inventoryOverlay.init();
         inventoryOverlay.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+        // Initialize the achievement popup overlay.
+        achievementPopup = new AchievementPopupOverlay(achievementAssets, menuAssets);
+        achievementPopup.init();
+        achievementPopup.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
         // Wire up the respawn callback
         controller.setOnPlayerDied(this::onPlayerDied);
 
@@ -221,6 +232,11 @@ public class GameScreen implements Screen {
 
             // Update HUD
             gameHud.update(delta);
+        }
+
+        // Accumulate active play time (drives the Speedrun achievement).
+        if (!paused && !inventoryOpen && respawnPhase == RespawnPhase.NONE) {
+            gameData.playTimeSeconds += delta;
         }
 
         Gdx.gl.glClearColor(1/255f, 0/255f, 35/255f, 0.8f);
@@ -313,6 +329,10 @@ public class GameScreen implements Screen {
 
         // Brightness overlay
         drawBrightnessOverlay();
+
+        // Achievement popup
+        achievementPopup.update(delta);
+        achievementPopup.draw();
 
         // Death/respawn fade overlay
         if (fadeAlpha > 0f) {
@@ -473,6 +493,7 @@ public class GameScreen implements Screen {
         displayOverlay.resize(width, height);
         pauseOverlay.resize(width, height);
         inventoryOverlay.resize(width, height);
+        achievementPopup.resize(width, height);
     }
 
     @Override
@@ -494,6 +515,7 @@ public class GameScreen implements Screen {
         displayOverlay.dispose();
         pauseOverlay.dispose();
         inventoryOverlay.dispose();
+        achievementPopup.dispose();
     }
 
     // --- Helpers ---

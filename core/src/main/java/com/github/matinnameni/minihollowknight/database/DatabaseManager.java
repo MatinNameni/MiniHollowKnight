@@ -8,7 +8,9 @@ import com.github.matinnameni.minihollowknight.model.enums.CharmType;
 import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Translates between {@link GameData} and {@link Settings} objects and
@@ -139,7 +141,7 @@ public class DatabaseManager {
         List<GameData> list = new ArrayList<>();
         try (
             PreparedStatement statement = connection.prepareStatement(DatabaseConfig.LOAD_ALL_SAVE_SLOTS);
-             ResultSet resultSet = statement.executeQuery()
+            ResultSet resultSet = statement.executeQuery()
         ) {
             while (resultSet.next()) {
                 GameData data = rowToGameData(resultSet);
@@ -155,6 +157,66 @@ public class DatabaseManager {
     public void deleteGameData(int slotId) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(DatabaseConfig.DELETE_SAVE_SLOT)) {
             statement.setInt(1, slotId);
+            statement.executeUpdate();
+        }
+    }
+
+    // --- Achievements (global / cross-slot) ---
+
+    /**
+     * Loads every distinct achievement id unlocked across all save slots.
+     */
+    public Set<Integer> loadAllUnlockedAchievementIds() throws SQLException {
+        Set<Integer> ids = new HashSet<>();
+        try (
+            PreparedStatement statement = connection.prepareStatement(DatabaseConfig.LOAD_ALL_ACHIEVEMENTS);
+            ResultSet resultSet = statement.executeQuery()
+        ) {
+            while (resultSet.next()) {
+                ids.add(resultSet.getInt("achievement_id"));
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * Persists a single achievement unlock to the given slot's row immediately.
+     * Uses {@code INSERT OR IGNORE} so calling it for an already-unlocked
+     * achievement is a safe no-op.
+     */
+    public void saveAchievement(int slotId, int achievementId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(DatabaseConfig.INSERT_ACHIEVEMENT)) {
+            statement.setInt(1, slotId);
+            statement.setInt(2, achievementId);
+            statement.executeUpdate();
+        }
+    }
+
+    // --- Killed enemy types (global, for True Hunter) ---
+
+    /**
+     * Loads the set of every enemy type name the player has ever killed (across all runs).
+     */
+    public Set<String> loadAllKilledEnemyTypes() throws SQLException {
+        Set<String> types = new HashSet<>();
+        try (
+            PreparedStatement statement = connection.prepareStatement(DatabaseConfig.LOAD_ALL_KILLED_ENEMY_TYPES);
+            ResultSet resultSet = statement.executeQuery()
+        ) {
+            while (resultSet.next()) {
+                types.add(resultSet.getString("enemy_type"));
+            }
+        }
+        return types;
+    }
+
+    /**
+     * Records that an enemy of {@code enemyType} was killed. Uses
+     * {@code INSERT OR IGNORE} so duplicate kills are a safe no-op.
+     */
+    public void saveKilledEnemyType(String enemyType) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(DatabaseConfig.INSERT_KILLED_ENEMY_TYPE)) {
+            statement.setString(1, enemyType);
             statement.executeUpdate();
         }
     }

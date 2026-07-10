@@ -1,6 +1,6 @@
 package com.github.matinnameni.minihollowknight.database;
 
-import com.badlogic.gdx.Input;
+import com.github.matinnameni.minihollowknight.model.achievement.AchievementManager;
 
 /**
  * Central place that database configuration constants is being held.
@@ -101,6 +101,13 @@ public final class DatabaseConfig {
                 FOREIGN KEY (slot_id)
                     REFERENCES save_slots(slot_id)
                     ON DELETE CASCADE
+            )
+            """,
+
+        // --- Killed enemy types (global, used for the True Hunter achievement) ---
+        """
+            CREATE TABLE IF NOT EXISTS killed_enemy_types (
+                enemy_type TEXT PRIMARY KEY
             )
             """
     };
@@ -206,4 +213,15 @@ public final class DatabaseConfig {
 
     public static final String LOAD_ACHIEVEMENTS_FOR_SLOT =
         "SELECT achievement_id FROM slot_achievements WHERE slot_id = ?";
+
+    public static final String LOAD_ALL_ACHIEVEMENTS =
+        "SELECT DISTINCT achievement_id FROM slot_achievements";
+
+    // --- Killed enemy type queries (global, for True Hunter) ---
+
+    public static final String LOAD_ALL_KILLED_ENEMY_TYPES =
+        "SELECT enemy_type FROM killed_enemy_types";
+
+    public static final String INSERT_KILLED_ENEMY_TYPE =
+        "INSERT OR IGNORE INTO killed_enemy_types (enemy_type) VALUES (?)";
 }

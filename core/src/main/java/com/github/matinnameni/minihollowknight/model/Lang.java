@@ -5,6 +5,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.I18NBundle;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
 
+import java.util.MissingResourceException;
 import java.util.Locale;
 
 /**
@@ -30,6 +31,24 @@ public final class Lang {
             throw new IllegalStateException("Lang.load() must be called before Lang.get().");
         }
         return bundle.get(key);
+    }
+
+    /**
+     * Safe variant of {@link #get(String)}: returns the translated string for
+     * {@code key}, or {@code fallback} if the key is missing from the bundle
+     * (or the bundle is not loaded yet).
+     *
+     * <p>This is used by the achievements UI so that newly added keys don't
+     * crash the game if the i18n properties files haven't been updated yet.</p>
+     */
+    public static String getSafe(String key, String fallback) {
+        if (bundle == null) return fallback;
+        try {
+            String value = bundle.get(key);
+            return value;
+        } catch (MissingResourceException e) {
+            return fallback;
+        }
     }
 
     /** Returns the translated, formatted string for {@code key}. */

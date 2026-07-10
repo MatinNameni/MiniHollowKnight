@@ -21,9 +21,11 @@ import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Manages enemy lifecycle: spawning from map spawn points, per-frame physics
@@ -36,6 +38,12 @@ public class EnemySystem {
     // --- Enemies ---
     private final List<Enemy> enemies = new ArrayList<>();
     private boolean enemiesSpawned = false;
+
+    /**
+     * Tracks enemies whose death has already been announced via
+     * {@link GameEvent#ENEMY_DIED}.
+     */
+    private final Set<Enemy> announcedDeaths = new HashSet<>();
 
     // --- False Knight boss reference ---
     private FalseKnight activeFalseKnight;
@@ -107,6 +115,11 @@ public class EnemySystem {
         Iterator<Enemy> iterator = enemies.iterator();
         while (iterator.hasNext()) {
             Enemy enemy = iterator.next();
+
+            if (enemy.isDead() && !announcedDeaths.contains(enemy)) {
+                announcedDeaths.add(enemy);
+                EventBus.getInstance().publish(GameEvent.ENEMY_DIED, enemy);
+            }
 
             if (enemy instanceof Crawlid) {
                 updateCrawlid(delta, (Crawlid) enemy);
@@ -378,6 +391,7 @@ public class EnemySystem {
     /** Clears all enemy and laser state (called on map change). */
     public void reset() {
         enemies.clear();
+        announcedDeaths.clear();
         enemiesSpawned = false;
         activeFalseKnight = null;
         for (Laser laser : lasers) {

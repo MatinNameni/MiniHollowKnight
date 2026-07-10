@@ -126,7 +126,7 @@ public class GameScreenController implements EventListener {
         // 9. Enemies
         enemySystem.updateEnemies(delta, knight);
 
-        // 10. Knight ↔ enemy contact damage
+        // 10. Knight and enemy contact damage
         combatSystem.resolveKnightEnemyContact(knight, enemySystem.getEnemies());
         combatSystem.resolveSharpShadowDashDamage(knight, enemySystem.getEnemies());
 
@@ -211,6 +211,8 @@ public class GameScreenController implements EventListener {
             if (gameMap != null) {
                 worldSystem.openAllDoors(gameMap);
             }
+            // "Game Completed" achievement
+            EventBus.getInstance().publish(GameEvent.GAME_COMPLETED);
         } else if (event == GameEvent.PLAYER_DIED) {
             if (onPlayerDied != null) {
                 onPlayerDied.run();
