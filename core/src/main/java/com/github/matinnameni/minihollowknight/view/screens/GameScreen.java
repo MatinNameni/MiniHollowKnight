@@ -14,6 +14,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.controller.GameScreenController;
 import com.github.matinnameni.minihollowknight.controller.InventoryController;
 import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
+import com.github.matinnameni.minihollowknight.event.EventBus;
+import com.github.matinnameni.minihollowknight.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.*;
 import com.github.matinnameni.minihollowknight.model.asset.*;
 import com.github.matinnameni.minihollowknight.model.enemies.Crystallized;
@@ -35,6 +37,13 @@ import com.github.matinnameni.minihollowknight.view.renderer.KnightRenderer;
  * The main gameplay screen.
  */
 public class GameScreen implements Screen {
+
+    // --- Constants ---
+
+    // Respawn
+    private static final float DEATH_ANIM_WAIT = 0.3f;
+    private static final float FADE_DURATION = 0.8f;
+    private static final float DEATH_ANIM_DURATION = 1.2f;
 
     private final ScreenNavigator navigator;
     private final GameData gameData;
@@ -77,6 +86,11 @@ public class GameScreen implements Screen {
 
     // --- Debug ---
     private boolean showDebugInfo = true;
+
+    // --- Respawn state ---
+    private RespawnPhase respawnPhase = RespawnPhase.NONE;
+    private float respawnTimer = 0f;
+    private float fadeAlpha = 0f;
 
     public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
                       KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets,
@@ -163,6 +177,9 @@ public class GameScreen implements Screen {
         inventoryOverlay.init();
         inventoryOverlay.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+        // Wire up the respawn callback
+        controller.setOnPlayerDied(this::onPlayerDied);
+
         Gdx.input.setInputProcessor(null);
         // TODO: implement input processors for the game
 
@@ -178,20 +195,25 @@ public class GameScreen implements Screen {
             // let the inventory's own close handling run first.
             if (inventoryOpen) {
                 closeInventory();
-            } else {
+            } else if (respawnPhase == RespawnPhase.NONE) {
                 togglePause();
             }
         }
 
         if (Gdx.input.isKeyJustPressed(settings.getKeyInventory())) {
-            // Only allow opening the inventory when the game isn't already paused.
-            if (!paused) {
+            // Only allow opening the inventory when the game isn't paused or respawning.
+            if (!paused && respawnPhase == RespawnPhase.NONE) {
                 toggleInventory();
             }
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
             showDebugInfo = !showDebugInfo;
+        }
+
+        // --- Update logic ---
+        if (respawnPhase != RespawnPhase.NONE) {
+            updateRespawn(delta);
         }
 
         if (!paused && !inventoryOpen) {
@@ -291,6 +313,105 @@ public class GameScreen implements Screen {
 
         // Brightness overlay
         drawBrightnessOverlay();
+
+        // Death/respawn fade overlay
+        if (fadeAlpha > 0f) {
+            drawFadeOverlay();
+        }
+    }
+
+    // --- Respawn ---
+
+    /** Called when the knight's masks reach zero (via PLAYER_DIED event). */
+    private void onPlayerDied() {
+        respawnPhase = RespawnPhase.DEATH_ANIM;
+        respawnTimer = 0f;
+        fadeAlpha = 0f;
+    }
+
+    /** Advances the respawn state machine each frame. */
+    private void updateRespawn(float delta) {
+        delta = Math.min(delta, 0.05f);
+
+        switch (respawnPhase) {
+            case DEATH_ANIM:
+                respawnTimer += delta;
+
+                if (respawnTimer >= DEATH_ANIM_DURATION + DEATH_ANIM_WAIT) {
+                    respawnPhase = RespawnPhase.FADE_TO_BLACK;
+                    respawnTimer = 0f;
+                }
+                break;
+
+            case FADE_TO_BLACK:
+                respawnTimer += delta;
+                fadeAlpha = Math.min(1f, respawnTimer / FADE_DURATION);
+                if (fadeAlpha >= 1f) {
+                    performRespawnReset();
+                    respawnPhase = RespawnPhase.FADE_IN;
+                    respawnTimer = 0f;
+                }
+                break;
+
+            case FADE_IN:
+                respawnTimer += delta;
+                fadeAlpha = Math.max(0f, 1f - respawnTimer / FADE_DURATION);
+                if (fadeAlpha <= 0f) {
+                    fadeAlpha = 0f;
+                    respawnPhase = RespawnPhase.NONE;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /** Resets the world state for respawn. */
+    private void performRespawnReset() {
+        // Dispose old map and load Forgotten Crossroads
+        if (gameMap != null) {
+            gameMap.dispose();
+        }
+        gameMap = MapLoader.loadMap(GameEnvironment.FORGOTTEN_CROSSROADS, mapAssets);
+        controller.setGameMap(gameMap);
+
+        // Reset the knight at the map's spawn point
+        Vector2 spawn = gameMap.getPlayerSpawn();
+        knight.setPosition(spawn.x, spawn.y);
+        knight.resetAfterDeath();
+
+        // Re-center camera immediately on the spawn point
+        controller.initializeCameraTarget();
+        camera.position.set(controller.getCameraTarget().x, controller.getCameraTarget().y, 0f);
+        camera.update();
+
+        // Reset HUD
+        gameHud.update(0f);
+
+        // Increment death counter in game data
+        gameData.totalDeaths++;
+
+        // Publish respawn event
+        EventBus.getInstance().publish(GameEvent.PLAYER_RESPAWNED);
+    }
+
+    /**
+     * Draws a black overlay with the current fade alpha.
+     * Used for the death fade-to-black and respawn fade-in.
+     */
+    private void drawFadeOverlay() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0, 0, 0, fadeAlpha);
+
+        float x = camera.position.x - camera.viewportWidth / 2f;
+        float y = camera.position.y - camera.viewportHeight / 2f;
+        shapeRenderer.rect(x, y, camera.viewportWidth, camera.viewportHeight);
+        shapeRenderer.end();
     }
 
     // --- Pause ---
@@ -497,5 +618,14 @@ public class GameScreen implements Screen {
         brightnessOverlayRenderer.setColor(0, 0, 0, alpha);
         brightnessOverlayRenderer.rect(x, y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         brightnessOverlayRenderer.end();
+    }
+
+    // --- Respawn state machine ---
+
+    private enum RespawnPhase {
+        NONE, // Normal gameplay
+        DEATH_ANIM, // Waiting for death animation to finish
+        FADE_TO_BLACK, // Black overlay alpha increasing
+        FADE_IN // Black overlay alpha decreasing (map already reset)
     }
 }

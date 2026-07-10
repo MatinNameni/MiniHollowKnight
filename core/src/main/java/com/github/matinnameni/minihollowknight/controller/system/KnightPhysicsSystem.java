@@ -6,6 +6,7 @@ import com.github.matinnameni.minihollowknight.model.Knight;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Handles all collision resolution for the Knight entity against the world geometry.
@@ -30,38 +31,31 @@ public class KnightPhysicsSystem {
             GridObject platform = entry.getKey();
             Direction direction = entry.getValue();
 
-            if (direction == Direction.UP) {
-                if (platform.isDeadly) {
-                    knight.takeDamage(resolvePlatformDeathKnockback(knight));
-                    knight.goToLastSafePosition();
-                    return;
+            if (knight.isDead()) {
+                if (direction == Direction.UP) {
+                    knight.onFloorCollision(platform.y + platform.height - Knight.DEATH_HITBOX_Y_OFFSET);
                 }
+                continue;
+            }
+
+            if (platform.isDeadly) {
+                knight.takeDamage(resolvePlatformDeathKnockback(knight));
+                knight.goToLastSafePosition();
+                return;
+            }
+
+            if (direction == Direction.UP) {
                 float resolvedHitboxY = platform.y + platform.height;
                 knight.onFloorCollision(resolvedHitboxY - Knight.HITBOX_Y_OFFSET);
                 knight.setSafePosition(knight.getPosition().x, knight.getPosition().y);
             } else if (direction == Direction.DOWN) {
-                if (platform.isDeadly) {
-                    knight.takeDamage(resolvePlatformDeathKnockback(knight));
-                    knight.goToLastSafePosition();
-                    return;
-                }
                 float resolvedHitboxY = platform.y - knightHitbox.height;
                 knight.onCeilingCollision(resolvedHitboxY - Knight.HITBOX_Y_OFFSET);
             } else if (direction == Direction.LEFT) {
-                if (platform.isDeadly) {
-                    knight.takeDamage(resolvePlatformDeathKnockback(knight));
-                    knight.goToLastSafePosition();
-                    return;
-                }
                 float resolvedHitboxX = platform.x - knightHitbox.width;
                 knight.onWallCollision(resolvedHitboxX - Knight.HITBOX_X_OFFSET);
                 knight.setHittingWall(true);
             } else {
-                if (platform.isDeadly) {
-                    knight.takeDamage(resolvePlatformDeathKnockback(knight));
-                    knight.goToLastSafePosition();
-                    return;
-                }
                 float resolvedHitboxX = platform.x + platform.width;
                 knight.onWallCollision(resolvedHitboxX - Knight.HITBOX_X_OFFSET);
             }

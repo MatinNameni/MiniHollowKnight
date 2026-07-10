@@ -42,6 +42,9 @@ public class GameScreenController implements EventListener {
     private final CameraSystem cameraSystem;
     private final WorldSystem worldSystem;
 
+    // --- Respawn callback ---
+    private Runnable onPlayerDied;
+
     public GameScreenController(Knight knight, EnemiesAssetsManager enemiesAssets) {
         this.knight = knight;
         this.enemiesAssets = enemiesAssets;
@@ -62,6 +65,17 @@ public class GameScreenController implements EventListener {
         EventBus.getInstance().subscribe(GameEvent.PLAYER_NAIL_HIT, this);
         EventBus.getInstance().subscribe(GameEvent.FALSE_KNIGHT_FIGHT_STARTED, this);
         EventBus.getInstance().subscribe(GameEvent.FALSE_KNIGHT_DEFEATED, this);
+        EventBus.getInstance().subscribe(GameEvent.PLAYER_DIED, this);
+    }
+
+    // --- Respawn callback ---
+
+    /**
+     * Sets a callback that is invoked when the player dies (masks reach zero).
+     * The GameScreen uses this to start the death/respawn sequence.
+     */
+    public void setOnPlayerDied(Runnable callback) {
+        this.onPlayerDied = callback;
     }
 
     // --- Initialization ---
@@ -197,6 +211,10 @@ public class GameScreenController implements EventListener {
             if (gameMap != null) {
                 worldSystem.openAllDoors(gameMap);
             }
+        } else if (event == GameEvent.PLAYER_DIED) {
+            if (onPlayerDied != null) {
+                onPlayerDied.run();
+            }
         }
     }
 
@@ -246,5 +264,6 @@ public class GameScreenController implements EventListener {
         EventBus.getInstance().unsubscribe(GameEvent.PLAYER_NAIL_HIT, this);
         EventBus.getInstance().unsubscribe(GameEvent.FALSE_KNIGHT_FIGHT_STARTED, this);
         EventBus.getInstance().unsubscribe(GameEvent.FALSE_KNIGHT_DEFEATED, this);
+        EventBus.getInstance().unsubscribe(GameEvent.PLAYER_DIED, this);
     }
 }

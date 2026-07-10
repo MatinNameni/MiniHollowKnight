@@ -1,5 +1,6 @@
 package com.github.matinnameni.minihollowknight.controller.system;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.model.Arena;
@@ -14,6 +15,8 @@ import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 public class CameraSystem {
 
     private static final float CAMERA_LERP = 4f;
+    private static final float CAMERA_X_OFFSET = 0f;
+    private static final float CAMERA_Y_OFFSET = 200f;
 
     private final Vector2 cameraTarget = new Vector2();
     private float cameraShakeIntensity = 0f;
@@ -23,8 +26,10 @@ public class CameraSystem {
 
     /** Sets the camera target to the Knight's center (call once at init). */
     public void initializeCameraTarget(Knight knight) {
-        cameraTarget.set(knight.getPosition().x + Knight.WIDTH / 2f,
-            knight.getPosition().y + Knight.HEIGHT / 2f);
+        cameraTarget.set(
+            knight.getPosition().x + Knight.WIDTH / 2f + CAMERA_X_OFFSET,
+            knight.getPosition().y + Knight.HEIGHT / 2f + CAMERA_Y_OFFSET
+        );
     }
 
     /** Advances the camera position by one frame. */

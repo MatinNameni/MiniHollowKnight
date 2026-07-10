@@ -31,6 +31,12 @@ public class Knight implements Entity {
     public static final float HITBOX_X_OFFSET = (WIDTH - HITBOX_WIDTH) / 2f;
     public static final float HITBOX_Y_OFFSET = 5f;
 
+    // Death hitbox
+    public static final float DEATH_HITBOX_WIDTH = HITBOX_WIDTH;
+    public static final float DEATH_HITBOX_HEIGHT = 20f;
+    public static final float DEATH_HITBOX_X_OFFSET = HITBOX_X_OFFSET;
+    public static final float DEATH_HITBOX_Y_OFFSET = HITBOX_Y_OFFSET + 30f;
+
     // Movement
     public static final float MOVE_SPEED = 200f;
     public static final float JUMP_INITIAL_VELOCITY = 600f;
@@ -81,55 +87,46 @@ public class Knight implements Entity {
     // --- State ---
     private KnightState state = KnightState.IDLE;
     private float stateTime = 0f;
-
-    // --- Position ---
     private final Vector2 position = new Vector2();
     private final Vector2 velocity = new Vector2();
-    private boolean grounded  = false;
-    private boolean hittingWall = false;
     private boolean facingRight = true;
-    private boolean canDoubleJump = true;
-    private boolean canDash = true;
+    private boolean grounded = false;
+    private boolean hittingWall = false;
 
-    // --- Combat ---
-    private Direction attackDirection = Direction.RIGHT;
-    private float attackCooldownTimer = 0f;
-    private float attackTimer = 0f;
+    // --- Health & Soul ---
+    private int masks = 5;
+    private int maxMasks = 5;
+    private float soul = 0f;
 
-    // --- Dash ---
-    private float dashTimer = 0f;
+    // --- Timers ---
+    private float invincibilityTimer = 0f;
+    private float hitFreezeCooldownTimer = 0f;
     private float dashCooldownTimer = 0f;
-
-    // --- Focus / Heal ---
+    private float attackCooldownTimer = 0f;
+    private float vengefulSpiritCooldownTimer = 0f;
+    private float vengefulSpiritTimer = 0f;
+    private float howlingWraithsCooldownTimer = 0f;
+    private float howlingWraithsTimer = 0f;
     private float focusTimer = 0f;
     private float focusCooldownTimer = 0f;
     private float consumedSoul = 0f;
+    private float attackTimer = 0f;
+    private float dashTimer = 0f;
 
-    // --- Health ---
-    private int masks;
-    private int maxMasks;
-    private float soul;
+    // --- Air abilities ---
+    private boolean canDoubleJump = true;
+    private boolean canDash = true;
 
-    // --- Invincibility ---
-    private float invincibilityTimer = 0f;
-    private float hitFreezeCooldownTimer = 0f;
-
-    // --- Spells ---
-    private float vengefulSpiritTimer = 0f;
-    private float vengefulSpiritCooldownTimer = 0f;
-
-    private float howlingWraithsTimer = 0f;
-    private float howlingWraithsCooldownTimer = 0f;
-
-    // --- Dependencies ---
-    private final KnightAssetBundle assets;
-    private final Settings settings;
+    // --- Attack ---
+    private Direction attackDirection = Direction.LEFT;
+    private final Set<Enemy> dashHitEnemiesThisDash = new HashSet<>();
 
     // --- Charms ---
     private CharmEffects charmEffects = CharmEffects.NONE;
 
-    // --- Sharp Shadow ---
-    private final Set<Enemy> dashHitEnemiesThisDash = new HashSet<>();
+    // --- Assets & settings ---
+    private final KnightAssetBundle assets;
+    private final Settings settings;
 
     // --- Safe Spots ---
     private Vector2 lastSafePosition = new Vector2();
@@ -146,6 +143,8 @@ public class Knight implements Entity {
         updateTimers(deltaTime);
 
         if (state == KnightState.DEAD) {
+            applyPhysics(deltaTime);
+            velocity.x = 0;
             stateTime += deltaTime;
             return;
         }
@@ -161,6 +160,10 @@ public class Knight implements Entity {
 
     @Override
     public Rectangle getBounds() {
+        if (state == KnightState.DEAD) {
+            return getDeathHitbox();
+        }
+
         return new Rectangle(position.x + HITBOX_X_OFFSET, position.y + HITBOX_Y_OFFSET,
             HITBOX_WIDTH, HITBOX_HEIGHT);
     }
@@ -567,6 +570,15 @@ public class Knight implements Entity {
         return null;
     }
 
+    public Rectangle getDeathHitbox() {
+        return new Rectangle(
+            position.x + DEATH_HITBOX_X_OFFSET,
+            position.y + DEATH_HITBOX_Y_OFFSET,
+            DEATH_HITBOX_WIDTH,
+            DEATH_HITBOX_HEIGHT
+        );
+    }
+
     // --- Nail ---
 
     public void onNailHit(Enemy enemy) {
@@ -631,6 +643,34 @@ public class Knight implements Entity {
     public void spendSoul(float amount) {
         soul = Math.max(soul - amount, 0);
         EventBus.getInstance().publish(GameEvent.PLAYER_SOUL_SPENT, amount);
+    }
+
+    // --- Respawn ---
+
+    /** Resets the knight's runtime state after a death/respawn cycle. */
+    public void resetAfterDeath() {
+        this.masks = maxMasks;
+        this.soul = 0f;
+        this.state = KnightState.IDLE;
+        this.stateTime = 0f;
+        this.velocity.setZero();
+        this.invincibilityTimer = 0f;
+        this.hitFreezeCooldownTimer = 0f;
+        this.dashCooldownTimer = 0f;
+        this.attackCooldownTimer = 0f;
+        this.vengefulSpiritCooldownTimer = 0f;
+        this.howlingWraithsCooldownTimer = 0f;
+        this.focusCooldownTimer = 0f;
+        this.focusTimer = 0f;
+        this.consumedSoul = 0f;
+        this.attackTimer = 0f;
+        this.dashTimer = 0f;
+        this.canDoubleJump = true;
+        this.canDash = true;
+        this.grounded = false;
+        this.hittingWall = false;
+        this.facingRight = true;
+        this.dashHitEnemiesThisDash.clear();
     }
 
     // --- External collision hooks ---
