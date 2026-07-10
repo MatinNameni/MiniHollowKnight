@@ -30,6 +30,11 @@ public class KnightInputProcessor extends InputAdapter {
      */
     public void processInput(float deltaTime) {
         KnightState state = knight.getState();
+
+        if (state == KnightState.DEAD) {
+            return;
+        }
+
         boolean inputLocked = state == KnightState.DASHING
             || state == KnightState.HIT
             || state == KnightState.VENGEFUL_SPIRIT

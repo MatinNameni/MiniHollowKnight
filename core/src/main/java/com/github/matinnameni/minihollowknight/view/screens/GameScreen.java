@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.controller.GameScreenController;
+import com.github.matinnameni.minihollowknight.controller.InventoryController;
 import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
 import com.github.matinnameni.minihollowknight.model.*;
 import com.github.matinnameni.minihollowknight.model.asset.*;
@@ -26,6 +27,7 @@ import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
 import com.github.matinnameni.minihollowknight.view.hud.DisplayTextOverlay;
 import com.github.matinnameni.minihollowknight.view.hud.GameHud;
+import com.github.matinnameni.minihollowknight.view.hud.InventoryOverlay;
 import com.github.matinnameni.minihollowknight.view.hud.PauseOverlay;
 import com.github.matinnameni.minihollowknight.view.renderer.KnightRenderer;
 
@@ -61,6 +63,12 @@ public class GameScreen implements Screen {
     private PauseOverlay pauseOverlay;
     private boolean paused = false;
 
+    // --- Inventory overlay ---
+    private final CharmAssetBundle charmAssets;
+    private InventoryOverlay inventoryOverlay;
+    private InventoryController inventoryController;
+    private boolean inventoryOpen = false;
+
     // --- Brightness overlay ---
     private final ShapeRenderer brightnessOverlayRenderer = new ShapeRenderer();
 
@@ -72,7 +80,8 @@ public class GameScreen implements Screen {
 
     public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
                       KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets,
-                      TiledMapAssetBundle mapAssets, EnemiesAssetsManager enemiesAssets) {
+                      TiledMapAssetBundle mapAssets, EnemiesAssetsManager enemiesAssets,
+                      CharmAssetBundle charmAssets) {
         this.navigator = navigator;
         this.gameData = gameData;
         this.settings = settings;
@@ -82,6 +91,7 @@ public class GameScreen implements Screen {
         this.gameHud = new GameHud(knight, hudAssets);
         this.menuAssets = menuAssets;
         this.mapAssets = mapAssets;
+        this.charmAssets = charmAssets;
     }
 
     // --- Screen ---
@@ -90,7 +100,11 @@ public class GameScreen implements Screen {
     public void show() {
         if (initialized) {
             if (paused) {
+                pauseOverlay.init();
                 Gdx.input.setInputProcessor(pauseOverlay.getStage());
+            } else if (inventoryOpen) {
+                inventoryOverlay.init();
+                Gdx.input.setInputProcessor(inventoryOverlay.getStage());
             } else {
                 Gdx.input.setInputProcessor(null);
             }
@@ -109,6 +123,10 @@ public class GameScreen implements Screen {
             MapLoader.loadMap(GameEnvironment.FORGOTTEN_CROSSROADS, mapAssets) :
             MapLoader.loadMap(currentEnvironment, mapAssets);
         controller.setGameMap(gameMap);
+
+        if (gameData.collectedCharms.isEmpty()) {
+            gameData.grantDefaultCharms();
+        }
 
         // Initialize knight from save data
         knight.initializeFromSave(gameData);
@@ -139,6 +157,12 @@ public class GameScreen implements Screen {
         pauseOverlay.init();
         pauseOverlay.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+        // Initialize the inventory overlay.
+        inventoryController = new InventoryController(gameData, knight, this::closeInventory);
+        inventoryOverlay = new InventoryOverlay(inventoryController, charmAssets, menuAssets);
+        inventoryOverlay.init();
+        inventoryOverlay.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
         Gdx.input.setInputProcessor(null);
         // TODO: implement input processors for the game
 
@@ -150,14 +174,27 @@ public class GameScreen implements Screen {
         // Temporary key bindings
 
         if (Gdx.input.isKeyJustPressed(settings.getKeyPause())) {
-            togglePause();
+            // Don't toggle pause while the inventory is open.
+            // let the inventory's own close handling run first.
+            if (inventoryOpen) {
+                closeInventory();
+            } else {
+                togglePause();
+            }
+        }
+
+        if (Gdx.input.isKeyJustPressed(settings.getKeyInventory())) {
+            // Only allow opening the inventory when the game isn't already paused.
+            if (!paused) {
+                toggleInventory();
+            }
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
             showDebugInfo = !showDebugInfo;
         }
 
-        if (!paused) {
+        if (!paused && !inventoryOpen) {
             controller.update(delta, camera);
 
             // Update HUD
@@ -246,6 +283,12 @@ public class GameScreen implements Screen {
             pauseOverlay.draw();
         }
 
+        // Inventory overlay
+        if (inventoryOpen) {
+            inventoryOverlay.update(delta);
+            inventoryOverlay.draw();
+        }
+
         // Brightness overlay
         drawBrightnessOverlay();
     }
@@ -273,6 +316,30 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(null);
     }
 
+    // --- Inventory ---
+
+    /** Toggles the inventory overlay open / closed. */
+    private void toggleInventory() {
+        if (inventoryOpen) {
+            closeInventory();
+        } else {
+            openInventory();
+        }
+    }
+
+    /** Opens the inventory overlay and pauses gameplay input. */
+    private void openInventory() {
+        inventoryOpen = true;
+        inventoryController.onOpen();
+        Gdx.input.setInputProcessor(inventoryOverlay.getStage());
+    }
+
+    /** Closes the inventory overlay and restores gameplay input. */
+    private void closeInventory() {
+        inventoryOpen = false;
+        Gdx.input.setInputProcessor(null);
+    }
+
     @Override
     public void resize(int width, int height) {
         float previousX = camera.position.x;
@@ -284,6 +351,7 @@ public class GameScreen implements Screen {
         gameHud.resize(width, height);
         displayOverlay.resize(width, height);
         pauseOverlay.resize(width, height);
+        inventoryOverlay.resize(width, height);
     }
 
     @Override
@@ -304,6 +372,7 @@ public class GameScreen implements Screen {
         gameHud.dispose();
         displayOverlay.dispose();
         pauseOverlay.dispose();
+        inventoryOverlay.dispose();
     }
 
     // --- Helpers ---

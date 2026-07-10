@@ -105,6 +105,29 @@ public class GameData {
     }
 
     /**
+     * Marks {@code charm} as collected by the player so it shows up in the
+     * inventory and becomes equippable.
+     *
+     * @return true if this was a new collection
+     */
+    public boolean collectCharm(CharmType charm) {
+        return collectedCharms.add(charm);
+    }
+
+    /** @return true if the player owns {@code charm}. */
+    public boolean hasCollected(CharmType charm) {
+        return collectedCharms.contains(charm);
+    }
+
+    /** Grants default charms available throughout the gameplay. */
+    public void grantDefaultCharms() {
+        for (CharmType charm : CharmType.values()) {
+            if (charm == CharmType.VOID_HEART) continue;
+            collectCharm(charm);
+        }
+    }
+
+    /**
      * Unlocks an achievement.
      * @return true if this was a new unlock
      */

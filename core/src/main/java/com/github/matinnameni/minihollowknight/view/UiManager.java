@@ -28,6 +28,7 @@ public class UiManager implements ScreenNavigator {
     private boolean knightAssetsLoaded = false;
     private boolean hudAssetsLoaded = false;
     private boolean tiledMapAssetsLoaded = false;
+    private boolean charmAssetsLoaded = false;
 
     private GameScreen pausedGameScreen;
 
@@ -59,6 +60,7 @@ public class UiManager implements ScreenNavigator {
         registry.register(new KnightAssetBundle(registry.getManager()));
         registry.register(new HudAssetBundle(registry.getManager()));
         registry.register(new TiledMapAssetBundle(registry.getManager()));
+        registry.register(new CharmAssetBundle(registry.getManager()));
         EnemiesAssetsManager.getInstance(registry).initAssets();
     }
 
@@ -242,14 +244,16 @@ public class UiManager implements ScreenNavigator {
         ensureHudAssetsLoaded();
         ensureEnemiesAssetsLoaded();
         ensureTiledMapAssetsLoaded();
+        ensureCharmAssetsLoaded();
         stopMenuMusic();
         KnightAssetBundle knightAssets = (KnightAssetBundle) registry.get(KnightAssetBundle.KEY);
         HudAssetBundle hudAssets = (HudAssetBundle) registry.get(HudAssetBundle.KEY);
         CrawlidAssetBundle crawlidAssets = (CrawlidAssetBundle) registry.get(CrawlidAssetBundle.KEY);
         MossflyAssetBundle mossflyAssets = (MossflyAssetBundle) registry.get(MossflyAssetBundle.KEY);
         TiledMapAssetBundle mapAssets = (TiledMapAssetBundle) registry.get(TiledMapAssetBundle.KEY);
+        CharmAssetBundle charmAssets = (CharmAssetBundle) registry.get(CharmAssetBundle.KEY);
         setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets,
-            getMenuAssets(), mapAssets, EnemiesAssetsManager.getInstance(registry)));
+            getMenuAssets(), mapAssets, EnemiesAssetsManager.getInstance(registry), charmAssets));
     }
 
     /**
@@ -286,6 +290,16 @@ public class UiManager implements ScreenNavigator {
         if (!tiledMapAssetsLoaded) {
             registry.loadBundle(TiledMapAssetBundle.KEY);
             tiledMapAssetsLoaded = true;
+        }
+    }
+
+    /**
+     * Loads the CharmAssetBundle if it hasn't been loaded yet.
+     */
+    private void ensureCharmAssetsLoaded() {
+        if (!charmAssetsLoaded) {
+            registry.loadBundle(CharmAssetBundle.KEY);
+            charmAssetsLoaded = true;
         }
     }
 
