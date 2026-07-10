@@ -21,8 +21,7 @@ import com.github.matinnameni.minihollowknight.model.GridObject;
 import com.github.matinnameni.minihollowknight.model.asset.TiledMapAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Wraps a Tiled map for use in the game.
@@ -43,9 +42,13 @@ public class TiledGameMap {
     private static final String CRYSTALLIZED_SPAWN_NAME = "crystallizedSpawn";
     private static final String FALSE_KNIGHT_SPAWN_NAME = "falseKnightSpawn";
 
+    private static final String FORGOTTEN_CROSSROADS_TO_GREENPATH = "fcToG";
+    private static final String GREENPATH_TO_FORGOTTEN_CROSSROADS = "gToFc";
+
     private static final String PROP_CAN_POGO = "canPogo";
     private static final String PROP_IS_DEADLY = "isDeadly";
     private static final String PROP_IS_BREAKABLE = "isBreakable";
+    private static final String PROP_TRANSFER_TO = "transferTo";
     private static final String PROP_HAVE_BOSS = "haveBoss";
     private static final String PROP_BOSS_NAME = "bossName";
     private static final String PROP_TEX_DEFAULT = "textureDefault";
@@ -91,6 +94,7 @@ public class TiledGameMap {
     private final List<Vector2> falseKnightSpawns = new ArrayList<>();
     private final List<BreakableWall> breakableWalls = new ArrayList<>();
     private final List<Door> doors = new ArrayList<>();
+    private final Map<ArrayList<GameEnvironment>, Vector2> transferPoints = new HashMap<>();
 
     // --- Arenas bounds ---
     private List<Arena> arenas = new ArrayList<>();
@@ -248,6 +252,12 @@ public class TiledGameMap {
             canPogo = rectangleObject.getProperties().get(PROP_CAN_POGO, Boolean.class);
         }
 
+        // Transfers the knight to another area
+        String transferTo = null;
+        if (rectangleObject.getProperties().containsKey(PROP_TRANSFER_TO)) {
+            transferTo = rectangleObject.getProperties().get(PROP_TRANSFER_TO, String.class);
+        }
+
         if (SPAWN_POINT_NAME.equals(rectangleObject.getName())) {
             playerSpawn.set(currentRectangle.x * unitScale, currentRectangle.y * unitScale);
         } else if (ARENA_NAME.equals(rectangleObject.getName())) {
@@ -277,7 +287,8 @@ public class TiledGameMap {
                 currentRectangle.width * unitScale,
                 currentRectangle.height * unitScale,
                 isDeadly,
-                canPogo
+                canPogo,
+                transferTo
             ));
         }
     }
@@ -330,6 +341,18 @@ public class TiledGameMap {
                 break;
             case FALSE_KNIGHT_SPAWN_NAME:
                 falseKnightSpawns.add(new Vector2(x * unitScale, y * unitScale));
+                break;
+            case FORGOTTEN_CROSSROADS_TO_GREENPATH:
+                transferPoints.put(new ArrayList<>(
+                    List.of(GameEnvironment.FORGOTTEN_CROSSROADS, GameEnvironment.GREENPATH)),
+                    new Vector2(x * unitScale, y * unitScale)
+                );
+                break;
+            case GREENPATH_TO_FORGOTTEN_CROSSROADS:
+                transferPoints.put(new ArrayList<>(
+                        List.of(GameEnvironment.GREENPATH, GameEnvironment.FORGOTTEN_CROSSROADS)),
+                    new Vector2(x * unitScale, y * unitScale)
+                );
                 break;
         }
     }
@@ -447,6 +470,18 @@ public class TiledGameMap {
 
     public List<Door> getDoors() {
         return doors;
+    }
+
+    public Vector2 getTransferPoint(GameEnvironment previous, GameEnvironment current) {
+        for (Map.Entry<ArrayList<GameEnvironment>, Vector2> entry : transferPoints.entrySet()) {
+            GameEnvironment env1 = entry.getKey().getFirst();
+            GameEnvironment env2 = entry.getKey().getLast();
+
+            if (env1.id != previous.id || env2.id != current.id) continue;
+
+            return entry.getValue();
+        }
+        return null;
     }
 
     /** Called by the controller when a breakable wall is fully destroyed. */

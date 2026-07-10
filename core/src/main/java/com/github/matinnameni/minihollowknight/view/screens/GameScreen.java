@@ -98,6 +98,15 @@ public class GameScreen implements Screen {
     private float respawnTimer = 0f;
     private float fadeAlpha = 0f;
 
+    // --- Area-transfer state ---
+    /** The environment we are currently fading into, or {@code null} when no transfer is in progress. */
+    private GameEnvironment transferTarget = null;
+    private TransferPhase transferPhase = TransferPhase.NONE;
+    private float transferTimer = 0f;
+    /** Separate alpha for the transfer fade so it doesn't collide with the respawn fade. */
+    private float transferFadeAlpha = 0f;
+    private static final float TRANSFER_FADE_DURATION = 0.5f;
+
     public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
                       KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets,
                       TiledMapAssetBundle mapAssets, EnemiesAssetsManager enemiesAssets,
@@ -200,21 +209,22 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // Temporary key bindings
+        delta = Math.min(delta, 0.05f);
 
+        // Temporary key bindings
         if (Gdx.input.isKeyJustPressed(settings.getKeyPause())) {
-            // Don't toggle pause while the inventory is open.
+            // Don't toggle pause while the inventory is open or during a transfer.
             // let the inventory's own close handling run first.
             if (inventoryOpen) {
                 closeInventory();
-            } else if (respawnPhase == RespawnPhase.NONE) {
+            } else if (respawnPhase == RespawnPhase.NONE && transferPhase == TransferPhase.NONE) {
                 togglePause();
             }
         }
 
         if (Gdx.input.isKeyJustPressed(settings.getKeyInventory())) {
-            // Only allow opening the inventory when the game isn't paused or respawning.
-            if (!paused && respawnPhase == RespawnPhase.NONE) {
+            // Only allow opening the inventory when the game isn't paused, respawning, or transferring.
+            if (!paused && respawnPhase == RespawnPhase.NONE && transferPhase == TransferPhase.NONE) {
                 toggleInventory();
             }
         }
@@ -228,15 +238,28 @@ public class GameScreen implements Screen {
             updateRespawn(delta);
         }
 
-        if (!paused && !inventoryOpen) {
+        // Area-transfer transition takes priority over normal gameplay
+        if (transferPhase != TransferPhase.NONE) {
+            updateTransfer(delta);
+        }
+
+        boolean gameplayBlocked = paused || inventoryOpen;
+
+        if (!gameplayBlocked) {
             controller.update(delta, camera);
 
             // Update HUD
             gameHud.update(delta);
+
+            // Check whether the knight stepped on a transfer trigger this frame.
+            GameEnvironment pending = controller.consumePendingTransfer();
+            if (pending != null) {
+                startTransfer(pending);
+            }
         }
 
         // Accumulate active play time (drives the Speedrun achievement).
-        if (!paused && !inventoryOpen && respawnPhase == RespawnPhase.NONE) {
+        if (!gameplayBlocked) {
             gameData.playTimeSeconds += delta;
         }
 
@@ -339,6 +362,11 @@ public class GameScreen implements Screen {
         if (fadeAlpha > 0f) {
             drawFadeOverlay();
         }
+
+        // Area-transfer fade overlay
+        if (transferFadeAlpha > 0f) {
+            drawTransferFadeOverlay();
+        }
     }
 
     // --- Respawn ---
@@ -428,6 +456,102 @@ public class GameScreen implements Screen {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0, 0, 0, fadeAlpha);
+
+        float x = camera.position.x - camera.viewportWidth / 2f;
+        float y = camera.position.y - camera.viewportHeight / 2f;
+        shapeRenderer.rect(x, y, camera.viewportWidth, camera.viewportHeight);
+        shapeRenderer.end();
+    }
+
+    // --- Area transfer ---
+
+    /**
+     * Begins a fade-to-black to swap-map to fade-in transition into
+     * {@code target}. No-op if a transfer or respawn is already in progress.
+     */
+    private void startTransfer(GameEnvironment target) {
+        if (target == null) return;
+        if (transferPhase != TransferPhase.NONE) return;
+        if (respawnPhase != RespawnPhase.NONE) return;
+
+        transferTarget = target;
+        transferPhase = TransferPhase.FADE_TO_BLACK;
+        transferTimer = 0f;
+        transferFadeAlpha = 0f;
+    }
+
+    /** Advances the transfer state machine each frame. */
+    private void updateTransfer(float delta) {
+        delta = Math.min(delta, 0.05f);
+
+        switch (transferPhase) {
+            case FADE_TO_BLACK:
+                transferTimer += delta;
+                transferFadeAlpha = Math.min(1f, transferTimer / TRANSFER_FADE_DURATION);
+                if (transferFadeAlpha >= 1f) {
+                    performTransfer();
+                    transferPhase = TransferPhase.FADE_IN;
+                    transferTimer = 0f;
+                }
+                break;
+
+            case FADE_IN:
+                transferTimer += delta;
+                transferFadeAlpha = Math.max(0f, 1f - transferTimer / TRANSFER_FADE_DURATION);
+                if (transferFadeAlpha <= 0f) {
+                    transferFadeAlpha = 0f;
+                    transferPhase = TransferPhase.NONE;
+                    transferTarget = null;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Swaps the current map for {@link #transferTarget}, placing the knight at
+     * the new map's spawn point. Called once the fade-to-black is complete so
+     * the swap is hidden from the player.
+     */
+    private void performTransfer() {
+        GameEnvironment target = transferTarget;
+        if (target == null) return;
+
+        GameEnvironment previousMap = gameMap.getCurrentEnvironment();
+
+        // Dispose the old map and load the target one.
+        if (gameMap != null) {
+            gameMap.dispose();
+        }
+        gameMap = MapLoader.loadMap(target, mapAssets);
+        controller.setGameMap(gameMap);
+
+        // Place the knight at the new map's transfer point.
+        Vector2 spawn = gameMap.getTransferPoint(previousMap, target);
+        knight.setPosition(spawn.x, spawn.y);
+
+        // Re-center camera immediately on the new spawn point.
+        controller.initializeCameraTarget();
+        camera.position.set(controller.getCameraTarget().x, controller.getCameraTarget().y, 0f);
+        camera.update();
+
+        // Record the new environment on the save data.
+        gameData.currentEnvironment = target.id;
+
+        // Refresh the HUD.
+        gameHud.update(0f);
+    }
+
+    /** Draws the black overlay used during area transfers. */
+    private void drawTransferFadeOverlay() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0, 0, 0, transferFadeAlpha);
 
         float x = camera.position.x - camera.viewportWidth / 2f;
         float y = camera.position.y - camera.viewportHeight / 2f;
@@ -678,5 +802,13 @@ public class GameScreen implements Screen {
         DEATH_ANIM, // Waiting for death animation to finish
         FADE_TO_BLACK, // Black overlay alpha increasing
         FADE_IN // Black overlay alpha decreasing (map already reset)
+    }
+
+    // --- Area-transfer state machine ---
+
+    private enum TransferPhase {
+        NONE, // Normal gameplay
+        FADE_TO_BLACK, // Black overlay alpha increasing (map not swapped yet)
+        FADE_IN // Black overlay alpha decreasing (map already swapped)
     }
 }

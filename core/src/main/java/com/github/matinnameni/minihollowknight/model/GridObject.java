@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Rectangle;
 public class GridObject extends Rectangle {
     public boolean isDeadly;
     public boolean canPogo;
+    public String transferTo;
 
     public GridObject(float x, float y, float width, float height) {
         super(x, y, width, height);
@@ -34,5 +35,12 @@ public class GridObject extends Rectangle {
         super(rect);
         this.isDeadly = isDeadly;
         this.canPogo = canPogo;
+    }
+
+    public GridObject(float x, float y, float width, float height, boolean isDeadly, boolean canPogo, String transferTo) {
+        super(x, y, width, height);
+        this.isDeadly = isDeadly;
+        this.canPogo = canPogo;
+        this.transferTo = transferTo;
     }
 }

@@ -1,6 +1,7 @@
 package com.github.matinnameni.minihollowknight.controller;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.controller.system.CameraSystem;
 import com.github.matinnameni.minihollowknight.controller.system.CombatSystem;
@@ -19,6 +20,7 @@ import com.github.matinnameni.minihollowknight.model.enemies.FalseKnight;
 import com.github.matinnameni.minihollowknight.model.enemies.Shockwave;
 import com.github.matinnameni.minihollowknight.model.enums.BossType;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
+import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 
 import java.util.List;
@@ -44,6 +46,15 @@ public class GameScreenController implements EventListener {
 
     // --- Respawn callback ---
     private Runnable onPlayerDied;
+
+    /**
+     * The environment the player should transfer to, or {@code null} when no
+     * transfer is pending. Set when the knight overlaps a transfer collider
+     * (a {@link GridObject} with a non-null {@code transferTo} property), then
+     * consumed by {@link com.github.matinnameni.minihollowknight.view.screens.GameScreen}
+     * to drive the fade-to-black → swap-map → fade-in transition.
+     */
+    private GameEnvironment pendingTransfer = null;
 
     public GameScreenController(Knight knight, EnemiesAssetsManager enemiesAssets) {
         this.knight = knight;
@@ -170,7 +181,38 @@ public class GameScreenController implements EventListener {
                     }
                 }
             }
+
+            // 15. Area-transfer check
+            if (pendingTransfer == null) {
+                Rectangle knightBounds = knight.getBounds();
+                for (GridObject collider : gameMap.getColliders()) {
+                    if (collider.transferTo == null) continue;
+                    if (!knightBounds.overlaps(collider)) continue;
+                    GameEnvironment target = resolveTransferTarget(collider.transferTo);
+                    if (target != null) {
+                        pendingTransfer = target;
+                        break;
+                    }
+                }
+            }
         }
+    }
+
+    /**
+     * Resolves a {@code transferTo} string (from the Tiled map) to a
+     * {@link GameEnvironment}. Matches case-insensitively against both the
+     * enum name and the environment's display name.
+     *
+     * @return the matching environment, or {@code null} if no match.
+     */
+    private static GameEnvironment resolveTransferTarget(String transferTo) {
+        if (transferTo == null) return null;
+        String normalized = transferTo.trim().toLowerCase();
+        for (GameEnvironment env : GameEnvironment.values()) {
+            if (env.name().toLowerCase().equals(normalized)) return env;
+            if (env.name != null && env.name.toLowerCase().equals(normalized)) return env;
+        }
+        return null;
     }
 
     // --- Shockwave helper ---
@@ -256,6 +298,19 @@ public class GameScreenController implements EventListener {
         combatSystem.reset();
         cameraSystem.reset();
         worldSystem.reset();
+        // Clear any pending transfer so a stale one from the old map doesn't
+        // immediately re-trigger after a map swap.
+        pendingTransfer = null;
+    }
+
+    /**
+     * @return the environment the player should transfer to, or {@code null}
+     *         if no transfer is pending.
+     */
+    public GameEnvironment consumePendingTransfer() {
+        GameEnvironment target = pendingTransfer;
+        pendingTransfer = null;
+        return target;
     }
 
     // --- Lifecycle ---
