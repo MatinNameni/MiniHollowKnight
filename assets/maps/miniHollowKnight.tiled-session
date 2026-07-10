@@ -1,0 +1,407 @@
+{
+    "activeFile": "forgotten_crossroads/spawnPoint.tmx",
+    "expandedProjectPaths": [
+        ".",
+        "forgotten_crossroads"
+    ],
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "forgotten_crossroads/BG_egg_07_0005_Layer-0_0.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/BG_twist.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/FG_eggs_03_0000_04.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/FG_platform.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/FK_break__0000_wall_default.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/FK_break__0001_wall_half_break.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/FK_break__0004_wall_break.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/TestWall.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 0.25,
+            "scaleInEditor": 0.75
+        },
+        "forgotten_crossroads/arena_BG_wall_01_0001_Layer-2.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/arena_BG_wall_01_0003_Layer-4.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/atlas0.tsx": {
+            "scaleInDock": 0.03125,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/barrel shelf bg.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/black_fader.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/black_solid.tsx": {
+            "scaleInDock": 4,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/black_wall.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/bone_bench.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/bone_spike_03.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/bone_spike_04.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/bone_spike_06.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/boss_room_door.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/break_wall_ancient_variant.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/break_wall_deepnest.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_archbase_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_archbase_01_long.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_archway_01_broken.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_archway_02.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_big_roof_0001_06.tsx": {
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_big_roof_0004_03.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_broken_wall.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_floor_02.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_mid_wall_detail_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_mid_wall_detail_02.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_room_BG_01.tsx": {
+            "scaleInDock": 0.0625,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_room_BG_02.tsx": {
+            "scaleInDock": 0.0625,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_wall_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/cd_wall_01_r.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/deep_crumble_floor.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/door.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/mainEntrance.tmx": {
+            "scale": 0.25,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1140,
+                "y": 1754
+            }
+        },
+        "forgotten_crossroads/plat_float_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/plat_float_05.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/plat_float_06.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/plat_float_07.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/plat_float_08.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/plat_float_09.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/sliding_wall0008.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/sliding_wall0009.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/spawnPoint.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 0.12,
+            "selectedLayer": 10,
+            "viewCenter": {
+                "x": 2375.0000000000005,
+                "y": 2158.333333333333
+            }
+        },
+        "forgotten_crossroads/spawnPoint.tmx#cd_BG_well_shaft": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.25
+        },
+        "forgotten_crossroads/spawnPoint.tmx#well_extension_0000_2": {
+            "scaleInDock": 0.75
+        },
+        "forgotten_crossroads/statue_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/statue_02.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/statue_02_base.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/statue_03.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/statue_03_base.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/statue_06.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/statue_06_base.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/vil_BG_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/vil_BG_02.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/vil_BG_03.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/vil_BG_04.tsx": {
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/vil_BG_05.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/vil_BG_06.tsx": {
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/vil_BG_07.tsx": {
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/vil_floor_01.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/wall_08_0003_01.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/wd_BG_skull_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/wd_BG_skull_02.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/wd_pole_04.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/well_extension_0000_2.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "forgotten_crossroads/well_extension_0001_1.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "/home/matin/Sharif/Term2/AP/Exercises/E4/MiniHollowKnight/assets/sprites/Architecture & Environment",
+    "map.height": 200,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 8,
+    "map.tileWidth": 8,
+    "map.width": 300,
+    "openFiles": [
+        "forgotten_crossroads/mainEntrance.tmx",
+        "forgotten_crossroads/spawnPoint.tmx",
+        "forgotten_crossroads/sliding_wall0009.tsx",
+        "forgotten_crossroads/plat_float_09.tsx",
+        "forgotten_crossroads/plat_float_06.tsx",
+        "forgotten_crossroads/wall_08_0003_01.tsx",
+        "forgotten_crossroads/deep_crumble_floor.tsx",
+        "forgotten_crossroads/black_wall.tsx",
+        "forgotten_crossroads/break_wall_ancient_variant.tsx",
+        "forgotten_crossroads/plat_float_07.tsx",
+        "forgotten_crossroads/break_wall_deepnest.tsx",
+        "forgotten_crossroads/FK_break__0001_wall_half_break.tsx",
+        "forgotten_crossroads/sliding_wall0008.tsx",
+        "forgotten_crossroads/black_solid.tsx",
+        "forgotten_crossroads/boss_room_door.tsx",
+        "forgotten_crossroads/BG_twist.tsx",
+        "forgotten_crossroads/bone_spike_03.tsx",
+        "forgotten_crossroads/bone_spike_04.tsx",
+        "forgotten_crossroads/arena_BG_wall_01_0003_Layer-4.tsx",
+        "forgotten_crossroads/arena_BG_wall_01_0001_Layer-2.tsx",
+        "forgotten_crossroads/bone_spike_06.tsx",
+        "forgotten_crossroads/plat_float_05.tsx",
+        "forgotten_crossroads/plat_float_08.tsx",
+        "forgotten_crossroads/well_extension_0001_1.tsx",
+        "forgotten_crossroads/plat_float_01.tsx",
+        "forgotten_crossroads/cd_archbase_01.tsx",
+        "forgotten_crossroads/cd_big_roof_0001_06.tsx",
+        "forgotten_crossroads/cd_big_roof_0004_03.tsx",
+        "forgotten_crossroads/barrel shelf bg.tsx",
+        "forgotten_crossroads/cd_room_BG_01.tsx",
+        "forgotten_crossroads/cd_room_BG_02.tsx",
+        "forgotten_crossroads/vil_BG_01.tsx",
+        "forgotten_crossroads/statue_06.tsx",
+        "forgotten_crossroads/vil_BG_02.tsx",
+        "forgotten_crossroads/vil_BG_03.tsx",
+        "forgotten_crossroads/vil_BG_04.tsx",
+        "forgotten_crossroads/vil_BG_05.tsx",
+        "forgotten_crossroads/vil_BG_06.tsx",
+        "forgotten_crossroads/vil_BG_07.tsx",
+        "forgotten_crossroads/door.tsx",
+        "forgotten_crossroads/statue_01.tsx",
+        "forgotten_crossroads/statue_02.tsx",
+        "forgotten_crossroads/statue_02_base.tsx",
+        "forgotten_crossroads/statue_06_base.tsx",
+        "forgotten_crossroads/statue_03.tsx",
+        "forgotten_crossroads/statue_03_base.tsx",
+        "forgotten_crossroads/wd_BG_skull_02.tsx",
+        "forgotten_crossroads/wd_BG_skull_01.tsx",
+        "forgotten_crossroads/wd_pole_04.tsx",
+        "forgotten_crossroads/bone_bench.tsx",
+        "forgotten_crossroads/atlas0.tsx",
+        "forgotten_crossroads/FK_break__0004_wall_break.tsx",
+        "forgotten_crossroads/black_fader.tsx",
+        "forgotten_crossroads/vil_floor_01.tsx"
+    ],
+    "project": "miniHollowKnight.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "forgotten_crossroads/mainEntrance.tmx",
+        "forgotten_crossroads/vil_floor_01.tsx",
+        "forgotten_crossroads/black_fader.tsx",
+        "forgotten_crossroads/FK_break__0004_wall_break.tsx",
+        "forgotten_crossroads/atlas0.tsx",
+        "forgotten_crossroads/bone_bench.tsx",
+        "forgotten_crossroads/wd_pole_04.tsx",
+        "forgotten_crossroads/wd_BG_skull_01.tsx",
+        "forgotten_crossroads/wd_BG_skull_02.tsx",
+        "forgotten_crossroads/statue_03_base.tsx",
+        "forgotten_crossroads/statue_03.tsx",
+        "forgotten_crossroads/statue_06_base.tsx"
+    ],
+    "tileset.embedInMap": false,
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 8,
+        "width": 8
+    },
+    "tileset.type": 0
+}
