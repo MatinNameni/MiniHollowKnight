@@ -30,7 +30,7 @@ public class PauseMenuController {
 
     /** Called when the player taps the Quit to menu button. */
     public void onQuitToMenu() {
-        // TODO: save current game data
+        gameScreen.saveGame();
         navigator.goToMainMenu();
     }
 

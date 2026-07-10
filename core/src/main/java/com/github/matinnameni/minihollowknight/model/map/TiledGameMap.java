@@ -393,6 +393,10 @@ public class TiledGameMap {
 
     // --- Getters ---
 
+    public GameEnvironment getCurrentEnvironment() {
+        return currentEnvironment;
+    }
+
     public List<GridObject> getColliders() {
         return colliders;
     }

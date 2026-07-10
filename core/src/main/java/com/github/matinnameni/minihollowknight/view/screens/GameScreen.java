@@ -27,6 +27,7 @@ import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.map.MapLoader;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
+import com.github.matinnameni.minihollowknight.view.UiManager;
 import com.github.matinnameni.minihollowknight.view.hud.AchievementPopupOverlay;
 import com.github.matinnameni.minihollowknight.view.hud.DisplayTextOverlay;
 import com.github.matinnameni.minihollowknight.view.hud.GameHud;
@@ -479,6 +480,34 @@ public class GameScreen implements Screen {
     private void closeInventory() {
         inventoryOpen = false;
         Gdx.input.setInputProcessor(null);
+    }
+
+    // --- Saving ---
+
+    /** Persists the current game state to the database. */
+    public void saveGame() {
+        // Sync live knight state into gameData.
+        if (knight != null) {
+            knight.writeToSave(gameData);
+        }
+
+        // Sync the currently loaded environment.
+        if (gameMap != null && gameMap.getCurrentEnvironment() != null) {
+            gameData.currentEnvironment = gameMap.getCurrentEnvironment().id;
+        }
+
+        // Stamp the save timestamp.
+        gameData.lastSavedAt = System.currentTimeMillis();
+
+        // Persist to the database.
+        UiManager ui = UiManager.getInstance();
+        if (ui != null && ui.getDatabase() != null && gameData.isPersisted()) {
+            try {
+                ui.getDatabase().saveGameData(gameData);
+            } catch (java.sql.SQLException e) {
+                System.err.println("[GameScreen] Failed to save game: " + e.getMessage());
+            }
+        }
     }
 
     @Override
