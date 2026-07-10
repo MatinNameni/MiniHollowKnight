@@ -1,9 +1,11 @@
 {
-    "activeFile": "forgotten_crossroads/spawnPoint.tmx",
+    "activeFile": "forgotten_crossroads/vil_floor_01.tsx",
     "expandedProjectPaths": [
-        ".",
-        "forgotten_crossroads"
+        "greenpath",
+        "forgotten_crossroads",
+        "."
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "": {
             "scaleInDock": 1
@@ -171,8 +173,8 @@
             "scale": 0.25,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 1140,
-                "y": 1754
+                "x": 2240,
+                "y": 1968
             }
         },
         "forgotten_crossroads/plat_float_01.tsx": {
@@ -317,14 +319,22 @@
         "forgotten_crossroads/well_extension_0001_1.tsx": {
             "scaleInDock": 0.25,
             "scaleInEditor": 1
+        },
+        "greenpath/greenpath.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 592,
+                "y": 582
+            }
         }
     },
     "last.imagePath": "/home/matin/Sharif/Term2/AP/Exercises/E4/MiniHollowKnight/assets/sprites/Architecture & Environment",
-    "map.height": 200,
+    "map.height": 600,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 8,
     "map.tileWidth": 8,
-    "map.width": 300,
+    "map.width": 500,
     "openFiles": [
         "forgotten_crossroads/mainEntrance.tmx",
         "forgotten_crossroads/spawnPoint.tmx",
@@ -385,17 +395,17 @@
     "property.type": "bool",
     "recentFiles": [
         "forgotten_crossroads/mainEntrance.tmx",
-        "forgotten_crossroads/vil_floor_01.tsx",
-        "forgotten_crossroads/black_fader.tsx",
-        "forgotten_crossroads/FK_break__0004_wall_break.tsx",
-        "forgotten_crossroads/atlas0.tsx",
-        "forgotten_crossroads/bone_bench.tsx",
-        "forgotten_crossroads/wd_pole_04.tsx",
-        "forgotten_crossroads/wd_BG_skull_01.tsx",
-        "forgotten_crossroads/wd_BG_skull_02.tsx",
-        "forgotten_crossroads/statue_03_base.tsx",
-        "forgotten_crossroads/statue_03.tsx",
-        "forgotten_crossroads/statue_06_base.tsx"
+        "forgotten_crossroads/spawnPoint.tmx",
+        "forgotten_crossroads/sliding_wall0009.tsx",
+        "forgotten_crossroads/plat_float_09.tsx",
+        "forgotten_crossroads/plat_float_06.tsx",
+        "forgotten_crossroads/wall_08_0003_01.tsx",
+        "forgotten_crossroads/deep_crumble_floor.tsx",
+        "forgotten_crossroads/black_wall.tsx",
+        "forgotten_crossroads/break_wall_ancient_variant.tsx",
+        "forgotten_crossroads/plat_float_07.tsx",
+        "forgotten_crossroads/break_wall_deepnest.tsx",
+        "forgotten_crossroads/FK_break__0001_wall_half_break.tsx"
     ],
     "tileset.embedInMap": false,
     "tileset.lastUsedFormat": "tsx",
