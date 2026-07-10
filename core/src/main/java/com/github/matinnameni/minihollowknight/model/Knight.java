@@ -56,6 +56,7 @@ public class Knight implements Entity {
     // Attack
     public static final float SLASH_DAMAGE = 40f;
     public static final float SLASH_SOUL_GAIN = 11f;
+    public static final float SOUL_GAIN_DURATION = 0.4f;
     public static final float ATTACK_DURATION = 0.30f;
     public static final float ATTACK_HITBOX_WIDTH = 80f;
     public static final float ATTACK_HITBOX_HEIGHT = 50f;
@@ -97,6 +98,7 @@ public class Knight implements Entity {
     private int masks = 5;
     private int maxMasks = 5;
     private float soul = 0f;
+    private float pendingSoulGain = 0f; // Soul that has been earned but not yet added to soul.
 
     // --- Timers ---
     private float invincibilityTimer = 0f;
@@ -149,8 +151,33 @@ public class Knight implements Entity {
             return;
         }
 
+        applyPendingSoul(deltaTime);
+
         updateState(deltaTime);
         applyPhysics(deltaTime);
+    }
+
+    /**
+     * Drains {@link #pendingSoulGain} into {@link #soul} over
+     * {@link #SOUL_GAIN_DURATION} seconds, capped at {@link GameData#MAX_SOUL}.
+     */
+    private void applyPendingSoul(float deltaTime) {
+        if (pendingSoulGain <= 0f) return;
+
+        // Amount that should move from pending to soul this frame.
+        float amount = pendingSoulGain * (deltaTime / SOUL_GAIN_DURATION);
+
+        // Don't overshoot MAX_SOUL or the remaining pending.
+        float headroom = GameData.MAX_SOUL - soul;
+        amount = Math.min(amount, headroom);
+        amount = Math.min(amount, pendingSoulGain);
+
+        soul += amount;
+        pendingSoulGain -= amount;
+
+        if (pendingSoulGain <= 0f) {
+            pendingSoulGain = 0f;
+        }
     }
 
     @Override
@@ -184,6 +211,7 @@ public class Knight implements Entity {
         this.masks = data.masks;
         this.maxMasks = data.maxMasks;
         this.soul = data.soul;
+        this.pendingSoulGain = 0f;
         applyEquippedCharms(data.equippedCharms);
 
         // Reset runtime state
@@ -204,7 +232,7 @@ public class Knight implements Entity {
         data.playerY = position.y;
         data.masks = masks;
         data.maxMasks = maxMasks;
-        data.soul = soul;
+        data.soul = Math.min(soul + pendingSoulGain, GameData.MAX_SOUL);
     }
 
     // --- Charms ---
@@ -636,7 +664,12 @@ public class Knight implements Entity {
     // --- Soul ---
 
     public void gainSoul(float amount) {
-        soul = Math.min(soul + amount, GameData.MAX_SOUL);
+        float totalIfAdded = soul + pendingSoulGain + amount;
+        if (totalIfAdded <= GameData.MAX_SOUL) {
+            pendingSoulGain += amount;
+        } else {
+            pendingSoulGain = GameData.MAX_SOUL - soul;
+        }
         EventBus.getInstance().publish(GameEvent.PLAYER_SOUL_GAINED, amount);
     }
 
@@ -651,6 +684,7 @@ public class Knight implements Entity {
     public void resetAfterDeath() {
         this.masks = maxMasks;
         this.soul = 0f;
+        this.pendingSoulGain = 0f;
         this.state = KnightState.IDLE;
         this.stateTime = 0f;
         this.velocity.setZero();
