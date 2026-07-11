@@ -57,13 +57,6 @@ public class GameScreenController implements EventListener {
     // --- Respawn callback ---
     private Runnable onPlayerDied;
 
-    /**
-     * The environment the player should transfer to, or {@code null} when no
-     * transfer is pending. Set when the knight overlaps a transfer collider
-     * (a {@link GridObject} with a non-null {@code transferTo} property), then
-     * consumed by {@link com.github.matinnameni.minihollowknight.view.screens.GameScreen}
-     * to drive the fade-to-black → swap-map → fade-in transition.
-     */
     private GameEnvironment pendingTransfer = null;
 
     public GameScreenController(Knight knight, EnemiesAssetsManager enemiesAssets) {
@@ -87,6 +80,7 @@ public class GameScreenController implements EventListener {
         EventBus.getInstance().subscribe(GameEvent.FALSE_KNIGHT_FIGHT_STARTED, this);
         EventBus.getInstance().subscribe(GameEvent.FALSE_KNIGHT_DEFEATED, this);
         EventBus.getInstance().subscribe(GameEvent.PLAYER_DIED, this);
+        EventBus.getInstance().subscribe(GameEvent.CAMERA_SHAKE, this);
     }
 
     // --- Respawn callback ---
@@ -247,9 +241,11 @@ public class GameScreenController implements EventListener {
         if (event == GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST && payload instanceof VengefulSpirit.SpawnInfo) {
             VengefulSpirit.SpawnInfo info = (VengefulSpirit.SpawnInfo) payload;
             projectileSystem.addProjectile(new VengefulSpirit(info.x, info.y, info.direction, info.assets, info.damageMultiplier));
+            EventBus.getInstance().publish(GameEvent.CAMERA_SHAKE);
         } else if (event == GameEvent.PLAYER_HOWLING_WRAITHS_CAST && payload instanceof HowlingWraiths.SpawnInfo) {
             HowlingWraiths.SpawnInfo info = (HowlingWraiths.SpawnInfo) payload;
             projectileSystem.addProjectile(new HowlingWraiths(info.x, info.y, info.assets, info.damageMultiplier));
+            EventBus.getInstance().publish(GameEvent.CAMERA_SHAKE);
         } else if (event == GameEvent.PLAYER_NAIL_HIT && payload instanceof Enemy) {
             combatSystem.resolveNailHitOnEnemy(knight, (Enemy) payload);
         } else if (event == GameEvent.FALSE_KNIGHT_FIGHT_STARTED) {
@@ -268,6 +264,12 @@ public class GameScreenController implements EventListener {
         } else if (event == GameEvent.PLAYER_DIED) {
             if (onPlayerDied != null) {
                 onPlayerDied.run();
+            }
+        } else if (event == GameEvent.CAMERA_SHAKE) {
+            if (payload instanceof Float) {
+                cameraSystem.addShake((Float) payload);
+            } else {
+                cameraSystem.addShake(CameraSystem.DEFAULT_SHAKE);
             }
         }
     }
@@ -352,5 +354,6 @@ public class GameScreenController implements EventListener {
         EventBus.getInstance().unsubscribe(GameEvent.FALSE_KNIGHT_FIGHT_STARTED, this);
         EventBus.getInstance().unsubscribe(GameEvent.FALSE_KNIGHT_DEFEATED, this);
         EventBus.getInstance().unsubscribe(GameEvent.PLAYER_DIED, this);
+        EventBus.getInstance().unsubscribe(GameEvent.CAMERA_SHAKE, this);
     }
 }

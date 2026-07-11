@@ -1,6 +1,8 @@
 package com.github.matinnameni.minihollowknight.controller.system;
 
 import com.badlogic.gdx.math.Rectangle;
+import com.github.matinnameni.minihollowknight.model.event.EventBus;
+import com.github.matinnameni.minihollowknight.model.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.object.BreakableWall;
 import com.github.matinnameni.minihollowknight.model.charm.CharmEffects;
 import com.github.matinnameni.minihollowknight.model.object.GridObject;
@@ -146,6 +148,7 @@ public class CombatSystem {
 
             Direction knockback = (knight.getBounds().x < enemy.getBounds().x) ? Direction.LEFT : Direction.RIGHT;
             knight.takeDamage(knockback);
+            EventBus.getInstance().publish(GameEvent.CAMERA_SHAKE);
             break;
         }
     }

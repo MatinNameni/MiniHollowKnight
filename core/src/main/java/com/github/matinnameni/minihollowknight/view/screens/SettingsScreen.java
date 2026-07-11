@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.Scaling;
 
 import com.github.matinnameni.minihollowknight.controller.SettingsController;
 import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
+import com.github.matinnameni.minihollowknight.model.enums.MenuStyle;
 import com.github.matinnameni.minihollowknight.model.localization.Lang;
 import com.github.matinnameni.minihollowknight.model.data.Settings;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
@@ -20,6 +21,7 @@ public class SettingsScreen extends AbstractScreen {
     private static final float FIELD_HEIGHT = 40f;
     private static final float FIELD_SPACING = 20f;
     private static final float SLIDER_WIDTH = 200f;
+    private static final float SELECT_BOX_WIDTH = 200f;
 
     private final Settings settings;
     private final SettingsController controller;
@@ -43,7 +45,8 @@ public class SettingsScreen extends AbstractScreen {
 
         rootTable.add(buildTitleLabel()).width(FIELD_WIDTH).spaceBottom(0).row();
         rootTable.add(buildSeparator()).width(FIELD_WIDTH).row();
-        rootTable.add(buildLanguageSelectSection()).width(FIELD_WIDTH).spaceTop(0).row();
+        rootTable.add(buildMenuStyleSection()).width(FIELD_WIDTH).spaceTop(0).row();
+        rootTable.add(buildLanguageSelectSection()).width(FIELD_WIDTH).row();
         rootTable.add(buildBrightnessSection()).width(FIELD_WIDTH).row();
         rootTable.add(buildAudioSettingsButton()).spaceTop(0).row();
         rootTable.add(buildKeyBindingsButton()).spaceTop(0).row();
@@ -75,6 +78,38 @@ public class SettingsScreen extends AbstractScreen {
         Image separator = new Image(menuAssets().getSeparator());
         separator.setScaling(Scaling.fillX);
         return separator;
+    }
+
+    // --- Menu theme ---
+
+    private Table buildMenuStyleSection() {
+        Table wrapper = new Table(skin);
+
+        wrapper.add(new Label(Lang.get("settings.menuStyle"), skin)).expandX().grow().spaceRight(FIELD_SPACING);
+        wrapper.add(buildMenuStyleSelect()).width(SELECT_BOX_WIDTH).growY();
+
+        return wrapper;
+    }
+
+    /**
+     * Builds the select box that changes the menu background.
+     */
+    private SelectBox<MenuStyle> buildMenuStyleSelect() {
+        SelectBox<MenuStyle> select = new SelectBox<>(skin);
+        select.setItems(MenuStyle.values());
+        select.setSelected(menuAssets().getMenuStyle());
+        select.setAlignment(Align.right);
+
+        select.getStyle().background = null;
+        select.getList().setAlignment(Align.center);
+
+        select.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                controller.onMenuStyleChange(select.getSelected(), menuAssets());
+            }
+        });
+        return select;
     }
 
     // --- Audio ---
@@ -115,7 +150,7 @@ public class SettingsScreen extends AbstractScreen {
         Table wrapper = new Table(skin);
 
         wrapper.add(new Label(Lang.get("settings.language"), skin)).expandX().grow().spaceRight(FIELD_SPACING);
-        wrapper.add(buildLanguageSelect()).growY();
+        wrapper.add(buildLanguageSelect()).width(SELECT_BOX_WIDTH).growY();
 
         return wrapper;
     }
@@ -127,6 +162,7 @@ public class SettingsScreen extends AbstractScreen {
         SelectBox<SupportedLanguage> select = new SelectBox<>(skin);
         select.setItems(SupportedLanguage.values());
         select.setSelected(SupportedLanguage.fromShortName(settings.getLanguage()));
+        select.setAlignment(Align.right);
 
         select.getStyle().background = null;
         select.getList().setAlignment(Align.center);

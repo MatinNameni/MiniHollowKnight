@@ -14,6 +14,7 @@ public class CameraSystem {
     private static final float CAMERA_LERP = 4f;
     private static final float CAMERA_X_OFFSET = 0f;
     private static final float CAMERA_Y_OFFSET = 200f;
+    public static final float DEFAULT_SHAKE = 10f;
 
     private final Vector2 cameraTarget = new Vector2();
     private float cameraShakeIntensity = 0f;

@@ -1,6 +1,8 @@
 package com.github.matinnameni.minihollowknight.controller;
 
+import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
 import com.github.matinnameni.minihollowknight.model.data.Settings;
+import com.github.matinnameni.minihollowknight.model.enums.MenuStyle;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
 import com.github.matinnameni.minihollowknight.view.navigator.ScreenNavigator;
 import com.github.matinnameni.minihollowknight.view.navigator.UiManager;
@@ -23,6 +25,16 @@ public class SettingsController {
         this.navigator = navigator;
         this.settings = settings;
         this.cameFromPause = cameFromPause;
+    }
+
+    /** Called when the player changes the menu style. */
+    public void onMenuStyleChange(MenuStyle style, MenuAssetBundle menuAssets) {
+        menuAssets.setBackground(style);
+        if (cameFromPause) {
+            navigator.goToSettingsFromPause();
+        } else {
+            navigator.goToSettings();
+        }
     }
 
     /** Called when the player taps the Audio Settings button. */

@@ -174,7 +174,7 @@ public class InventoryOverlay {
 
         nameLabel = new Label("", skin);
         nameLabel.setFontScale(TITLE_FONT_SCALE);
-        nameLabel.setColor(EQUIPPED_TINT);
+        nameLabel.setColor(Color.WHITE);
         panel.add(nameLabel).growX().row();
 
         descriptionLabel = new Label("", skin);
@@ -301,7 +301,7 @@ public class InventoryOverlay {
         CharmType selected = controller.getSelectedCharm();
         if (selected == null) {
             nameLabel.setText("");
-            nameLabel.setColor(Color.GRAY);
+            nameLabel.setColor(Color.WHITE);
             descriptionLabel.setText("");
             return;
         }
@@ -358,8 +358,6 @@ public class InventoryOverlay {
                     whiteTexture = makeWhiteTexture();
                     baseDrawable = new TextureRegionDrawable(new TextureRegion(whiteTexture));
                 }
-                // tint() returns a new SpriteDrawable with the requested color
-                // baked in, so it can be used directly as a Table background.
                 d = baseDrawable.tint(new Color(color.r, color.g, color.b, alpha));
                 cache.put(key, d);
             }

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.github.matinnameni.minihollowknight.model.data.GameData;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
+import com.github.matinnameni.minihollowknight.model.enums.MenuStyle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,9 @@ public class MenuAssetBundle extends AssetBundle {
 
     // --- Asset paths ---
     private static final String UI_SKIN = "skins/gameskins.json";
-    private static final String BACKGROUND_IMG = "sprites/Menu/controller_prompt_bg.png";
+    private static final String BACKGROUND_IMG_CLASSIC = "sprites/Menu/Menu_Theme_Classic_Current.png";
+    private static final String BACKGROUND_IMG_LIFEBLOOD = "sprites/Menu/Menu_Theme_Lifeblood.png";
+    private static final String BACKGROUND_IMG_HIDDEN_DREAMS = "sprites/Menu/Menu_Theme_Hidden_Dreams.png";
     private static final String LOGO_IMG = "sprites/Menu/logo.png";
     private static final String SEPARATOR = "sprites/Inventory & UI/Fleurs/Warning_Fleur0008.png";
     private static final String MENU_MUSIC = "Audio_Files/Title.wav";
@@ -37,6 +40,8 @@ public class MenuAssetBundle extends AssetBundle {
 
     private final List<String> assetPaths = new ArrayList<>();
 
+    private String backgroundPath = BACKGROUND_IMG_CLASSIC;
+
     public MenuAssetBundle(AssetManager manager) {
         super(manager);
     }
@@ -49,7 +54,9 @@ public class MenuAssetBundle extends AssetBundle {
     @Override
     public void queue() {
         assetPaths.clear();
-        queue(BACKGROUND_IMG, Texture.class);
+        queue(BACKGROUND_IMG_CLASSIC, Texture.class);
+        queue(BACKGROUND_IMG_LIFEBLOOD, Texture.class);
+        queue(BACKGROUND_IMG_HIDDEN_DREAMS, Texture.class);
         queue(LOGO_IMG, Texture.class);
         queue(SEPARATOR, Texture.class);
         queue(MENU_MUSIC, Music.class);
@@ -82,7 +89,36 @@ public class MenuAssetBundle extends AssetBundle {
     // --- Accessors ---
 
     public Texture getBackground() {
-        return manager.get(BACKGROUND_IMG, Texture.class);
+        return manager.get(backgroundPath, Texture.class);
+    }
+
+    public void setBackground(MenuStyle style) {
+        switch (style) {
+            case LIFEBLOOD:
+                backgroundPath = BACKGROUND_IMG_LIFEBLOOD;
+                break;
+
+            case HIDDEN_DREAMS:
+                backgroundPath = BACKGROUND_IMG_HIDDEN_DREAMS;
+                break;
+
+            default:
+                backgroundPath = BACKGROUND_IMG_CLASSIC;
+                break;
+        }
+    }
+
+    public MenuStyle getMenuStyle() {
+        switch (backgroundPath) {
+            case BACKGROUND_IMG_LIFEBLOOD:
+                return MenuStyle.LIFEBLOOD;
+
+            case BACKGROUND_IMG_HIDDEN_DREAMS:
+                return MenuStyle.HIDDEN_DREAMS;
+
+            default:
+                return MenuStyle.CLASSIC;
+        }
     }
 
     public Texture getLogo() {

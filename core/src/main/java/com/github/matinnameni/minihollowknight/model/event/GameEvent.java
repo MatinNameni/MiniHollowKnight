@@ -42,6 +42,7 @@ public enum GameEvent {
     // --- World ---
     BREAKABLE_WALL_HIT,
     BREAKABLE_WALL_DEATH,
+    CAMERA_SHAKE,
 
     // --- Game lifecycle ---
     GAME_SAVED,
