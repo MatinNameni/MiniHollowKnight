@@ -1,6 +1,7 @@
 package com.github.matinnameni.minihollowknight.controller;
 
 import com.github.matinnameni.minihollowknight.view.navigator.ScreenNavigator;
+import com.github.matinnameni.minihollowknight.view.navigator.UiManager;
 import com.github.matinnameni.minihollowknight.view.screens.GameScreen;
 
 /**
@@ -32,6 +33,7 @@ public class PauseMenuController {
     public void onQuitToMenu() {
         gameScreen.saveGame();
         navigator.goToMainMenu();
+        UiManager.getInstance().playMenuMusic();
     }
 
     /** Called when the player taps the Show cheat codes button */

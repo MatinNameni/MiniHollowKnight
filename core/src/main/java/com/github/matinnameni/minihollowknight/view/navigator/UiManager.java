@@ -4,7 +4,6 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
-import com.github.matinnameni.minihollowknight.controller.AchievementController;
 import com.github.matinnameni.minihollowknight.controller.AudioSettingsController;
 import com.github.matinnameni.minihollowknight.controller.GameMusicManager;
 import com.github.matinnameni.minihollowknight.controller.KeyBindingsController;
@@ -193,8 +192,9 @@ public class UiManager implements ScreenNavigator {
         if (manager != null) {
             manager.clearActiveGameData();
         }
-        stopGameMusic();
-        playMenuMusic();
+        if (gameMusicManager != null) {
+            gameMusicManager.stop();
+        }
         MainMenuController controller = new MainMenuController(this);
         setScreen(new MainMenuScreen(registry, settings, controller));
     }
