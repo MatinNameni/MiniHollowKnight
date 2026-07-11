@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="600" height="500" tilewidth="8" tileheight="8" infinite="0" nextlayerid="9" nextobjectid="59">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="600" height="500" tilewidth="8" tileheight="8" infinite="0" nextlayerid="9" nextobjectid="62">
  <tileset firstgid="1" source="slug_floor.tsx"/>
  <tileset firstgid="301" source="fung_pillar_wall_0001_2.tsx"/>
  <tileset firstgid="2341" source="fungd_wall_rock_03_0003_a.tsx"/>
@@ -2053,7 +2053,7 @@
 </data>
  </layer>
  <objectgroup id="8" name="MainLayer">
-  <object id="5" name="mossflySpawn" x="3692" y="3520">
+  <object id="5" name="mossflySpawn" x="3682.91" y="3559.39">
    <point/>
   </object>
   <object id="6" name="mossflySpawn" x="3440" y="2428">
@@ -2062,19 +2062,19 @@
   <object id="7" name="mossflySpawn" x="328" y="1136">
    <point/>
   </object>
-  <object id="8" name="mossflySpawn" x="540" y="2240">
+  <object id="8" name="mossflySpawn" x="543.03" y="2246.06">
    <point/>
   </object>
   <object id="9" name="mossflySpawn" x="3768" y="1100">
    <point/>
   </object>
-  <object id="10" name="mossflySpawn" x="1404" y="3536">
+  <object id="10" name="mossflySpawn" x="1373.7" y="3560.24">
    <point/>
   </object>
   <object id="11" name="huskHornheadSpawn" x="536" y="1132">
    <point/>
   </object>
-  <object id="12" name="huskHornheadSpawn" x="2352" y="3540">
+  <object id="12" name="huskHornheadSpawn" x="2342.91" y="3558.18">
    <point/>
   </object>
   <object id="13" name="crystallizedSpawn" x="3844" y="2428">
@@ -2089,7 +2089,7 @@
   <object id="17" x="1590" y="3012" width="254" height="106"/>
   <object id="18" x="2056" y="2802" width="256" height="106"/>
   <object id="19" x="2498" y="2640" width="256" height="106"/>
-  <object id="20" x="2970" y="2428" width="1838" height="86"/>
+  <object id="20" x="2970" y="2428" width="1641.52" height="86"/>
   <object id="21" x="4734" y="2516" width="62" height="1014"/>
   <object id="22" x="2" y="3546" width="4802" height="142"/>
   <object id="23" x="-2" y="4" width="62" height="3260"/>
@@ -2109,7 +2109,7 @@
     <property name="isDeadly" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="29" x="4648" y="1160" width="92" height="1156">
+  <object id="29" x="4648" y="1160" width="92" height="1104">
    <properties>
     <property name="isDeadly" type="bool" value="true"/>
    </properties>
@@ -2124,7 +2124,7 @@
     <property name="isDeadly" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="32" x="3176" y="1104" width="1558" height="44"/>
+  <object id="32" x="3176" y="1104" width="1434.61" height="44"/>
   <object id="33" x="2812" y="1282" width="136" height="124"/>
   <object id="34" x="2306" y="1724" width="124" height="114"/>
   <object id="35" x="2652" y="2010" width="132" height="130"/>
@@ -2181,6 +2181,13 @@
   <object id="57" name="fcToG" x="106" y="3530">
    <point/>
   </object>
+  <object id="59" x="4680" y="2264" width="52" height="154.667">
+   <properties>
+    <property name="isDeadly" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="60" x="4613.67" y="2428" width="182.667" height="86"/>
+  <object id="61" x="4612.03" y="1104" width="118.61" height="44"/>
  </objectgroup>
  <layer id="5" name="foreground" width="600" height="500">
   <data encoding="csv">

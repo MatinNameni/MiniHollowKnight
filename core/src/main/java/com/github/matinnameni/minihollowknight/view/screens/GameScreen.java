@@ -104,7 +104,7 @@ public class GameScreen implements Screen {
     private boolean initialized = false;
 
     // --- Debug ---
-    private boolean showDebugInfo = true;
+    private boolean showDebugInfo = false;
 
     // --- Respawn state ---
     private RespawnPhase respawnPhase = RespawnPhase.NONE;
@@ -274,7 +274,8 @@ public class GameScreen implements Screen {
             gameData.playTimeSeconds += delta;
         }
 
-        Gdx.gl.glClearColor(1/255f, 0/255f, 35/255f, 0.8f);
+        Color bgColor = controller.getCurrentBackgroundColor(gameMap);
+        Gdx.gl.glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // Background layer

@@ -1,5 +1,7 @@
 package com.github.matinnameni.minihollowknight.controller;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -30,6 +32,7 @@ import com.github.matinnameni.minihollowknight.model.projectile.HowlingWraiths;
 import com.github.matinnameni.minihollowknight.model.projectile.Projectile;
 import com.github.matinnameni.minihollowknight.model.projectile.VengefulSpirit;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -293,6 +296,21 @@ public class GameScreenController implements EventListener {
 
     public void resetDisplayText() {
         worldSystem.resetDisplayText();
+    }
+
+    public Color getCurrentBackgroundColor(TiledGameMap gameMap) {
+        switch (gameMap.getCurrentEnvironment()) {
+            case FORGOTTEN_CROSSROADS:
+                return new Color(
+                    1/255f, 0/255f, 35/255f, 0.8f
+                );
+            case GREENPATH:
+                return new Color(
+                    0/255f, 16/255f, 4/255f, 0.8f
+                );
+            default:
+                return Color.BLACK;
+        }
     }
 
     // --- Map change ---
