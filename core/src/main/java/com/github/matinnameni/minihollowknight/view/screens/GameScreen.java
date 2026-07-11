@@ -242,6 +242,8 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         delta = Math.min(delta, 0.05f);
 
+        UiManager.getInstance().updateGameMusic(delta);
+
         // --- Update logic ---
         if (respawnPhase != RespawnPhase.NONE) {
             updateRespawn(delta);

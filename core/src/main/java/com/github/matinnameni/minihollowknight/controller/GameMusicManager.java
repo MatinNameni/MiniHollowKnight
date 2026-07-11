@@ -13,12 +13,28 @@ import com.github.matinnameni.minihollowknight.model.event.EventListener;
  */
 public class GameMusicManager implements EventListener {
 
+    /** Duration of a crossfade between two tracks. */
+    private static final float FADE_DURATION = 1.5f;
+
     // --- State ---
     private GameEnvironment currentEnvironment;
     private boolean bossFightActive = false;
 
-    /** The track currently playing, or {@code null} when nothing is playing. */
+    /** The track that should be playing once any transition completes. */
     private Music currentTrack;
+
+    /**
+     * The track being faded out during a crossfade, or {@code null} when no
+     * transition is in progress (or when the outgoing track has fully faded
+     * and been stopped).
+     */
+    private Music outgoingTrack;
+
+    /** True while a fade is in progress. */
+    private boolean transitioning = false;
+
+    /** Elapsed time in the current transition, in seconds. */
+    private float fadeTimer = 0f;
 
     // --- Tracks ---
     private final Music crossroadsMusic;
@@ -49,19 +65,65 @@ public class GameMusicManager implements EventListener {
         updateTrack();
     }
 
-    /** Re-applies the current music volume / mute setting to the active track. */
-    public void applyVolumeSettings() {
+    /**
+     * Advances any in-progress fade. MUST be called every frame from the game
+     * loop (e.g. from {@code GameScreen.render}).
+     */
+    public void update(float delta) {
+        if (!transitioning) return;
+
+        fadeTimer += delta;
+        float progress = Math.min(1f, fadeTimer / FADE_DURATION);
+        float vol = currentVolume();
+
+        // Fade the new track in.
         if (currentTrack != null) {
-            currentTrack.setVolume(currentVolume());
+            currentTrack.setVolume(vol * progress);
+        }
+        // Fade the old track out.
+        if (outgoingTrack != null) {
+            outgoingTrack.setVolume(vol * (1f - progress));
+        }
+
+        if (progress >= 1f) {
+            if (outgoingTrack != null) {
+                outgoingTrack.stop();
+                outgoingTrack = null;
+            }
+            transitioning = false;
         }
     }
 
-    /** Stops and clears the active track without releasing the music assets. */
+    /** Re-applies the current music volume / mute setting to the active tracks. */
+    public void applyVolumeSettings() {
+        float vol = currentVolume();
+        if (!transitioning) {
+            if (currentTrack != null) {
+                currentTrack.setVolume(vol);
+            }
+        } else {
+            float progress = Math.min(1f, fadeTimer / FADE_DURATION);
+            if (currentTrack != null) {
+                currentTrack.setVolume(vol * progress);
+            }
+            if (outgoingTrack != null) {
+                outgoingTrack.setVolume(vol * (1f - progress));
+            }
+        }
+    }
+
+    /** Stops all tracks immediately and clears transition state. */
     public void stop() {
         if (currentTrack != null) {
             currentTrack.stop();
             currentTrack = null;
         }
+        if (outgoingTrack != null) {
+            outgoingTrack.stop();
+            outgoingTrack = null;
+        }
+        transitioning = false;
+        fadeTimer = 0f;
     }
 
     public void dispose() {
@@ -92,22 +154,59 @@ public class GameMusicManager implements EventListener {
      */
     private void updateTrack() {
         Music desired = desiredTrack();
-        if (desired == currentTrack) {
-            if (currentTrack != null) {
-                currentTrack.setVolume(currentVolume());
+
+        if (!transitioning) {
+            if (desired == currentTrack) {
+                if (currentTrack != null) {
+                    currentTrack.setVolume(currentVolume());
+                }
+                return;
             }
+
+            // Start a new transition.
+            if (currentTrack == null && desired != null) {
+                currentTrack = desired;
+                desired.setVolume(0f);
+                desired.play();
+            } else if (currentTrack != null && desired == null) {
+                outgoingTrack = currentTrack;
+                currentTrack = null;
+            } else {
+                outgoingTrack = currentTrack;
+                currentTrack = desired;
+                desired.setVolume(0f);
+                desired.play();
+            }
+            fadeTimer = 0f;
+            transitioning = true;
             return;
         }
 
-        if (currentTrack != null) {
-            currentTrack.stop();
+        if (desired == currentTrack) {
+            return;
         }
 
+        if (desired == outgoingTrack) {
+            if (currentTrack != null) {
+                currentTrack.stop();
+            }
+            currentTrack = outgoingTrack;
+            outgoingTrack = null;
+            transitioning = false;
+            currentTrack.setVolume(currentVolume());
+            return;
+        }
+
+        if (outgoingTrack != null) {
+            outgoingTrack.stop();
+        }
+        outgoingTrack = currentTrack;
         currentTrack = desired;
         if (desired != null) {
-            desired.setVolume(currentVolume());
+            desired.setVolume(0f);
             desired.play();
         }
+        fadeTimer = 0f;
     }
 
     /**

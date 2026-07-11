@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
+import com.github.matinnameni.minihollowknight.controller.AchievementController;
 import com.github.matinnameni.minihollowknight.controller.AudioSettingsController;
 import com.github.matinnameni.minihollowknight.controller.GameMusicManager;
 import com.github.matinnameni.minihollowknight.controller.KeyBindingsController;
@@ -381,6 +382,13 @@ public class UiManager implements ScreenNavigator {
     public void onGameEnvironmentChanged(GameEnvironment environment) {
         if (gameMusicManager != null && environment != null) {
             gameMusicManager.onEnvironmentChanged(environment);
+        }
+    }
+
+    /** Advances the gameplay music crossfade. */
+    public void updateGameMusic(float delta) {
+        if (gameMusicManager != null) {
+            gameMusicManager.update(delta);
         }
     }
 
