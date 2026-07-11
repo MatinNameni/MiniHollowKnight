@@ -1,7 +1,6 @@
 package com.github.matinnameni.minihollowknight.view.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -11,7 +10,9 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.github.matinnameni.minihollowknight.controller.CheatCodeRegistry;
 import com.github.matinnameni.minihollowknight.controller.GameScreenController;
+import com.github.matinnameni.minihollowknight.controller.GameScreenInputProcessor;
 import com.github.matinnameni.minihollowknight.controller.InventoryController;
 import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
 import com.github.matinnameni.minihollowknight.event.EventBus;
@@ -23,6 +24,7 @@ import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
 import com.github.matinnameni.minihollowknight.model.enemies.FalseKnight;
 import com.github.matinnameni.minihollowknight.model.enemies.HuskHornhead;
 import com.github.matinnameni.minihollowknight.model.enemies.Mossfly;
+import com.github.matinnameni.minihollowknight.model.enums.BossType;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.map.MapLoader;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
@@ -84,6 +86,10 @@ public class GameScreen implements Screen {
     private final AchievementAssetBundle achievementAssets;
     private AchievementPopupOverlay achievementPopup;
 
+    // --- Input + cheats ---
+    private CheatCodeRegistry cheatRegistry;
+    private GameScreenInputProcessor gameInputProcessor;
+
     // --- Brightness overlay ---
     private final ShapeRenderer brightnessOverlayRenderer = new ShapeRenderer();
 
@@ -136,7 +142,7 @@ public class GameScreen implements Screen {
                 inventoryOverlay.init();
                 Gdx.input.setInputProcessor(inventoryOverlay.getStage());
             } else {
-                Gdx.input.setInputProcessor(null);
+                Gdx.input.setInputProcessor(gameInputProcessor);
             }
             return;
         }
@@ -201,8 +207,21 @@ public class GameScreen implements Screen {
         // Wire up the respawn callback
         controller.setOnPlayerDied(this::onPlayerDied);
 
-        Gdx.input.setInputProcessor(null);
-        // TODO: implement input processors for the game
+        // Build the cheat registry + input processor.
+        cheatRegistry = new CheatCodeRegistry();
+        CheatCodeRegistry.Context cheatContext = new CheatCodeRegistry.Context(
+            knight, gameData, gameMap, controller.getEnemies(), this::teleportToBossArena);
+        gameInputProcessor = new GameScreenInputProcessor(
+            settings,
+            cheatRegistry,
+            cheatContext,
+            () -> respawnPhase == RespawnPhase.NONE && transferPhase == TransferPhase.NONE, // canTogglePause
+            () -> !paused && respawnPhase == RespawnPhase.NONE && transferPhase == TransferPhase.NONE, // canToggleInventory
+            this::togglePause,
+            this::toggleInventory,
+            () -> showDebugInfo = !showDebugInfo
+        );
+        Gdx.input.setInputProcessor(gameInputProcessor);
 
         initialized = true;
     }
@@ -210,28 +229,6 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         delta = Math.min(delta, 0.05f);
-
-        // Temporary key bindings
-        if (Gdx.input.isKeyJustPressed(settings.getKeyPause())) {
-            // Don't toggle pause while the inventory is open or during a transfer.
-            // let the inventory's own close handling run first.
-            if (inventoryOpen) {
-                closeInventory();
-            } else if (respawnPhase == RespawnPhase.NONE && transferPhase == TransferPhase.NONE) {
-                togglePause();
-            }
-        }
-
-        if (Gdx.input.isKeyJustPressed(settings.getKeyInventory())) {
-            // Only allow opening the inventory when the game isn't paused, respawning, or transferring.
-            if (!paused && respawnPhase == RespawnPhase.NONE && transferPhase == TransferPhase.NONE) {
-                toggleInventory();
-            }
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
-            showDebugInfo = !showDebugInfo;
-        }
 
         // --- Update logic ---
         if (respawnPhase != RespawnPhase.NONE) {
@@ -544,6 +541,44 @@ public class GameScreen implements Screen {
         gameHud.update(0f);
     }
 
+    // --- Boss Arena Teleport (cheat) ---
+
+    /** Instantly teleports the Knight to the False Knight arena. */
+    private void teleportToBossArena() {
+        if (gameMap == null) return;
+
+        // Transfer the knight to forgotten crossroads if it's not there already
+        if (gameMap.getCurrentEnvironment() != GameEnvironment.FORGOTTEN_CROSSROADS) {
+            transferTarget = GameEnvironment.FORGOTTEN_CROSSROADS;
+            performTransfer();
+        }
+
+        Arena target = null;
+        for (Arena arena : gameMap.getArenas()) {
+            if (arena.haveBoss && arena.arenaBossType == BossType.FALSE_KNIGHT) {
+                target = arena;
+                break;
+            }
+        }
+
+        if (target == null) {
+            return;
+        }
+
+        // Place the knight at the center-top of the arena.
+        float x = target.x + target.width / 2f - Knight.HITBOX_WIDTH / 2f;
+        float y = target.y + target.height - Knight.HITBOX_HEIGHT;
+        knight.setPosition(x, y);
+
+        // Snap the camera to the new position.
+        controller.initializeCameraTarget();
+        camera.position.set(controller.getCameraTarget().x, controller.getCameraTarget().y, 0f);
+        camera.update();
+
+        // Start the boss fight
+        controller.forceStartBossFight(gameMap);
+    }
+
     /** Draws the black overlay used during area transfers. */
     private void drawTransferFadeOverlay() {
         Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -579,7 +614,7 @@ public class GameScreen implements Screen {
     /** Resumes gameplay. */
     private void resumeGame() {
         paused = false;
-        Gdx.input.setInputProcessor(null);
+        Gdx.input.setInputProcessor(gameInputProcessor);
     }
 
     // --- Inventory ---
@@ -603,7 +638,14 @@ public class GameScreen implements Screen {
     /** Closes the inventory overlay and restores gameplay input. */
     private void closeInventory() {
         inventoryOpen = false;
-        Gdx.input.setInputProcessor(null);
+        Gdx.input.setInputProcessor(gameInputProcessor);
+    }
+
+    // --- Cheat registry accessor ---
+
+    /** @return the cheat-code registry, or {@code null} if not initialized yet. */
+    public CheatCodeRegistry getCheatRegistry() {
+        return cheatRegistry;
     }
 
     // --- Saving ---

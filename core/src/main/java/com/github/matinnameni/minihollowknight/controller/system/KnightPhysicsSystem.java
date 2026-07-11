@@ -24,6 +24,10 @@ public class KnightPhysicsSystem {
      * Also updates grounded / hitting-wall state and safe positions.
      */
     public void resolveCollisions(Knight knight) {
+        if (knight.isNoclip()) {
+            return;
+        }
+
         Rectangle knightHitbox = knight.getBounds();
         Map<GridObject, Direction> collisions = collisionSystem.getOverlappingObjects(knightHitbox);
 
@@ -66,6 +70,10 @@ public class KnightPhysicsSystem {
      * Resolves a collision between the Knight and a solid obstacle (e.g. a closed door).
      */
     public void resolveCollisionWithObstacle(Knight knight, GridObject obstacle) {
+        if (knight.isNoclip()) {
+            return;
+        }
+
         if (!obstacle.overlaps(knight.getBounds())) {
             return;
         }

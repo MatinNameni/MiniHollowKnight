@@ -313,6 +313,11 @@ public class GameScreenController implements EventListener {
         return target;
     }
 
+    public void forceStartBossFight(TiledGameMap gameMap) {
+        gameMap.removeBlackMask();
+        EventBus.getInstance().publish(GameEvent.FALSE_KNIGHT_FIGHT_STARTED);
+    }
+
     // --- Lifecycle ---
 
     public void dispose() {

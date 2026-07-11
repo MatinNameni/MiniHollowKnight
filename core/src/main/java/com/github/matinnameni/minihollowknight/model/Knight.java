@@ -100,6 +100,11 @@ public class Knight implements Entity {
     private float soul = 0f;
     private float pendingSoulGain = 0f; // Soul that has been earned but not yet added to soul.
 
+    // --- Cheat flags ---
+    private boolean godMode = false;
+    private boolean noclip = false;
+    private static final float NOCLIP_MOVE_SPEED_MULTIPLIER = 2.0f;
+
     // --- Timers ---
     private float invincibilityTimer = 0f;
     private float hitFreezeCooldownTimer = 0f;
@@ -537,6 +542,12 @@ public class Knight implements Entity {
     // --- Physics ---
 
     private void applyPhysics(float delta) {
+        if (noclip) {
+            position.x += velocity.x * delta;
+            position.y += velocity.y * delta;
+            return;
+        }
+
         // Gravity - disabled during dash, focus and spells
         if (state != KnightState.DASHING && state != KnightState.FOCUSING &&
             state != KnightState.VENGEFUL_SPIRIT && state != KnightState.HOWLING_WRAITHS) {
@@ -628,6 +639,7 @@ public class Knight implements Entity {
 
     public void takeDamage(Direction knockbackDirection) {
         if (invincibilityTimer > 0f || state == KnightState.DEAD) return;
+        if (godMode) return;
 
         masks--;
         invincibilityTimer = INVINCIBILITY_DURATION;
@@ -818,6 +830,48 @@ public class Knight implements Entity {
 
     public Vector2 getVelocity() {
         return velocity;
+    }
+
+    // --- Cheat accessors ---
+
+    public boolean isGodMode() {
+        return godMode;
+    }
+
+    public void setGodMode(boolean godMode) {
+        this.godMode = godMode;
+    }
+
+    public boolean isNoclip() {
+        return noclip;
+    }
+
+    public void setNoclip(boolean noclip) {
+        this.noclip = noclip;
+        if (!noclip) {
+            velocity.setZero();
+        }
+    }
+
+    /** @return the effective horizontal move speed. */
+    public float getEffectiveMoveSpeed() {
+        return MOVE_SPEED * (noclip ? NOCLIP_MOVE_SPEED_MULTIPLIER : 1f);
+    }
+
+    /** Fully refills the soul vessel. */
+    public void refillSoul() {
+        this.soul = GameData.MAX_SOUL;
+        this.pendingSoulGain = 0f;
+    }
+
+    /** Restores one mask for the knight. */
+    public void heal() {
+        this.masks = Math.min(masks + 1, maxMasks);
+    }
+
+    /** Restores the knight to full masks. */
+    public void fullHeal() {
+        this.masks = maxMasks;
     }
 
     public float getWidth() {

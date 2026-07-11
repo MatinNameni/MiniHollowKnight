@@ -35,6 +35,12 @@ public class KnightInputProcessor extends InputAdapter {
             return;
         }
 
+        // --- Noclip ---
+        if (knight.isNoclip()) {
+            processNoclipInput();
+            return;
+        }
+
         boolean inputLocked = state == KnightState.DASHING
             || state == KnightState.HIT
             || state == KnightState.VENGEFUL_SPIRIT
@@ -134,14 +140,14 @@ public class KnightInputProcessor extends InputAdapter {
                     float moveInput = 0f;
                     if (Gdx.input.isKeyPressed(settings.getKeyLeft()))  moveInput -= 1f;
                     if (Gdx.input.isKeyPressed(settings.getKeyRight())) moveInput += 1f;
-                    knight.getVelocity().x = moveInput * Knight.MOVE_SPEED;
+                    knight.getVelocity().x = moveInput * knight.getEffectiveMoveSpeed();
                 }
             } else {
                 float moveInput = 0f;
                 if (Gdx.input.isKeyPressed(settings.getKeyLeft()))  moveInput -= 1f;
                 if (Gdx.input.isKeyPressed(settings.getKeyRight())) moveInput += 1f;
 
-                knight.getVelocity().x = moveInput * Knight.MOVE_SPEED;
+                knight.getVelocity().x = moveInput * knight.getEffectiveMoveSpeed();
 
                 if (moveInput != 0f) {
                     knight.setFacingRight(moveInput > 0f);
@@ -152,6 +158,24 @@ public class KnightInputProcessor extends InputAdapter {
                     knight.enterState(KnightState.IDLE);
                 }
             }
+        }
+    }
+
+    private void processNoclipInput() {
+        float speed = knight.getEffectiveMoveSpeed();
+        float vx = 0f;
+        float vy = 0f;
+
+        if (Gdx.input.isKeyPressed(settings.getKeyLeft())) vx -= 1f;
+        if (Gdx.input.isKeyPressed(settings.getKeyRight())) vx += 1f;
+        if (Gdx.input.isKeyPressed(settings.getKeyUp())) vy += 1f;
+        if (Gdx.input.isKeyPressed(settings.getKeyDown())) vy -= 1f;
+
+        knight.getVelocity().x = vx * speed;
+        knight.getVelocity().y = vy * speed;
+
+        if (vx != 0f) {
+            knight.setFacingRight(vx > 0f);
         }
     }
 
