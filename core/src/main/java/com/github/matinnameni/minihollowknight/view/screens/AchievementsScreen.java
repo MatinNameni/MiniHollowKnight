@@ -10,9 +10,9 @@ import com.badlogic.gdx.utils.Scaling;
 import com.github.matinnameni.minihollowknight.model.achievement.AchievementManager;
 import com.github.matinnameni.minihollowknight.model.asset.AchievementAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
-import com.github.matinnameni.minihollowknight.model.Lang;
+import com.github.matinnameni.minihollowknight.model.localization.Lang;
 import com.github.matinnameni.minihollowknight.model.enums.AchievementType;
-import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
+import com.github.matinnameni.minihollowknight.view.navigator.ScreenNavigator;
 
 /**
  * Achievements screen, reachable from the main menu.

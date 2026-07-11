@@ -9,8 +9,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
 import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
-import com.github.matinnameni.minihollowknight.model.Settings;
-import com.github.matinnameni.minihollowknight.view.UiManager;
+import com.github.matinnameni.minihollowknight.model.data.Settings;
+import com.github.matinnameni.minihollowknight.view.navigator.UiManager;
 
 /**
  * Base class for all screens.

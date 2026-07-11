@@ -1,6 +1,6 @@
 package com.github.matinnameni.minihollowknight.controller;
 
-import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
+import com.github.matinnameni.minihollowknight.view.navigator.ScreenNavigator;
 
 /**
  * Controller for the main menu screen.

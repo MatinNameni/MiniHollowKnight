@@ -8,8 +8,8 @@ import com.badlogic.gdx.utils.Scaling;
 
 import com.github.matinnameni.minihollowknight.controller.AudioSettingsController;
 import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
-import com.github.matinnameni.minihollowknight.model.Lang;
-import com.github.matinnameni.minihollowknight.model.Settings;
+import com.github.matinnameni.minihollowknight.model.localization.Lang;
+import com.github.matinnameni.minihollowknight.model.data.Settings;
 
 /**
  * Audio settings screen with music toggle/volume, and SFX toggle/volume.

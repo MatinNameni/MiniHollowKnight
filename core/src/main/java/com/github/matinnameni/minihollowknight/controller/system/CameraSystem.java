@@ -1,12 +1,9 @@
 package com.github.matinnameni.minihollowknight.controller.system;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
-import com.github.matinnameni.minihollowknight.model.Arena;
-import com.github.matinnameni.minihollowknight.model.Knight;
-import com.github.matinnameni.minihollowknight.model.enemies.FalseKnight;
-import com.github.matinnameni.minihollowknight.model.enums.BossType;
+import com.github.matinnameni.minihollowknight.model.object.Arena;
+import com.github.matinnameni.minihollowknight.model.entity.Knight;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 
 /**

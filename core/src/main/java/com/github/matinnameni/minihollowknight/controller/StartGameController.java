@@ -1,9 +1,9 @@
 package com.github.matinnameni.minihollowknight.controller;
 
-import com.github.matinnameni.minihollowknight.database.DatabaseManager;
-import com.github.matinnameni.minihollowknight.model.GameData;
-import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
-import com.github.matinnameni.minihollowknight.view.UiManager;
+import com.github.matinnameni.minihollowknight.model.database.DatabaseManager;
+import com.github.matinnameni.minihollowknight.model.data.GameData;
+import com.github.matinnameni.minihollowknight.view.navigator.ScreenNavigator;
+import com.github.matinnameni.minihollowknight.view.navigator.UiManager;
 
 import java.sql.SQLException;
 import java.util.Arrays;

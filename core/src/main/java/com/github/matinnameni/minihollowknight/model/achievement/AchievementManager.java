@@ -1,15 +1,15 @@
 package com.github.matinnameni.minihollowknight.model.achievement;
 
-import com.github.matinnameni.minihollowknight.database.DatabaseManager;
-import com.github.matinnameni.minihollowknight.event.EventBus;
-import com.github.matinnameni.minihollowknight.event.GameEvent;
-import com.github.matinnameni.minihollowknight.model.GameData;
-import com.github.matinnameni.minihollowknight.model.enemies.Crawlid;
-import com.github.matinnameni.minihollowknight.model.enemies.Crystallized;
-import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
-import com.github.matinnameni.minihollowknight.model.enemies.FalseKnight;
-import com.github.matinnameni.minihollowknight.model.enemies.HuskHornhead;
-import com.github.matinnameni.minihollowknight.model.enemies.Mossfly;
+import com.github.matinnameni.minihollowknight.model.database.DatabaseManager;
+import com.github.matinnameni.minihollowknight.model.event.EventBus;
+import com.github.matinnameni.minihollowknight.model.event.GameEvent;
+import com.github.matinnameni.minihollowknight.model.data.GameData;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.Crawlid;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.Crystallized;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.FalseKnight;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.HuskHornhead;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.Mossfly;
 import com.github.matinnameni.minihollowknight.model.enums.AchievementType;
 
 import java.sql.SQLException;

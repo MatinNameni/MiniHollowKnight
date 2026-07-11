@@ -5,12 +5,11 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.github.matinnameni.minihollowknight.model.GameData;
+import com.github.matinnameni.minihollowknight.model.data.GameData;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 
 /**
  * Owns all assets used by the main-menu system.

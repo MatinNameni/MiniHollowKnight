@@ -13,7 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
-import com.github.matinnameni.minihollowknight.model.Lang;
+import com.github.matinnameni.minihollowknight.model.localization.Lang;
 import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
 
 /**

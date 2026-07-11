@@ -1,8 +1,8 @@
 package com.github.matinnameni.minihollowknight.controller.system;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.github.matinnameni.minihollowknight.model.Door;
-import com.github.matinnameni.minihollowknight.model.GridObject;
+import com.github.matinnameni.minihollowknight.model.object.Door;
+import com.github.matinnameni.minihollowknight.model.object.GridObject;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 

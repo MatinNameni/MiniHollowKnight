@@ -1,12 +1,11 @@
 package com.github.matinnameni.minihollowknight.controller.system;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.github.matinnameni.minihollowknight.model.GridObject;
-import com.github.matinnameni.minihollowknight.model.Knight;
+import com.github.matinnameni.minihollowknight.model.object.GridObject;
+import com.github.matinnameni.minihollowknight.model.entity.Knight;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Handles all collision resolution for the Knight entity against the world geometry.

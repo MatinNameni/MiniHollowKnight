@@ -1,13 +1,13 @@
 package com.github.matinnameni.minihollowknight.controller.system;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.github.matinnameni.minihollowknight.model.BreakableWall;
-import com.github.matinnameni.minihollowknight.model.CharmEffects;
-import com.github.matinnameni.minihollowknight.model.GridObject;
-import com.github.matinnameni.minihollowknight.model.Knight;
-import com.github.matinnameni.minihollowknight.model.Laser;
-import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
-import com.github.matinnameni.minihollowknight.model.enemies.FalseKnight;
+import com.github.matinnameni.minihollowknight.model.object.BreakableWall;
+import com.github.matinnameni.minihollowknight.model.charm.CharmEffects;
+import com.github.matinnameni.minihollowknight.model.object.GridObject;
+import com.github.matinnameni.minihollowknight.model.entity.Knight;
+import com.github.matinnameni.minihollowknight.model.laser.Laser;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.FalseKnight;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightState;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;

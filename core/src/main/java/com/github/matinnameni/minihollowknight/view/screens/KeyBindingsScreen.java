@@ -9,8 +9,8 @@ import com.badlogic.gdx.utils.Scaling;
 
 import com.github.matinnameni.minihollowknight.controller.KeyBindingsController;
 import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
-import com.github.matinnameni.minihollowknight.model.Lang;
-import com.github.matinnameni.minihollowknight.model.Settings;
+import com.github.matinnameni.minihollowknight.model.localization.Lang;
+import com.github.matinnameni.minihollowknight.model.data.Settings;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

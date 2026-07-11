@@ -1,7 +1,7 @@
 package com.github.matinnameni.minihollowknight.controller.system;
 
-import com.github.matinnameni.minihollowknight.model.Door;
-import com.github.matinnameni.minihollowknight.model.Knight;
+import com.github.matinnameni.minihollowknight.model.object.Door;
+import com.github.matinnameni.minihollowknight.model.entity.Knight;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 
 /**

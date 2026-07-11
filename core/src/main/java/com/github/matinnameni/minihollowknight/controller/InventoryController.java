@@ -1,10 +1,10 @@
 package com.github.matinnameni.minihollowknight.controller;
 
-import com.github.matinnameni.minihollowknight.event.EventBus;
-import com.github.matinnameni.minihollowknight.event.GameEvent;
-import com.github.matinnameni.minihollowknight.model.CharmCatalog;
-import com.github.matinnameni.minihollowknight.model.GameData;
-import com.github.matinnameni.minihollowknight.model.Knight;
+import com.github.matinnameni.minihollowknight.model.event.EventBus;
+import com.github.matinnameni.minihollowknight.model.event.GameEvent;
+import com.github.matinnameni.minihollowknight.model.charm.CharmCatalog;
+import com.github.matinnameni.minihollowknight.model.data.GameData;
+import com.github.matinnameni.minihollowknight.model.entity.Knight;
 import com.github.matinnameni.minihollowknight.model.achievement.AchievementManager;
 import com.github.matinnameni.minihollowknight.model.enums.AchievementType;
 import com.github.matinnameni.minihollowknight.model.enums.CharmType;

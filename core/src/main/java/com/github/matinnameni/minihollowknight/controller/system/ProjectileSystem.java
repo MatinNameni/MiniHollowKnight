@@ -1,12 +1,12 @@
 package com.github.matinnameni.minihollowknight.controller.system;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.github.matinnameni.minihollowknight.model.HowlingWraiths;
-import com.github.matinnameni.minihollowknight.model.Knight;
-import com.github.matinnameni.minihollowknight.model.Projectile;
-import com.github.matinnameni.minihollowknight.model.VengefulSpirit;
-import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
-import com.github.matinnameni.minihollowknight.model.enemies.Shockwave;
+import com.github.matinnameni.minihollowknight.model.projectile.HowlingWraiths;
+import com.github.matinnameni.minihollowknight.model.entity.Knight;
+import com.github.matinnameni.minihollowknight.model.projectile.Projectile;
+import com.github.matinnameni.minihollowknight.model.projectile.VengefulSpirit;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.projectile.Shockwave;
 
 import java.util.ArrayList;
 import java.util.Iterator;

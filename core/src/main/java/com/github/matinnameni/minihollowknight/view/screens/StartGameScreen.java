@@ -11,8 +11,8 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.github.matinnameni.minihollowknight.controller.StartGameController;
 import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
-import com.github.matinnameni.minihollowknight.model.GameData;
-import com.github.matinnameni.minihollowknight.model.Lang;
+import com.github.matinnameni.minihollowknight.model.data.GameData;
+import com.github.matinnameni.minihollowknight.model.localization.Lang;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 
 /**

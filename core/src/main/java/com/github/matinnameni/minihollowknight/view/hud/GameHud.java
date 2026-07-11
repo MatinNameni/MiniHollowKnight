@@ -3,8 +3,7 @@ package com.github.matinnameni.minihollowknight.view.hud;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.github.matinnameni.minihollowknight.model.GameData;
-import com.github.matinnameni.minihollowknight.model.Knight;
+import com.github.matinnameni.minihollowknight.model.entity.Knight;
 import com.github.matinnameni.minihollowknight.model.asset.HudAssetBundle;
 
 import java.util.ArrayList;

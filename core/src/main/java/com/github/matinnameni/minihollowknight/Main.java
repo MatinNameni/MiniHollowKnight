@@ -4,7 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.github.matinnameni.minihollowknight.view.UiManager;
+import com.github.matinnameni.minihollowknight.view.navigator.UiManager;
 
 public class Main extends Game {
     @Override

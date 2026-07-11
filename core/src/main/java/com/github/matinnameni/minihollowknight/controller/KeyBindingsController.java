@@ -1,9 +1,9 @@
 package com.github.matinnameni.minihollowknight.controller;
 
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.github.matinnameni.minihollowknight.model.Settings;
-import com.github.matinnameni.minihollowknight.view.ScreenNavigator;
-import com.github.matinnameni.minihollowknight.view.UiManager;
+import com.github.matinnameni.minihollowknight.model.data.Settings;
+import com.github.matinnameni.minihollowknight.view.navigator.ScreenNavigator;
+import com.github.matinnameni.minihollowknight.view.navigator.UiManager;
 
 import java.util.Map;
 

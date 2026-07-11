@@ -1,6 +1,5 @@
 package com.github.matinnameni.minihollowknight.view.hud;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -11,13 +10,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.github.matinnameni.minihollowknight.event.EventBus;
-import com.github.matinnameni.minihollowknight.event.GameEvent;
-import com.github.matinnameni.minihollowknight.event.EventListener;
-import com.github.matinnameni.minihollowknight.model.Lang;
+import com.github.matinnameni.minihollowknight.model.event.EventBus;
+import com.github.matinnameni.minihollowknight.model.event.GameEvent;
+import com.github.matinnameni.minihollowknight.model.event.EventListener;
+import com.github.matinnameni.minihollowknight.model.localization.Lang;
 import com.github.matinnameni.minihollowknight.model.asset.AchievementAssetBundle;
 import com.github.matinnameni.minihollowknight.model.asset.MenuAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enums.AchievementType;

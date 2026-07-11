@@ -8,8 +8,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Scaling;
 import com.github.matinnameni.minihollowknight.model.asset.AssetRegistry;
 import com.github.matinnameni.minihollowknight.controller.MainMenuController;
-import com.github.matinnameni.minihollowknight.model.Lang;
-import com.github.matinnameni.minihollowknight.model.Settings;
+import com.github.matinnameni.minihollowknight.model.localization.Lang;
+import com.github.matinnameni.minihollowknight.model.data.Settings;
 
 /**
  * Main-menu screen

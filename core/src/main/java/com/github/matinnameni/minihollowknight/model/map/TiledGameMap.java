@@ -1,8 +1,6 @@
 package com.github.matinnameni.minihollowknight.model.map;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
@@ -14,10 +12,10 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.github.matinnameni.minihollowknight.model.Arena;
-import com.github.matinnameni.minihollowknight.model.BreakableWall;
-import com.github.matinnameni.minihollowknight.model.Door;
-import com.github.matinnameni.minihollowknight.model.GridObject;
+import com.github.matinnameni.minihollowknight.model.object.Arena;
+import com.github.matinnameni.minihollowknight.model.object.BreakableWall;
+import com.github.matinnameni.minihollowknight.model.object.Door;
+import com.github.matinnameni.minihollowknight.model.object.GridObject;
 import com.github.matinnameni.minihollowknight.model.asset.TiledMapAssetBundle;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 

@@ -1,12 +1,11 @@
 package com.github.matinnameni.minihollowknight.controller;
 
 import com.badlogic.gdx.Input;
-import com.github.matinnameni.minihollowknight.event.EventBus;
-import com.github.matinnameni.minihollowknight.event.GameEvent;
-import com.github.matinnameni.minihollowknight.model.Arena;
-import com.github.matinnameni.minihollowknight.model.GameData;
-import com.github.matinnameni.minihollowknight.model.Knight;
-import com.github.matinnameni.minihollowknight.model.enemies.Enemy;
+import com.github.matinnameni.minihollowknight.model.event.EventBus;
+import com.github.matinnameni.minihollowknight.model.event.GameEvent;
+import com.github.matinnameni.minihollowknight.model.data.GameData;
+import com.github.matinnameni.minihollowknight.model.entity.Knight;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.Enemy;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 
