@@ -11,6 +11,10 @@ import com.github.matinnameni.minihollowknight.model.entity.Knight;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightAnimationType;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 public class HowlingWraiths implements Projectile {
     // --- Constants ---
 
@@ -27,6 +31,8 @@ public class HowlingWraiths implements Projectile {
     private float stateTime = 0f;
     private boolean isDead;
     private final float damageMultiplier;
+
+    private final Set<Enemy> damagedEnemies = new LinkedHashSet<>();
 
     // --- Dependencies ---
 
@@ -87,12 +93,14 @@ public class HowlingWraiths implements Projectile {
 
     @Override
     public void onHitEnemy(Enemy enemy) {
+        if (!damagedEnemies.add(enemy)) return;
+
         enemy.takeDamage(getDamage(), getDirection(), 1f);
     }
 
     @Override
     public float getDamage() {
-        return Knight.HOWLING_WRAITHS_DAMAGE_PER_FRAME * damageMultiplier;
+        return Knight.HOWLING_WRAITHS_DAMAGE * damageMultiplier;
     }
 
     @Override

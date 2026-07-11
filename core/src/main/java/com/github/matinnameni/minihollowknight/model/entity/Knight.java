@@ -78,13 +78,13 @@ public class Knight implements Entity {
     private static final float HIT_FREEZE_COOLDOWN = 0.4f;
 
     // Spells
-    public static final float VENGEFUL_SPIRIT_DAMAGE_PER_FRAME = 1f;
+    public static final float VENGEFUL_SPIRIT_DAMAGE = 50f;
     public static final float VENGEFUL_SPIRIT_DURATION = KnightAnimationType.FIREBALL_CAST.getDuration();
     public static final float VENGEFUL_SPIRIT_COOLDOWN = 1f;
     public static final float VENGEFUL_SPIRIT_SOUL_COST = 33f;
     public static final float VENGEFUL_SPIRIT_OFFSET = 40f;
 
-    public static final float HOWLING_WRAITHS_DAMAGE_PER_FRAME = 0.7f;
+    public static final float HOWLING_WRAITHS_DAMAGE = 75f;
     public static final float HOWLING_WRAITHS_DURATION = KnightAnimationType.SOUL_SCREAM.getDuration();
     public static final float HOWLING_WRAITHS_COOLDOWN = 0.7f;
     public static final float HOWLING_WRAITHS_SOUL_COST = 33f;

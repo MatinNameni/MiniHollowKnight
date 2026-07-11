@@ -11,6 +11,9 @@ import com.github.matinnameni.minihollowknight.model.entity.Knight;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.enums.KnightAnimationType;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 /**
  * The Vengeful Spirit projectile
  */
@@ -39,6 +42,8 @@ public class VengefulSpirit implements Projectile {
     private float stateTime = 0f;
     private float lifetime = 0f;
     private final float damageMultiplier;
+
+    private final Set<Enemy> damagedEnemies = new LinkedHashSet<>();
 
     // --- Dependencies ---
 
@@ -122,12 +127,14 @@ public class VengefulSpirit implements Projectile {
 
     @Override
     public void onHitEnemy(Enemy enemy) {
+        if (!damagedEnemies.add(enemy)) return;
+
         enemy.takeDamage(getDamage(), getDirection(), 1f);
     }
 
     @Override
     public float getDamage() {
-        return Knight.VENGEFUL_SPIRIT_DAMAGE_PER_FRAME * damageMultiplier;
+        return Knight.VENGEFUL_SPIRIT_DAMAGE * damageMultiplier;
     }
 
     @Override
