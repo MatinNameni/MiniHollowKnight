@@ -335,6 +335,7 @@ public class Knight implements Entity {
         attackCooldownTimer = getEffectiveAttackDuration();
         attackTimer = 0f;
         enterState(KnightState.ATTACKING);
+        EventBus.getInstance().publish(GameEvent.PLAYER_ATTACK_START, attackDirection);
     }
 
     // --- Dash ---
@@ -684,10 +685,10 @@ public class Knight implements Entity {
         float totalIfAdded = soul + pendingSoulGain + amount;
         if (totalIfAdded <= GameData.MAX_SOUL) {
             pendingSoulGain += amount;
+            EventBus.getInstance().publish(GameEvent.PLAYER_SOUL_GAINED, amount);
         } else {
             pendingSoulGain = GameData.MAX_SOUL - soul;
         }
-        EventBus.getInstance().publish(GameEvent.PLAYER_SOUL_GAINED, amount);
     }
 
     public void spendSoul(float amount) {

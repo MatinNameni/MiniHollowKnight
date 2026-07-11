@@ -9,6 +9,7 @@ import com.github.matinnameni.minihollowknight.controller.AudioSettingsControlle
 import com.github.matinnameni.minihollowknight.controller.GameMusicManager;
 import com.github.matinnameni.minihollowknight.controller.KeyBindingsController;
 import com.github.matinnameni.minihollowknight.controller.SettingsController;
+import com.github.matinnameni.minihollowknight.controller.SoundEffectManager;
 import com.github.matinnameni.minihollowknight.model.database.DatabaseManager;
 import com.github.matinnameni.minihollowknight.model.localization.Lang;
 import com.github.matinnameni.minihollowknight.model.data.Settings;
@@ -35,8 +36,10 @@ public class UiManager implements ScreenNavigator {
     private boolean charmAssetsLoaded = false;
     private boolean achievementAssetsLoaded = false;
     private boolean gameMusicAssetsLoaded = false;
+    private boolean soundEffectAssetsLoaded = false;
 
     private GameMusicManager gameMusicManager;
+    private SoundEffectManager soundEffectManager;
 
     private GameScreen pausedGameScreen;
 
@@ -72,6 +75,7 @@ public class UiManager implements ScreenNavigator {
         registry.register(new CharmAssetBundle(registry.getManager()));
         registry.register(new AchievementAssetBundle(registry.getManager()));
         registry.register(new GameMusicAssetBundle(registry.getManager()));
+        registry.register(new SoundEffectAssetBundle(registry.getManager()));
         EnemiesAssetsManager.getInstance(registry).initAssets();
     }
 
@@ -175,13 +179,16 @@ public class UiManager implements ScreenNavigator {
         }
     }
 
-    /** Applies the current volume settings to every active music source. */
+    /** Applies the current volume settings to every active music / SFX source. */
     public void applyVolumeSettings() {
         if (menuMusic != null) {
             menuMusic.setVolume(settings.isMusicEnabled() ? settings.getMusicVolume() : 0f);
         }
         if (gameMusicManager != null) {
             gameMusicManager.applyVolumeSettings();
+        }
+        if (soundEffectManager != null) {
+            soundEffectManager.applyVolumeSettings();
         }
     }
 
@@ -196,6 +203,7 @@ public class UiManager implements ScreenNavigator {
         if (gameMusicManager != null) {
             gameMusicManager.stop();
         }
+        stopSoundEffects();
         MainMenuController controller = new MainMenuController(this);
         setScreen(new MainMenuScreen(registry, settings, controller));
     }
@@ -272,8 +280,10 @@ public class UiManager implements ScreenNavigator {
         ensureCharmAssetsLoaded();
         ensureAchievementAssetsLoaded();
         ensureGameMusicAssetsLoaded();
+        ensureSoundEffectAssetsLoaded();
         stopMenuMusic();
         startGameMusic();
+        startSoundEffects();
 
         AchievementManager manager = AchievementManager.getInstance();
         if (manager != null) {
@@ -356,6 +366,16 @@ public class UiManager implements ScreenNavigator {
         }
     }
 
+    /**
+     * Loads the {@link SoundEffectAssetBundle} if it hasn't been loaded yet.
+     */
+    private void ensureSoundEffectAssetsLoaded() {
+        if (!soundEffectAssetsLoaded) {
+            registry.loadBundle(SoundEffectAssetBundle.KEY);
+            soundEffectAssetsLoaded = true;
+        }
+    }
+
     // --- Gameplay music ---
 
     private void startGameMusic() {
@@ -375,6 +395,25 @@ public class UiManager implements ScreenNavigator {
         }
     }
 
+    // --- Sound effects ---
+
+    private void startSoundEffects() {
+        if (soundEffectManager != null) {
+            soundEffectManager.dispose();
+            soundEffectManager = null;
+        }
+        SoundEffectAssetBundle sfxAssets = (SoundEffectAssetBundle) registry.get(SoundEffectAssetBundle.KEY);
+        soundEffectManager = new SoundEffectManager(sfxAssets, settings);
+    }
+
+    /** Stops and disposes the sound-effect manager (if any). */
+    private void stopSoundEffects() {
+        if (soundEffectManager != null) {
+            soundEffectManager.dispose();
+            soundEffectManager = null;
+        }
+    }
+
     /**
      * Notifies the gameplay music manager that the knight has entered (or
      * been respawned into) a new environment.
@@ -389,6 +428,13 @@ public class UiManager implements ScreenNavigator {
     public void updateGameMusic(float delta) {
         if (gameMusicManager != null) {
             gameMusicManager.update(delta);
+        }
+    }
+
+    /** Advances the sound-effect manager. */
+    public void updateSoundEffects(float delta) {
+        if (soundEffectManager != null) {
+            soundEffectManager.update(delta);
         }
     }
 
@@ -418,6 +464,7 @@ public class UiManager implements ScreenNavigator {
     // --- Lifecycle ---
 
     public void dispose() {
+        stopSoundEffects();
         stopGameMusic();
         stopMenuMusic();
         if (registry != null) {

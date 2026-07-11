@@ -243,6 +243,7 @@ public class GameScreen implements Screen {
         delta = Math.min(delta, 0.05f);
 
         UiManager.getInstance().updateGameMusic(delta);
+        UiManager.getInstance().updateSoundEffects(delta);
 
         // --- Update logic ---
         if (respawnPhase != RespawnPhase.NONE) {

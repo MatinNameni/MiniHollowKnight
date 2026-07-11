@@ -105,7 +105,7 @@ public final class CheatCodeRegistry {
             ctx -> {
                 for (Enemy enemy : ctx.enemies) {
                     if (!enemy.isDead()) {
-                        enemy.takeDamage(Float.MAX_VALUE, Direction.LEFT);
+                        enemy.takeDamage(Float.MAX_VALUE, Direction.LEFT, 1f);
                     }
                 }
             });

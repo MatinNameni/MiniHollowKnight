@@ -122,7 +122,7 @@ public class VengefulSpirit implements Projectile {
 
     @Override
     public void onHitEnemy(Enemy enemy) {
-        enemy.takeDamage(getDamage(), getDirection());
+        enemy.takeDamage(getDamage(), getDirection(), 1f);
     }
 
     @Override

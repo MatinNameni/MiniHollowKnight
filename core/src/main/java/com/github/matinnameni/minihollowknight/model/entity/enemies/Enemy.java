@@ -3,6 +3,8 @@ package com.github.matinnameni.minihollowknight.model.entity.enemies;
 import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.model.entity.Entity;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
+import com.github.matinnameni.minihollowknight.model.event.EventBus;
+import com.github.matinnameni.minihollowknight.model.event.GameEvent;
 
 public abstract class Enemy implements Entity {
 
@@ -27,6 +29,7 @@ public abstract class Enemy implements Entity {
         if (knockbackMultiplier != 1f) {
             velocity.x *= knockbackMultiplier;
         }
+        EventBus.getInstance().publish(GameEvent.ENEMY_DAMAGED, this);
     }
 
     /** @return true while the enemy's hitbox should be able to damage the player on contact. */
