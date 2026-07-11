@@ -33,24 +33,6 @@ public final class Lang {
         return bundle.get(key);
     }
 
-    /**
-     * Safe variant of {@link #get(String)}: returns the translated string for
-     * {@code key}, or {@code fallback} if the key is missing from the bundle
-     * (or the bundle is not loaded yet).
-     *
-     * <p>This is used by the achievements UI so that newly added keys don't
-     * crash the game if the i18n properties files haven't been updated yet.</p>
-     */
-    public static String getSafe(String key, String fallback) {
-        if (bundle == null) return fallback;
-        try {
-            String value = bundle.get(key);
-            return value;
-        } catch (MissingResourceException e) {
-            return fallback;
-        }
-    }
-
     /** Returns the translated, formatted string for {@code key}. */
     public static String format(String key, Object... args) {
         if (bundle == null) {

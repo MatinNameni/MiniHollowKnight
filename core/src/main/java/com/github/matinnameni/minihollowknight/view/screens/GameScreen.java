@@ -167,6 +167,11 @@ public class GameScreen implements Screen {
             MapLoader.loadMap(currentEnvironment, mapAssets);
         controller.setGameMap(gameMap);
 
+        // Start the area-appropriate background music.
+        GameEnvironment musicEnv = (currentEnvironment == null)
+            ? GameEnvironment.FORGOTTEN_CROSSROADS : currentEnvironment;
+        UiManager.getInstance().onGameEnvironmentChanged(musicEnv);
+
         if (gameData.collectedCharms.isEmpty()) {
             gameData.grantDefaultCharms();
         }
@@ -429,6 +434,9 @@ public class GameScreen implements Screen {
         gameMap = MapLoader.loadMap(GameEnvironment.FORGOTTEN_CROSSROADS, mapAssets);
         controller.setGameMap(gameMap);
 
+        // Reset the background music
+        UiManager.getInstance().onGameEnvironmentChanged(GameEnvironment.FORGOTTEN_CROSSROADS);
+
         // Reset the knight at the map's spawn point
         Vector2 spawn = gameMap.getPlayerSpawn();
         knight.setPosition(spawn.x, spawn.y);
@@ -546,6 +554,9 @@ public class GameScreen implements Screen {
 
         // Refresh the HUD.
         gameHud.update(0f);
+
+        // Switch the background music to the new area.
+        UiManager.getInstance().onGameEnvironmentChanged(target);
     }
 
     // --- Boss Arena Teleport (cheat) ---

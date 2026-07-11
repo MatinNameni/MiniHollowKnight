@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.github.matinnameni.minihollowknight.controller.AchievementController;
 import com.github.matinnameni.minihollowknight.controller.AudioSettingsController;
+import com.github.matinnameni.minihollowknight.controller.GameMusicManager;
 import com.github.matinnameni.minihollowknight.controller.KeyBindingsController;
 import com.github.matinnameni.minihollowknight.controller.SettingsController;
 import com.github.matinnameni.minihollowknight.model.database.DatabaseManager;
@@ -13,6 +14,7 @@ import com.github.matinnameni.minihollowknight.model.localization.Lang;
 import com.github.matinnameni.minihollowknight.model.data.Settings;
 import com.github.matinnameni.minihollowknight.model.achievement.AchievementManager;
 import com.github.matinnameni.minihollowknight.model.asset.*;
+import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
 import com.github.matinnameni.minihollowknight.model.enums.SupportedLanguage;
 import com.github.matinnameni.minihollowknight.controller.MainMenuController;
 import com.github.matinnameni.minihollowknight.controller.StartGameController;
@@ -32,9 +34,9 @@ public class UiManager implements ScreenNavigator {
     private boolean tiledMapAssetsLoaded = false;
     private boolean charmAssetsLoaded = false;
     private boolean achievementAssetsLoaded = false;
+    private boolean gameMusicAssetsLoaded = false;
 
-    /** App-lifetime observer that turns gameplay events into achievement unlocks. */
-    private AchievementController achievementController;
+    private GameMusicManager gameMusicManager;
 
     private GameScreen pausedGameScreen;
 
@@ -69,6 +71,7 @@ public class UiManager implements ScreenNavigator {
         registry.register(new TiledMapAssetBundle(registry.getManager()));
         registry.register(new CharmAssetBundle(registry.getManager()));
         registry.register(new AchievementAssetBundle(registry.getManager()));
+        registry.register(new GameMusicAssetBundle(registry.getManager()));
         EnemiesAssetsManager.getInstance(registry).initAssets();
     }
 
@@ -96,7 +99,6 @@ public class UiManager implements ScreenNavigator {
     /** Initializes the global {@link AchievementManager}. */
     private void initAchievements() {
         AchievementManager.init(database);
-        achievementController = new AchievementController();
     }
 
     public void setScreen(Screen screen) {
@@ -173,10 +175,13 @@ public class UiManager implements ScreenNavigator {
         }
     }
 
-    /** Applies the current volume settings. */
+    /** Applies the current volume settings to every active music source. */
     public void applyVolumeSettings() {
         if (menuMusic != null) {
             menuMusic.setVolume(settings.isMusicEnabled() ? settings.getMusicVolume() : 0f);
+        }
+        if (gameMusicManager != null) {
+            gameMusicManager.applyVolumeSettings();
         }
     }
 
@@ -188,6 +193,7 @@ public class UiManager implements ScreenNavigator {
         if (manager != null) {
             manager.clearActiveGameData();
         }
+        stopGameMusic();
         playMenuMusic();
         MainMenuController controller = new MainMenuController(this);
         setScreen(new MainMenuScreen(registry, settings, controller));
@@ -264,7 +270,9 @@ public class UiManager implements ScreenNavigator {
         ensureTiledMapAssetsLoaded();
         ensureCharmAssetsLoaded();
         ensureAchievementAssetsLoaded();
+        ensureGameMusicAssetsLoaded();
         stopMenuMusic();
+        startGameMusic();
 
         AchievementManager manager = AchievementManager.getInstance();
         if (manager != null) {
@@ -337,6 +345,45 @@ public class UiManager implements ScreenNavigator {
         }
     }
 
+    /**
+     * Loads the {@link GameMusicAssetBundle} if it hasn't been loaded yet.
+     */
+    private void ensureGameMusicAssetsLoaded() {
+        if (!gameMusicAssetsLoaded) {
+            registry.loadBundle(GameMusicAssetBundle.KEY);
+            gameMusicAssetsLoaded = true;
+        }
+    }
+
+    // --- Gameplay music ---
+
+    private void startGameMusic() {
+        if (gameMusicManager != null) {
+            gameMusicManager.dispose();
+            gameMusicManager = null;
+        }
+        GameMusicAssetBundle gameMusicAssets = (GameMusicAssetBundle) registry.get(GameMusicAssetBundle.KEY);
+        gameMusicManager = new GameMusicManager(gameMusicAssets, settings);
+    }
+
+    /** Stops and disposes the gameplay music manager (if any). */
+    private void stopGameMusic() {
+        if (gameMusicManager != null) {
+            gameMusicManager.dispose();
+            gameMusicManager = null;
+        }
+    }
+
+    /**
+     * Notifies the gameplay music manager that the knight has entered (or
+     * been respawned into) a new environment.
+     */
+    public void onGameEnvironmentChanged(GameEnvironment environment) {
+        if (gameMusicManager != null && environment != null) {
+            gameMusicManager.onEnvironmentChanged(environment);
+        }
+    }
+
     @Override
     public void goToGuide() {
         // TODO: write this method after implementing GuideScreen
@@ -363,6 +410,8 @@ public class UiManager implements ScreenNavigator {
     // --- Lifecycle ---
 
     public void dispose() {
+        stopGameMusic();
+        stopMenuMusic();
         if (registry != null) {
             registry.dispose();
         }
