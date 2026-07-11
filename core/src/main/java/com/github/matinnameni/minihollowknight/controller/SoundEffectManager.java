@@ -24,6 +24,8 @@ public class SoundEffectManager implements EventListener {
     private final Sound focusCharging;
     private final Sound focusHeal;
     private final Sound soulPickup;
+    private final Sound breakableWallHit;
+    private final Sound breakableWallDeath;
 
     /**
      * Sound instance id of the currently looping focus-charging sound,
@@ -40,6 +42,8 @@ public class SoundEffectManager implements EventListener {
         this.focusCharging = assets.getFocusCharging();
         this.focusHeal = assets.getFocusHeal();
         this.soulPickup = assets.getSoulPickup();
+        this.breakableWallHit = assets.getBreakableWallHit();
+        this.breakableWallDeath = assets.getBreakableWallDeath();
 
         EventBus bus = EventBus.getInstance();
         bus.subscribe(GameEvent.PLAYER_ATTACK_START, this);
@@ -49,6 +53,8 @@ public class SoundEffectManager implements EventListener {
         bus.subscribe(GameEvent.PLAYER_FOCUS_CANCEL, this);
         bus.subscribe(GameEvent.PLAYER_FOCUS_COMPLETE, this);
         bus.subscribe(GameEvent.PLAYER_SOUL_GAINED, this);
+        bus.subscribe(GameEvent.BREAKABLE_WALL_HIT, this);
+        bus.subscribe(GameEvent.BREAKABLE_WALL_DEATH, this);
     }
 
     // --- EventListener ---
@@ -89,6 +95,14 @@ public class SoundEffectManager implements EventListener {
                 play(soulPickup);
                 break;
 
+            case BREAKABLE_WALL_HIT:
+                play(breakableWallHit);
+                break;
+
+            case BREAKABLE_WALL_DEATH:
+                play(breakableWallDeath);
+                break;
+
             default:
                 break;
         }
@@ -119,6 +133,8 @@ public class SoundEffectManager implements EventListener {
         bus.unsubscribe(GameEvent.PLAYER_FOCUS_CANCEL, this);
         bus.unsubscribe(GameEvent.PLAYER_FOCUS_COMPLETE, this);
         bus.unsubscribe(GameEvent.PLAYER_SOUL_GAINED, this);
+        bus.subscribe(GameEvent.BREAKABLE_WALL_HIT, this);
+        bus.subscribe(GameEvent.BREAKABLE_WALL_DEATH, this);
     }
 
     // --- Helpers ---

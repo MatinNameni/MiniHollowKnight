@@ -39,6 +39,10 @@ public enum GameEvent {
     // --- Achievements ---
     ACHIEVEMENT_UNLOCKED,
 
+    // --- World ---
+    BREAKABLE_WALL_HIT,
+    BREAKABLE_WALL_DEATH,
+
     // --- Game lifecycle ---
     GAME_SAVED,
     GAME_LOADED,

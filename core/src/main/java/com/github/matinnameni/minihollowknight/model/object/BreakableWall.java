@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.github.matinnameni.minihollowknight.model.enums.GameEnvironment;
+import com.github.matinnameni.minihollowknight.model.event.EventBus;
+import com.github.matinnameni.minihollowknight.model.event.GameEvent;
 
 public class BreakableWall {
 
@@ -72,8 +74,10 @@ public class BreakableWall {
 
         if (hitCount >= hitsToBreak) {
             state = State.BROKEN;
+            EventBus.getInstance().publish(GameEvent.BREAKABLE_WALL_DEATH);
         } else {
             state = State.CRACKED;
+            EventBus.getInstance().publish(GameEvent.BREAKABLE_WALL_HIT);
         }
         return true;
     }

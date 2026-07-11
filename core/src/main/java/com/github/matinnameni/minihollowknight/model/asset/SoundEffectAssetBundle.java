@@ -21,6 +21,8 @@ public class SoundEffectAssetBundle extends AssetBundle {
     private static final String FOCUS_CHARGING = "Audio_Files/focus_health_charging.wav";
     private static final String FOCUS_HEAL = "Audio_Files/focus_health_heal.wav";
     private static final String SOUL_PICKUP = "Audio_Files/soul_pickup_1.wav";
+    private static final String BREAKABLE_WALL_HIT = "Audio_Files/breakable_wall_hit_1.wav";
+    private static final String BREAKABLE_WALL_DEATH = "Audio_Files/breakable_wall_death.wav";
 
     private final List<String> assetPaths = new ArrayList<>();
 
@@ -49,6 +51,10 @@ public class SoundEffectAssetBundle extends AssetBundle {
         assetPaths.add(FOCUS_HEAL);
         manager.load(SOUL_PICKUP, Sound.class);
         assetPaths.add(SOUL_PICKUP);
+        manager.load(BREAKABLE_WALL_HIT, Sound.class);
+        assetPaths.add(BREAKABLE_WALL_HIT);
+        manager.load(BREAKABLE_WALL_DEATH, Sound.class);
+        assetPaths.add(BREAKABLE_WALL_DEATH);
     }
 
     @Override
@@ -96,5 +102,15 @@ public class SoundEffectAssetBundle extends AssetBundle {
     /** Played when the knight gains soul. */
     public Sound getSoulPickup() {
         return manager.get(SOUL_PICKUP, Sound.class);
+    }
+
+    /** Played when player hit a breakable wall. */
+    public Sound getBreakableWallHit() {
+        return manager.get(BREAKABLE_WALL_HIT, Sound.class);
+    }
+
+    /** Played when a breakable wall gets smashed. */
+    public Sound getBreakableWallDeath() {
+        return manager.get(BREAKABLE_WALL_DEATH, Sound.class);
     }
 }
