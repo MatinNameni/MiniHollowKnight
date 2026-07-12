@@ -40,6 +40,11 @@ public abstract class Enemy implements Entity {
         return health <= 0f;
     }
 
+    /** Kills this entity instantly. */
+    public void kill() {
+        this.health = 0f;
+    }
+
     // --- Getters ---
 
     @Override

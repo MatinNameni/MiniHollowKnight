@@ -301,6 +301,12 @@ public class HuskHornhead extends Enemy {
         }
     }
 
+    @Override
+    public void kill() {
+        super.kill();
+        state = State.DYING;
+    }
+
     private Animation<TextureRegion> getCurrentAnimation() {
         switch (state) {
             case WALKING: return assets.getAnimation(HuskHornheadAnimationType.WALK);

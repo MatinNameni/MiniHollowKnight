@@ -105,6 +105,12 @@ public class Mossfly extends Enemy {
     }
 
     @Override
+    public void kill() {
+        super.kill();
+        state = State.DYING;
+    }
+
+    @Override
     public boolean canDamagePlayer() {
         return !isDead() &&
             (state == State.IDLE || state == State.CHASING);

@@ -318,6 +318,12 @@ public class FalseKnight extends Boss {
         }
     }
 
+    @Override
+    public void kill() {
+        super.kill();
+        state = State.DYING;
+    }
+
     private void enterStun() {
         stunned = true;
         stunTimer = STUN_DURATION;

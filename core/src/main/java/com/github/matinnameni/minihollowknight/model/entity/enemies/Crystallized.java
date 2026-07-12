@@ -270,6 +270,12 @@ public class Crystallized extends Enemy {
         }
     }
 
+    @Override
+    public void kill() {
+        super.kill();
+        state = State.DYING;
+    }
+
     // --- State ---
 
     private void enterState(State newState) {

@@ -1,6 +1,7 @@
 package com.github.matinnameni.minihollowknight.controller;
 
 import com.badlogic.gdx.Input;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.Boss;
 import com.github.matinnameni.minihollowknight.model.event.EventBus;
 import com.github.matinnameni.minihollowknight.model.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.data.GameData;
@@ -104,8 +105,8 @@ public final class CheatCodeRegistry {
             Input.Keys.K,
             ctx -> {
                 for (Enemy enemy : ctx.enemies) {
-                    if (!enemy.isDead()) {
-                        enemy.takeDamage(Float.MAX_VALUE, Direction.LEFT, 1f);
+                    if (!enemy.isDead() && !(enemy instanceof Boss)) {
+                        enemy.kill();
                     }
                 }
             });
