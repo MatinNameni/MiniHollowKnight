@@ -7,6 +7,7 @@ import com.badlogic.gdx.audio.Music;
 import com.github.matinnameni.minihollowknight.controller.AchievementController;
 import com.github.matinnameni.minihollowknight.controller.AudioSettingsController;
 import com.github.matinnameni.minihollowknight.controller.GameMusicManager;
+import com.github.matinnameni.minihollowknight.controller.GuideController;
 import com.github.matinnameni.minihollowknight.controller.KeyBindingsController;
 import com.github.matinnameni.minihollowknight.controller.SettingsController;
 import com.github.matinnameni.minihollowknight.controller.SoundEffectManager;
@@ -449,7 +450,8 @@ public class UiManager implements ScreenNavigator {
 
     @Override
     public void goToGuide() {
-        // TODO: write this method after implementing GuideScreen
+        GuideController controller = new GuideController(this);
+        setScreen(new GuideScreen(registry, settings, controller));
     }
 
     @Override
