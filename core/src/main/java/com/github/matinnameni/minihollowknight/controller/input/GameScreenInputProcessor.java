@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Input.Keys;
 import com.github.matinnameni.minihollowknight.controller.CheatCodeRegistry;
+import com.github.matinnameni.minihollowknight.controller.ZoteController;
 import com.github.matinnameni.minihollowknight.model.data.Settings;
 import com.github.matinnameni.minihollowknight.view.screens.GameScreen;
 
@@ -17,6 +18,7 @@ public class GameScreenInputProcessor extends InputAdapter {
     private final Settings settings;
     private final CheatCodeRegistry cheats;
     private final CheatCodeRegistry.Context cheatContext;
+    private final ZoteController zoteController;
 
     /** Gate callbacks that decide whether a given toggle is allowed right now. */
     private final BooleanSupplier canTogglePause;
@@ -28,6 +30,7 @@ public class GameScreenInputProcessor extends InputAdapter {
     public GameScreenInputProcessor(Settings settings,
                                     CheatCodeRegistry cheats,
                                     CheatCodeRegistry.Context cheatContext,
+                                    ZoteController zoteController,
                                     BooleanSupplier canTogglePause,
                                     BooleanSupplier canToggleInventory,
                                     Runnable onTogglePause,
@@ -36,6 +39,7 @@ public class GameScreenInputProcessor extends InputAdapter {
         this.settings = settings;
         this.cheats = cheats;
         this.cheatContext = cheatContext;
+        this.zoteController = zoteController;
         this.canTogglePause = canTogglePause;
         this.canToggleInventory = canToggleInventory;
         this.onTogglePause = onTogglePause;
@@ -45,7 +49,20 @@ public class GameScreenInputProcessor extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
-        // --- Menu toggles (user-configurable keys) ---
+        if (zoteController != null && zoteController.isDialogueOpen()) {
+            if (keycode == Keys.ENTER || keycode == Keys.NUMPAD_ENTER
+                || keycode == settings.getKeyInteract()) {
+                zoteController.onAdvanceKeyPressed();
+                return true;
+            }
+            if (keycode == settings.getKeyPause()) {
+                zoteController.onCloseKeyPressed();
+                return true;
+            }
+            return false;
+        }
+
+        // --- Menu toggles ---
         if (keycode == settings.getKeyPause()) {
             if (canTogglePause.getAsBoolean()) {
                 onTogglePause.run();
@@ -57,6 +74,11 @@ public class GameScreenInputProcessor extends InputAdapter {
                 onToggleInventory.run();
             }
             return true;
+        }
+
+        // --- Zote interact ---
+        if (keycode == settings.getKeyInteract() && zoteController != null) {
+            zoteController.onInteractKeyPressed();
         }
 
         // --- Debug toggle ---

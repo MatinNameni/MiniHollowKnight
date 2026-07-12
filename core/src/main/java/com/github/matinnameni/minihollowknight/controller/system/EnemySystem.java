@@ -16,6 +16,7 @@ import com.github.matinnameni.minihollowknight.model.entity.enemies.Enemy;
 import com.github.matinnameni.minihollowknight.model.entity.enemies.FalseKnight;
 import com.github.matinnameni.minihollowknight.model.entity.enemies.HuskHornhead;
 import com.github.matinnameni.minihollowknight.model.entity.enemies.Mossfly;
+import com.github.matinnameni.minihollowknight.model.entity.enemies.Zote;
 import com.github.matinnameni.minihollowknight.model.enums.BossType;
 import com.github.matinnameni.minihollowknight.model.enums.Direction;
 import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
@@ -47,6 +48,9 @@ public class EnemySystem {
 
     // --- False Knight boss reference ---
     private FalseKnight activeFalseKnight;
+
+    // --- Zote NPC reference (only one per map, if any) ---
+    private Zote activeZote;
 
     // --- Lasers ---
     private final List<Laser> lasers = new ArrayList<>();
@@ -107,6 +111,14 @@ public class EnemySystem {
             }
         }
 
+        // Zote (NPC)
+        for (Vector2 spawnPoint : gameMap.getZoteSpawns()) {
+            Zote zote = new Zote(spawnPoint.x, spawnPoint.y, enemiesAssets.getZoteAssetBundle());
+            enemies.add(zote);
+            activeZote = zote;
+            EventBus.getInstance().publish(GameEvent.ENEMY_SPAWNED, zote);
+        }
+
         enemiesSpawned = true;
     }
 
@@ -131,6 +143,8 @@ public class EnemySystem {
                 updateCrystallized(delta, (Crystallized) enemy, knight);
             } else if (enemy instanceof FalseKnight) {
                 updateFalseKnight(delta, (FalseKnight) enemy);
+            } else if (enemy instanceof Zote) {
+                updateZote(delta, (Zote) enemy, knight);
             } else {
                 enemy.update(delta);
             }
@@ -386,6 +400,42 @@ public class EnemySystem {
         falseKnight.update(delta);
     }
 
+    private void updateZote(float delta, Zote zote, Knight knight) {
+        if (!zote.isTalking() && !zote.isAngry()) {
+            zote.faceTowards(knight.getBounds().x);
+        }
+
+        zote.setGrounded(false);
+
+        Rectangle hitbox = zote.getBounds();
+        Map<GridObject, Direction> collisions = collisionSystem.getOverlappingObjects(hitbox);
+
+        for (Map.Entry<GridObject, Direction> entry : collisions.entrySet()) {
+            GridObject platform = entry.getKey();
+            Direction direction = entry.getValue();
+
+            if (direction == Direction.UP) {
+                float resolvedHitboxY = platform.y + platform.height;
+                zote.onFloorCollision(resolvedHitboxY - Zote.HITBOX_Y_OFFSET);
+            } else if (direction == Direction.DOWN) {
+                float resolvedHitboxY = platform.y - hitbox.height;
+                zote.onCeilingCollision(resolvedHitboxY - Zote.HITBOX_Y_OFFSET);
+            } else if (direction == Direction.LEFT) {
+                float resolvedHitboxX = platform.x - hitbox.width;
+                zote.onWallCollision(resolvedHitboxX - Zote.HITBOX_X_OFFSET);
+            } else {
+                float resolvedHitboxX = platform.x + platform.width;
+                zote.onWallCollision(resolvedHitboxX - Zote.HITBOX_X_OFFSET);
+            }
+        }
+
+        if (collisionSystem.isOnFloor(zote.getBounds())) {
+            zote.setGrounded(true);
+        }
+
+        zote.update(delta);
+    }
+
     // --- Reset ---
 
     /** Clears all enemy and laser state (called on map change). */
@@ -394,6 +444,7 @@ public class EnemySystem {
         announcedDeaths.clear();
         enemiesSpawned = false;
         activeFalseKnight = null;
+        activeZote = null;
         for (Laser laser : lasers) {
             if (laser instanceof CrystallizedLaser) {
                 ((CrystallizedLaser) laser).dispose();
@@ -414,5 +465,9 @@ public class EnemySystem {
 
     public FalseKnight getActiveFalseKnight() {
         return activeFalseKnight;
+    }
+
+    public Zote getActiveZote() {
+        return activeZote;
     }
 }

@@ -20,6 +20,8 @@ public class KnightInputProcessor extends InputAdapter {
     /** Tracks whether the jump key is currently held (for jump-cut). */
     private boolean jumpKeyHeld = false;
 
+    private boolean shouldProcess = true;
+
     public KnightInputProcessor(Knight knight, Settings settings) {
         this.knight = knight;
         this.settings = settings;
@@ -29,6 +31,8 @@ public class KnightInputProcessor extends InputAdapter {
      * Reads the current keyboard state and triggers knight actions.
      */
     public void processInput(float deltaTime) {
+        if (!shouldProcess) return;
+
         KnightState state = knight.getState();
 
         if (state == KnightState.DEAD) {
@@ -199,5 +203,13 @@ public class KnightInputProcessor extends InputAdapter {
     /** @return true if interaction key is being held. */
     public boolean interactionKeyHeld() {
         return Gdx.input.isKeyPressed(settings.getKeyInteract());
+    }
+
+    public boolean isShouldProcess() {
+        return shouldProcess;
+    }
+
+    public void setShouldProcess(boolean shouldProcess) {
+        this.shouldProcess = shouldProcess;
     }
 }

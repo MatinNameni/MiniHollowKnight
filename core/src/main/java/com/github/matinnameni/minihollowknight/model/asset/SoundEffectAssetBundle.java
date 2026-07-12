@@ -24,6 +24,12 @@ public class SoundEffectAssetBundle extends AssetBundle {
     private static final String BREAKABLE_WALL_HIT = "Audio_Files/breakable_wall_hit_1.wav";
     private static final String BREAKABLE_WALL_DEATH = "Audio_Files/breakable_wall_death.wav";
 
+    private static final String ZOTE_01 = "Audio_Files/Zote_01.wav";
+    private static final String ZOTE_02 = "Audio_Files/Zote_02.wav";
+    private static final String ZOTE_03 = "Audio_Files/Zote_03.wav";
+    private static final String ZOTE_04 = "Audio_Files/Zote_04.wav";
+    private static final String ZOTE_05 = "Audio_Files/Zote_05.wav";
+
     private final List<String> assetPaths = new ArrayList<>();
 
     public SoundEffectAssetBundle(AssetManager manager) {
@@ -55,6 +61,16 @@ public class SoundEffectAssetBundle extends AssetBundle {
         assetPaths.add(BREAKABLE_WALL_HIT);
         manager.load(BREAKABLE_WALL_DEATH, Sound.class);
         assetPaths.add(BREAKABLE_WALL_DEATH);
+        manager.load(ZOTE_01, Sound.class);
+        assetPaths.add(ZOTE_01);
+        manager.load(ZOTE_02, Sound.class);
+        assetPaths.add(ZOTE_02);
+        manager.load(ZOTE_03, Sound.class);
+        assetPaths.add(ZOTE_03);
+        manager.load(ZOTE_04, Sound.class);
+        assetPaths.add(ZOTE_04);
+        manager.load(ZOTE_05, Sound.class);
+        assetPaths.add(ZOTE_05);
     }
 
     @Override
@@ -112,5 +128,25 @@ public class SoundEffectAssetBundle extends AssetBundle {
     /** Played when a breakable wall gets smashed. */
     public Sound getBreakableWallDeath() {
         return manager.get(BREAKABLE_WALL_DEATH, Sound.class);
+    }
+
+    public Sound getZote01() {
+        return manager.get(ZOTE_01, Sound.class);
+    }
+
+    public Sound getZote02() {
+        return manager.get(ZOTE_02, Sound.class);
+    }
+
+    public Sound getZote03() {
+        return manager.get(ZOTE_03, Sound.class);
+    }
+
+    public Sound getZote04() {
+        return manager.get(ZOTE_04, Sound.class);
+    }
+
+    public Sound getZote05() {
+        return manager.get(ZOTE_05, Sound.class);
     }
 }

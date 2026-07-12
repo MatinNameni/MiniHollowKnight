@@ -298,8 +298,10 @@ public class UiManager implements ScreenNavigator {
         TiledMapAssetBundle mapAssets = (TiledMapAssetBundle) registry.get(TiledMapAssetBundle.KEY);
         CharmAssetBundle charmAssets = (CharmAssetBundle) registry.get(CharmAssetBundle.KEY);
         AchievementAssetBundle achievementAssets = (AchievementAssetBundle) registry.get(AchievementAssetBundle.KEY);
+        SoundEffectAssetBundle sfxAssets = (SoundEffectAssetBundle) registry.get(SoundEffectAssetBundle.KEY);
         setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets,
-            getMenuAssets(), mapAssets, EnemiesAssetsManager.getInstance(registry), charmAssets, achievementAssets));
+            getMenuAssets(), mapAssets, EnemiesAssetsManager.getInstance(registry), charmAssets,
+            achievementAssets, sfxAssets));
     }
 
     /** Transitions to the end-game screen. */

@@ -12,8 +12,11 @@ import com.github.matinnameni.minihollowknight.model.map.TiledGameMap;
 public class InteractionSystem {
     public void resolveVoidHeartItemInteraction (Knight knight, TiledGameMap gameMap, GameData gameData,
                                                  KnightInputProcessor knightInputProcessor) {
+        if (gameMap == null) return;
+
         Rectangle interactionArea = gameMap.getVoidHeartInteractionArea();
 
+        if (interactionArea == null) return;
         if (!knightInputProcessor.interactionKeyHeld()) return;
         if (gameMap.isVoidHeartRemoved()) return;
         if (!knight.getBounds().overlaps(interactionArea)) return;

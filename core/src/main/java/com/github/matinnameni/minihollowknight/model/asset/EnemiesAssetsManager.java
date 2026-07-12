@@ -12,6 +12,7 @@ public class EnemiesAssetsManager {
     private boolean huskHornheadAssetsLoaded = false;
     private boolean crystallizedAssetsLoaded = false;
     private boolean falseKnightAssetsLoaded = false;
+    private boolean zoteAssetsLoaded = false;
 
     private EnemiesAssetsManager(AssetRegistry registry) {
         this.registry = registry;
@@ -31,6 +32,7 @@ public class EnemiesAssetsManager {
         registry.register(new HuskHornheadAssetBundle(registry.getManager()));
         registry.register(new CrystallizedAssetBundle(registry.getManager()));
         registry.register(new FalseKnightAssetBundle(registry.getManager()));
+        registry.register(new ZoteAssetBundle(registry.getManager()));
     }
 
     /** Loads all enemies asset bundles if they haven't been loaded yet. */
@@ -59,6 +61,11 @@ public class EnemiesAssetsManager {
             registry.loadBundle(FalseKnightAssetBundle.KEY);
             falseKnightAssetsLoaded = true;
         }
+
+        if (!zoteAssetsLoaded) {
+            registry.loadBundle(ZoteAssetBundle.KEY);
+            zoteAssetsLoaded = true;
+        }
     }
 
     // --- Enemies asset bundles ---
@@ -81,5 +88,9 @@ public class EnemiesAssetsManager {
 
     public FalseKnightAssetBundle getFalseKnightAssetBundle() {
         return (FalseKnightAssetBundle) registry.get(FalseKnightAssetBundle.KEY);
+    }
+
+    public ZoteAssetBundle getZoteAssetBundle() {
+        return (ZoteAssetBundle) registry.get(ZoteAssetBundle.KEY);
     }
 }

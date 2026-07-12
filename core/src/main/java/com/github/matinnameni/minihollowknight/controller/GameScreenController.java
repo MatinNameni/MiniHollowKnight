@@ -12,6 +12,7 @@ import com.github.matinnameni.minihollowknight.model.event.EventBus;
 import com.github.matinnameni.minihollowknight.model.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.event.EventListener;
 import com.github.matinnameni.minihollowknight.model.asset.EnemiesAssetsManager;
+import com.github.matinnameni.minihollowknight.model.asset.SoundEffectAssetBundle;
 import com.github.matinnameni.minihollowknight.model.entity.enemies.Enemy;
 import com.github.matinnameni.minihollowknight.model.entity.enemies.FalseKnight;
 import com.github.matinnameni.minihollowknight.model.laser.Laser;
@@ -50,13 +51,15 @@ public class GameScreenController implements EventListener {
     private final CameraSystem cameraSystem;
     private final WorldSystem worldSystem;
     private final InteractionSystem interactionSystem;
+    private final ZoteController zoteController;
 
     // --- Respawn callback ---
     private Runnable onPlayerDied;
 
     private GameEnvironment pendingTransfer = null;
 
-    public GameScreenController(Knight knight, EnemiesAssetsManager enemiesAssets, GameData gameData) {
+    public GameScreenController(Knight knight, EnemiesAssetsManager enemiesAssets, GameData gameData,
+                                SoundEffectAssetBundle sfxAssets) {
         this.knight = knight;
         this.enemiesAssets = enemiesAssets;
         this.gameData = gameData;
@@ -71,6 +74,7 @@ public class GameScreenController implements EventListener {
         this.cameraSystem = new CameraSystem();
         this.worldSystem = new WorldSystem();
         this.interactionSystem = new InteractionSystem();
+        this.zoteController = new ZoteController(knight, knight.getSettings(), sfxAssets);
 
         // Subscribe to events
         EventBus.getInstance().subscribe(GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST, this);
@@ -104,6 +108,10 @@ public class GameScreenController implements EventListener {
         delta = Math.min(delta, 0.05f);
 
         TiledGameMap gameMap = collisionSystem.getGameMap();
+
+        // 0. Zote controller
+        zoteController.update(delta);
+        knightInputProcessor.setShouldProcess(!zoteController.isDialogueOpen());
 
         // 1. Spawn enemies
         enemySystem.spawnEnemiesIfNeeded();
@@ -302,6 +310,11 @@ public class GameScreenController implements EventListener {
         worldSystem.resetDisplayText();
     }
 
+    /** @return the Zote controller, used by the view layer for rendering and input. */
+    public ZoteController getZoteController() {
+        return zoteController;
+    }
+
     public Color getCurrentBackgroundColor(TiledGameMap gameMap) {
         switch (gameMap.getCurrentEnvironment()) {
             case FORGOTTEN_CROSSROADS:
@@ -327,6 +340,9 @@ public class GameScreenController implements EventListener {
         combatSystem.reset();
         cameraSystem.reset();
         worldSystem.reset();
+        enemySystem.spawnEnemiesIfNeeded();
+        // Re-bind the Zote controller to the new map's Zote NPC (if any).
+        zoteController.bindToMap(gameMap, enemySystem.getActiveZote());
         // Clear any pending transfer so a stale one from the old map doesn't
         // immediately re-trigger after a map swap.
         pendingTransfer = null;
@@ -357,5 +373,6 @@ public class GameScreenController implements EventListener {
         EventBus.getInstance().unsubscribe(GameEvent.FALSE_KNIGHT_DEFEATED, this);
         EventBus.getInstance().unsubscribe(GameEvent.PLAYER_DIED, this);
         EventBus.getInstance().unsubscribe(GameEvent.CAMERA_SHAKE, this);
+        zoteController.dispose();
     }
 }

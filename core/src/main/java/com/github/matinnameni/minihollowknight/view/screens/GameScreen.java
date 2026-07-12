@@ -11,8 +11,10 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.github.matinnameni.minihollowknight.controller.CheatCodeRegistry;
 import com.github.matinnameni.minihollowknight.controller.GameScreenController;
+import com.github.matinnameni.minihollowknight.controller.ZoteController;
 import com.github.matinnameni.minihollowknight.controller.input.GameScreenInputProcessor;
 import com.github.matinnameni.minihollowknight.controller.InventoryController;
 import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
@@ -37,9 +39,15 @@ import com.github.matinnameni.minihollowknight.model.object.Arena;
 import com.github.matinnameni.minihollowknight.model.object.BreakableWall;
 import com.github.matinnameni.minihollowknight.model.object.Door;
 import com.github.matinnameni.minihollowknight.model.projectile.Projectile;
-import com.github.matinnameni.minihollowknight.view.hud.*;
 import com.github.matinnameni.minihollowknight.view.navigator.ScreenNavigator;
 import com.github.matinnameni.minihollowknight.view.navigator.UiManager;
+import com.github.matinnameni.minihollowknight.view.hud.AchievementPopupOverlay;
+import com.github.matinnameni.minihollowknight.view.hud.CheatCodesOverlay;
+import com.github.matinnameni.minihollowknight.view.hud.DisplayTextOverlay;
+import com.github.matinnameni.minihollowknight.view.hud.GameHud;
+import com.github.matinnameni.minihollowknight.view.hud.InventoryOverlay;
+import com.github.matinnameni.minihollowknight.view.hud.PauseOverlay;
+import com.github.matinnameni.minihollowknight.view.hud.ZoteDialogueOverlay;
 import com.github.matinnameni.minihollowknight.view.renderer.KnightRenderer;
 
 /**
@@ -81,6 +89,9 @@ public class GameScreen implements Screen, EventListener {
     private PauseOverlay pauseOverlay;
     private boolean paused = false;
 
+    // --- Zote dialogue overlay ---
+    private ZoteDialogueOverlay zoteDialogueOverlay;
+
     // --- Inventory overlay ---
     private final CharmAssetBundle charmAssets;
     private InventoryOverlay inventoryOverlay;
@@ -94,6 +105,9 @@ public class GameScreen implements Screen, EventListener {
     // --- Achievement popup ---
     private final AchievementAssetBundle achievementAssets;
     private AchievementPopupOverlay achievementPopup;
+
+    // --- Sound effects (used by ZoteController via the controller) ---
+    private final SoundEffectAssetBundle sfxAssets;
 
     // --- Input + cheats ---
     private CheatCodeRegistry cheatRegistry;
@@ -134,34 +148,39 @@ public class GameScreen implements Screen, EventListener {
     public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
                       KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets,
                       TiledMapAssetBundle mapAssets, EnemiesAssetsManager enemiesAssets,
-                      CharmAssetBundle charmAssets, AchievementAssetBundle achievementAssets) {
+                      CharmAssetBundle charmAssets, AchievementAssetBundle achievementAssets,
+                      SoundEffectAssetBundle sfxAssets) {
         this.navigator = navigator;
         this.gameData = gameData;
         this.settings = settings;
         this.knight = new Knight(knightAssets, settings);
         this.knightRenderer = new KnightRenderer(knight, knightAssets);
-        this.controller = new GameScreenController(knight, enemiesAssets, gameData);
+        this.controller = new GameScreenController(knight, enemiesAssets, gameData, sfxAssets);
         this.gameHud = new GameHud(knight, hudAssets);
         this.menuAssets = menuAssets;
         this.mapAssets = mapAssets;
         this.charmAssets = charmAssets;
         this.achievementAssets = achievementAssets;
+        this.sfxAssets = sfxAssets;
     }
 
     // --- Screen ---
 
     @Override
     public void show() {
-        if (cheatCodesOpen) {
-            cheatCodesOverlay.init();
-            Gdx.input.setInputProcessor(cheatCodesOverlay.getStage());
-        } else if (initialized) {
-            if (paused) {
+        if (initialized) {
+            if (cheatCodesOpen) {
+                cheatCodesOverlay.init();
+                Gdx.input.setInputProcessor(cheatCodesOverlay.getStage());
+            } else if (paused) {
                 pauseOverlay.init();
                 Gdx.input.setInputProcessor(pauseOverlay.getStage());
             } else if (inventoryOpen) {
                 inventoryOverlay.init();
                 Gdx.input.setInputProcessor(inventoryOverlay.getStage());
+            } else if (controller.getZoteController().isDialogueOpen()) {
+                zoteDialogueOverlay.init();
+                Gdx.input.setInputProcessor(gameInputProcessor);
             } else {
                 Gdx.input.setInputProcessor(gameInputProcessor);
             }
@@ -225,6 +244,11 @@ public class GameScreen implements Screen, EventListener {
         cheatCodesOverlay.init();
         cheatCodesOverlay.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+        // Initialize the Zote dialogue overlay.
+        zoteDialogueOverlay = new ZoteDialogueOverlay(menuAssets, controller.getZoteController());
+        zoteDialogueOverlay.init();
+        zoteDialogueOverlay.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
         // Initialize the inventory overlay.
         inventoryController = new InventoryController(gameData, knight, this::closeInventory);
         inventoryOverlay = new InventoryOverlay(inventoryController, charmAssets, menuAssets);
@@ -251,6 +275,7 @@ public class GameScreen implements Screen, EventListener {
             settings,
             cheatRegistry,
             cheatContext,
+            controller.getZoteController(),
             () -> respawnPhase == RespawnPhase.NONE && transferPhase == TransferPhase.NONE, // canTogglePause
             () -> !paused && respawnPhase == RespawnPhase.NONE && transferPhase == TransferPhase.NONE, // canToggleInventory
             this::togglePause,
@@ -285,7 +310,7 @@ public class GameScreen implements Screen, EventListener {
             if(gameEnded) return;
         }
 
-        boolean gameplayBlocked = paused || inventoryOpen;
+        boolean gameplayBlocked = paused || inventoryOpen || cheatCodesOpen;
 
         if (!gameplayBlocked) {
             controller.update(delta, camera);
@@ -300,6 +325,8 @@ public class GameScreen implements Screen, EventListener {
             }
 
             gameData.playTimeSeconds += delta;
+        } else if (controller.getZoteController().isDialogueOpen()) {
+            controller.getZoteController().update(delta);
         }
 
         Color bgColor = controller.getCurrentBackgroundColor(gameMap);
@@ -398,6 +425,21 @@ public class GameScreen implements Screen, EventListener {
             inventoryOverlay.update(delta);
             inventoryOverlay.draw();
         }
+
+        // Zote dialogue overlay
+        zoteDialogueOverlay.update(delta);
+        ZoteController zoteController = controller.getZoteController();
+        if (zoteController.shouldShowInteractPrompt() && zoteController.getZote() != null) {
+            Rectangle zoteBound = zoteController.getZote().getBounds();
+            Vector3 worldPos = new Vector3(
+                zoteBound.x + zoteBound.width / 2f,
+                zoteBound.y + zoteBound.height + 30f,
+                0f
+            );
+            camera.project(worldPos);
+            zoteDialogueOverlay.setInteractPromptPosition(worldPos.x, worldPos.y);
+        }
+        zoteDialogueOverlay.draw();
 
         // Brightness overlay
         drawBrightnessOverlay();
@@ -829,6 +871,8 @@ public class GameScreen implements Screen, EventListener {
         gameHud.resize(width, height);
         displayOverlay.resize(width, height);
         pauseOverlay.resize(width, height);
+        cheatCodesOverlay.resize(width, height);
+        zoteDialogueOverlay.resize(width, height);
         inventoryOverlay.resize(width, height);
         achievementPopup.resize(width, height);
     }
@@ -852,6 +896,8 @@ public class GameScreen implements Screen, EventListener {
         gameHud.dispose();
         displayOverlay.dispose();
         pauseOverlay.dispose();
+        cheatCodesOverlay.dispose();
+        zoteDialogueOverlay.dispose();
         inventoryOverlay.dispose();
         achievementPopup.dispose();
     }

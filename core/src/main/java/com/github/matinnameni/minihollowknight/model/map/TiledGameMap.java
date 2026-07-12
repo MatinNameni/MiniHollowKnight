@@ -44,6 +44,8 @@ public class TiledGameMap {
     private static final String HUSK_HORNHEAD_SPAWN_NAME = "huskHornheadSpawn";
     private static final String CRYSTALLIZED_SPAWN_NAME = "crystallizedSpawn";
     private static final String FALSE_KNIGHT_SPAWN_NAME = "falseKnightSpawn";
+    private static final String ZOTE_SPAWN_NAME = "zoteSpawn";
+    private static final String ZOTE_INTERACTION_NAME = "zote";
 
     private static final String FORGOTTEN_CROSSROADS_TO_GREENPATH = "fcToG";
     private static final String GREENPATH_TO_FORGOTTEN_CROSSROADS = "gToFc";
@@ -98,6 +100,7 @@ public class TiledGameMap {
     private final List<Vector2> huskHornheadSpawns = new ArrayList<>();
     private final List<Vector2> crystallizedSpawns = new ArrayList<>();
     private final List<Vector2> falseKnightSpawns = new ArrayList<>();
+    private final List<Vector2> zoteSpawns = new ArrayList<>();
     private final List<BreakableWall> breakableWalls = new ArrayList<>();
     private final List<Door> doors = new ArrayList<>();
     private final Map<ArrayList<GameEnvironment>, Vector2> transferPoints = new HashMap<>();
@@ -115,6 +118,9 @@ public class TiledGameMap {
     // --- Void Heart ---
     private Rectangle voidHeartInteractionArea;
     private boolean voidHeartRemoved = false;
+
+    // --- Zote ---
+    private Rectangle zoteInteractionArea;
 
     // --- Current environment ---
     private GameEnvironment currentEnvironment;
@@ -243,6 +249,13 @@ public class TiledGameMap {
                         String toBeInteracted = mapObject.getProperties().get(PROP_INTERACTION, String.class);
                         if (toBeInteracted.equals("voidHeart")) {
                             voidHeartInteractionArea = new Rectangle(
+                                rect.x * unitScale,
+                                rect.y * unitScale,
+                                rect.width * unitScale,
+                                rect.height * unitScale
+                            );
+                        } else if (toBeInteracted.equals(ZOTE_INTERACTION_NAME)) {
+                            zoteInteractionArea = new Rectangle(
                                 rect.x * unitScale,
                                 rect.y * unitScale,
                                 rect.width * unitScale,
@@ -377,9 +390,12 @@ public class TiledGameMap {
             case FALSE_KNIGHT_SPAWN_NAME:
                 falseKnightSpawns.add(new Vector2(x * unitScale, y * unitScale));
                 break;
+            case ZOTE_SPAWN_NAME:
+                zoteSpawns.add(new Vector2(x * unitScale, y * unitScale));
+                break;
             case FORGOTTEN_CROSSROADS_TO_GREENPATH:
                 transferPoints.put(new ArrayList<>(
-                    List.of(GameEnvironment.FORGOTTEN_CROSSROADS, GameEnvironment.GREENPATH)),
+                        List.of(GameEnvironment.FORGOTTEN_CROSSROADS, GameEnvironment.GREENPATH)),
                     new Vector2(x * unitScale, y * unitScale)
                 );
                 break;
@@ -488,6 +504,10 @@ public class TiledGameMap {
         return falseKnightSpawns;
     }
 
+    public List<Vector2> getZoteSpawns() {
+        return zoteSpawns;
+    }
+
     public float getMapWidth() {
         return mapWidth;
     }
@@ -514,6 +534,10 @@ public class TiledGameMap {
 
     public Rectangle getVoidHeartInteractionArea() {
         return voidHeartInteractionArea;
+    }
+
+    public Rectangle getZoteInteractionArea() {
+        return zoteInteractionArea;
     }
 
     public Vector2 getTransferPoint(GameEnvironment previous, GameEnvironment current) {
