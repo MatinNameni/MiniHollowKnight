@@ -37,13 +37,9 @@ import com.github.matinnameni.minihollowknight.model.object.Arena;
 import com.github.matinnameni.minihollowknight.model.object.BreakableWall;
 import com.github.matinnameni.minihollowknight.model.object.Door;
 import com.github.matinnameni.minihollowknight.model.projectile.Projectile;
+import com.github.matinnameni.minihollowknight.view.hud.*;
 import com.github.matinnameni.minihollowknight.view.navigator.ScreenNavigator;
 import com.github.matinnameni.minihollowknight.view.navigator.UiManager;
-import com.github.matinnameni.minihollowknight.view.hud.AchievementPopupOverlay;
-import com.github.matinnameni.minihollowknight.view.hud.DisplayTextOverlay;
-import com.github.matinnameni.minihollowknight.view.hud.GameHud;
-import com.github.matinnameni.minihollowknight.view.hud.InventoryOverlay;
-import com.github.matinnameni.minihollowknight.view.hud.PauseOverlay;
 import com.github.matinnameni.minihollowknight.view.renderer.KnightRenderer;
 
 /**
@@ -90,6 +86,10 @@ public class GameScreen implements Screen, EventListener {
     private InventoryOverlay inventoryOverlay;
     private InventoryController inventoryController;
     private boolean inventoryOpen = false;
+
+    // --- Cheat codes overlay ---
+    private CheatCodesOverlay cheatCodesOverlay;
+    private boolean cheatCodesOpen = false;
 
     // --- Achievement popup ---
     private final AchievementAssetBundle achievementAssets;
@@ -152,7 +152,10 @@ public class GameScreen implements Screen, EventListener {
 
     @Override
     public void show() {
-        if (initialized) {
+        if (cheatCodesOpen) {
+            cheatCodesOverlay.init();
+            Gdx.input.setInputProcessor(cheatCodesOverlay.getStage());
+        } else if (initialized) {
             if (paused) {
                 pauseOverlay.init();
                 Gdx.input.setInputProcessor(pauseOverlay.getStage());
@@ -211,10 +214,16 @@ public class GameScreen implements Screen, EventListener {
         displayOverlay.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // Initialize the pause menu overlay
-        PauseMenuController pauseController = new PauseMenuController(navigator, this, this::resumeGame);
+        PauseMenuController pauseController = new PauseMenuController(
+            navigator, this, this::resumeGame, this::showCheatCodes);
         pauseOverlay = new PauseOverlay(pauseController, menuAssets);
         pauseOverlay.init();
         pauseOverlay.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        // Initialize the cheat codes overlay.
+        cheatCodesOverlay = new CheatCodesOverlay(menuAssets, this::closeCheatCodes);
+        cheatCodesOverlay.init();
+        cheatCodesOverlay.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // Initialize the inventory overlay.
         inventoryController = new InventoryController(gameData, knight, this::closeInventory);
@@ -376,6 +385,12 @@ public class GameScreen implements Screen, EventListener {
         if (paused) {
             pauseOverlay.update(delta);
             pauseOverlay.draw();
+        }
+
+        // Cheat codes overlay
+        if (cheatCodesOpen) {
+            cheatCodesOverlay.update(delta);
+            cheatCodesOverlay.draw();
         }
 
         // Inventory overlay
@@ -787,6 +802,20 @@ public class GameScreen implements Screen, EventListener {
                 System.err.println("[GameScreen] Failed to save game: " + e.getMessage());
             }
         }
+    }
+
+    // --- Cheat codes overlay ---
+
+    /** Opens the cheat codes overlay on top of the pause menu. */
+    private void showCheatCodes() {
+        cheatCodesOpen = true;
+        Gdx.input.setInputProcessor(cheatCodesOverlay.getStage());
+    }
+
+    /** Closes the cheat codes overlay and returns focus to the pause menu. */
+    private void closeCheatCodes() {
+        cheatCodesOpen = false;
+        Gdx.input.setInputProcessor(pauseOverlay.getStage());
     }
 
     @Override

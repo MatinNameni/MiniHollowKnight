@@ -12,11 +12,14 @@ public class PauseMenuController {
     private final GameScreen gameScreen;
 
     private final Runnable onContinue;
+    private final Runnable onShowCheatCodes;
 
-    public PauseMenuController(ScreenNavigator navigator, GameScreen gameScreen, Runnable onContinue) {
+    public PauseMenuController(ScreenNavigator navigator, GameScreen gameScreen,
+                               Runnable onContinue, Runnable onShowCheatCodes) {
         this.navigator = navigator;
         this.gameScreen = gameScreen;
         this.onContinue = onContinue;
+        this.onShowCheatCodes = onShowCheatCodes;
     }
 
     /** Called when the player taps the Continue button. */
@@ -38,6 +41,8 @@ public class PauseMenuController {
 
     /** Called when the player taps the Show cheat codes button */
     public void onShowCheatCodes() {
-        // TODO: implement this after cheat codes have been set
+        if (onShowCheatCodes != null) {
+            onShowCheatCodes.run();
+        }
     }
 }
