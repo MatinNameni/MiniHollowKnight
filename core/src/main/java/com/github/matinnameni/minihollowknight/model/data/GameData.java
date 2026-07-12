@@ -140,8 +140,8 @@ public class GameData {
      */
     public void resetToNewGame() {
         currentEnvironment = 0;
-        playerX = 0f;
-        playerY = 0f;
+        playerX = -1f;
+        playerY = -1f;
         masks = 5;
         maxMasks = 5;
         soul = 0;
@@ -151,6 +151,5 @@ public class GameData {
         playTimeSeconds = 0f;
         collectedCharms.clear();
         equippedCharms.clear();
-        unlockedAchievements.clear();
     }
 }

@@ -7,6 +7,7 @@ public interface ScreenNavigator {
     void goToMainMenu();
     void goToStartGame();
     void goToGame(GameData data);
+    void goToEndGame(GameData data);
     void goToSettings();
     void goToAudioSettings();
     void goToKeyBindings();

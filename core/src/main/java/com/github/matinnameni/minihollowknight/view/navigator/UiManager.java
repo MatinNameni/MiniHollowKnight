@@ -40,6 +40,7 @@ public class UiManager implements ScreenNavigator {
 
     private GameMusicManager gameMusicManager;
     private SoundEffectManager soundEffectManager;
+    private AchievementController achievementController;
 
     private GameScreen pausedGameScreen;
 
@@ -103,6 +104,7 @@ public class UiManager implements ScreenNavigator {
     /** Initializes the global {@link AchievementManager}. */
     private void initAchievements() {
         AchievementManager.init(database);
+        achievementController = new AchievementController();
     }
 
     public void setScreen(Screen screen) {
@@ -297,6 +299,13 @@ public class UiManager implements ScreenNavigator {
         AchievementAssetBundle achievementAssets = (AchievementAssetBundle) registry.get(AchievementAssetBundle.KEY);
         setScreen(new GameScreen(this, data, settings, knightAssets, hudAssets,
             getMenuAssets(), mapAssets, EnemiesAssetsManager.getInstance(registry), charmAssets, achievementAssets));
+    }
+
+    /** Transitions to the end-game screen. */
+    @Override
+    public void goToEndGame(GameData data) {
+        stopSoundEffects();
+        setScreen(new EndGameScreen(registry, this, data));
     }
 
     /**

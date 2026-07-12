@@ -17,6 +17,7 @@ public class GameMusicAssetBundle extends AssetBundle {
     private static final String CROSSROADS_MUSIC = "Audio_Files/S19 Crossroads Main.wav";
     private static final String GREENPATH_MUSIC = "Audio_Files/S5 Green Path Main.wav";
     private static final String FALSE_KNIGHT_MUSIC = "Audio_Files/04. False Knight.mp3";
+    private static final String END_GAME_MUSIC = "Audio_Files/Royal_HollowKnight_Theme.wav";
 
     private final List<String> assetPaths = new ArrayList<>();
 
@@ -37,6 +38,8 @@ public class GameMusicAssetBundle extends AssetBundle {
         assetPaths.add(GREENPATH_MUSIC);
         manager.load(FALSE_KNIGHT_MUSIC, Music.class);
         assetPaths.add(FALSE_KNIGHT_MUSIC);
+        manager.load(END_GAME_MUSIC, Music.class);
+        assetPaths.add(END_GAME_MUSIC);
     }
 
     @Override
@@ -61,5 +64,9 @@ public class GameMusicAssetBundle extends AssetBundle {
 
     public Music getFalseKnightMusic() {
         return manager.get(FALSE_KNIGHT_MUSIC, Music.class);
+    }
+
+    public Music getEndGameMusic() {
+        return manager.get(END_GAME_MUSIC, Music.class);
     }
 }

@@ -19,6 +19,7 @@ public class GameMusicManager implements EventListener {
     // --- State ---
     private GameEnvironment currentEnvironment;
     private boolean bossFightActive = false;
+    private boolean gameEnded = false;
 
     /** The track that should be playing once any transition completes. */
     private Music currentTrack;
@@ -40,6 +41,7 @@ public class GameMusicManager implements EventListener {
     private final Music crossroadsMusic;
     private final Music greenpathMusic;
     private final Music falseKnightMusic;
+    private final Music endGameMusic;
 
     // --- Settings ---
     private final Settings settings;
@@ -49,14 +51,17 @@ public class GameMusicManager implements EventListener {
         this.crossroadsMusic = assets.getCrossroadsMusic();
         this.greenpathMusic = assets.getGreenpathMusic();
         this.falseKnightMusic = assets.getFalseKnightMusic();
+        this.endGameMusic = assets.getEndGameMusic();
 
         crossroadsMusic.setLooping(true);
         greenpathMusic.setLooping(true);
         falseKnightMusic.setLooping(true);
+        endGameMusic.setLooping(true);
 
         EventBus bus = EventBus.getInstance();
         bus.subscribe(GameEvent.FALSE_KNIGHT_FIGHT_STARTED, this);
         bus.subscribe(GameEvent.FALSE_KNIGHT_DEFEATED, this);
+        bus.subscribe(GameEvent.GAME_COMPLETED, this);
     }
 
     public void onEnvironmentChanged(GameEnvironment environment) {
@@ -130,6 +135,7 @@ public class GameMusicManager implements EventListener {
         EventBus bus = EventBus.getInstance();
         bus.unsubscribe(GameEvent.FALSE_KNIGHT_FIGHT_STARTED, this);
         bus.unsubscribe(GameEvent.FALSE_KNIGHT_DEFEATED, this);
+        bus.unsubscribe(GameEvent.GAME_COMPLETED, this);
         stop();
     }
 
@@ -142,6 +148,9 @@ public class GameMusicManager implements EventListener {
             updateTrack();
         } else if (event == GameEvent.FALSE_KNIGHT_DEFEATED) {
             bossFightActive = false;
+            updateTrack();
+        } else if (event == GameEvent.GAME_COMPLETED) {
+            gameEnded = true;
             updateTrack();
         }
     }
@@ -217,6 +226,9 @@ public class GameMusicManager implements EventListener {
     private Music desiredTrack() {
         if (bossFightActive) {
             return falseKnightMusic;
+        }
+        if (gameEnded) {
+            return endGameMusic;
         }
         if (currentEnvironment == GameEnvironment.FORGOTTEN_CROSSROADS) {
             return crossroadsMusic;

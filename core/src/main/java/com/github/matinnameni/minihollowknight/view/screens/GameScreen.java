@@ -1,5 +1,6 @@
 package com.github.matinnameni.minihollowknight.view.screens;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -17,6 +18,7 @@ import com.github.matinnameni.minihollowknight.controller.InventoryController;
 import com.github.matinnameni.minihollowknight.controller.PauseMenuController;
 import com.github.matinnameni.minihollowknight.model.event.EventBus;
 import com.github.matinnameni.minihollowknight.model.event.GameEvent;
+import com.github.matinnameni.minihollowknight.model.event.EventListener;
 import com.github.matinnameni.minihollowknight.model.asset.*;
 import com.github.matinnameni.minihollowknight.model.data.GameData;
 import com.github.matinnameni.minihollowknight.model.data.Settings;
@@ -47,7 +49,7 @@ import com.github.matinnameni.minihollowknight.view.renderer.KnightRenderer;
 /**
  * The main gameplay screen.
  */
-public class GameScreen implements Screen {
+public class GameScreen implements Screen, EventListener {
 
     // --- Constants ---
 
@@ -119,6 +121,15 @@ public class GameScreen implements Screen {
     /** Separate alpha for the transfer fade so it doesn't collide with the respawn fade. */
     private float transferFadeAlpha = 0f;
     private static final float TRANSFER_FADE_DURATION = 0.5f;
+
+    // --- End-game state ---
+    private static final float END_GAME_WAIT_DURATION = 2.8f;
+    private static final float END_GAME_FADE_DURATION = 1.0f;
+    private float endGameFadeAlpha = 0f;
+    private EndGamePhase endGamePhase = EndGamePhase.NONE;
+    private float endGameTimer = 0f;
+    private boolean endGameTriggered = false;
+    private boolean gameEnded = false;
 
     public GameScreen(ScreenNavigator navigator, GameData gameData, Settings settings,
                       KnightAssetBundle knightAssets, HudAssetBundle hudAssets, MenuAssetBundle menuAssets,
@@ -219,6 +230,10 @@ public class GameScreen implements Screen {
         // Wire up the respawn callback
         controller.setOnPlayerDied(this::onPlayerDied);
 
+        // Listen for the False Knight's defeat so we can transition to the
+        // end-game screen once the death animation has played.
+        EventBus.getInstance().subscribe(GameEvent.FALSE_KNIGHT_DEFEATED, this);
+
         // Build the cheat registry + input processor.
         cheatRegistry = new CheatCodeRegistry();
         CheatCodeRegistry.Context cheatContext = new CheatCodeRegistry.Context(
@@ -255,6 +270,12 @@ public class GameScreen implements Screen {
             updateTransfer(delta);
         }
 
+        // End-game sequence
+        if (endGamePhase != EndGamePhase.NONE) {
+            updateEndGame(delta);
+            if(gameEnded) return;
+        }
+
         boolean gameplayBlocked = paused || inventoryOpen;
 
         if (!gameplayBlocked) {
@@ -268,10 +289,7 @@ public class GameScreen implements Screen {
             if (pending != null) {
                 startTransfer(pending);
             }
-        }
 
-        // Accumulate active play time (drives the Speedrun achievement).
-        if (!gameplayBlocked) {
             gameData.playTimeSeconds += delta;
         }
 
@@ -380,6 +398,11 @@ public class GameScreen implements Screen {
         if (transferFadeAlpha > 0f) {
             drawTransferFadeOverlay();
         }
+
+        // End-game fade overlay
+        if (endGameFadeAlpha > 0f) {
+            drawEndGameFadeOverlay();
+        }
     }
 
     // --- Respawn ---
@@ -389,6 +412,72 @@ public class GameScreen implements Screen {
         respawnPhase = RespawnPhase.DEATH_ANIM;
         respawnTimer = 0f;
         fadeAlpha = 0f;
+    }
+
+    // --- End-game sequence ---
+
+    /**
+     * Listener for {@link GameEvent#FALSE_KNIGHT_DEFEATED}. Kicks off the
+     * end-game sequence.
+     */
+    @Override
+    public void onEvent(GameEvent event, Object payload) {
+        if (event != GameEvent.FALSE_KNIGHT_DEFEATED) return;
+        if (endGameTriggered) return;
+        endGameTriggered = true;
+
+        Gdx.input.setInputProcessor(null);
+
+        endGamePhase = EndGamePhase.WAIT;
+        endGameTimer = 0f;
+        endGameFadeAlpha = 0f;
+    }
+
+    /** Advances the end-game state machine each frame. */
+    private void updateEndGame(float delta) {
+        delta = Math.min(delta, 0.05f);
+
+        switch (endGamePhase) {
+            case WAIT:
+                endGameTimer += delta;
+                if (endGameTimer >= END_GAME_WAIT_DURATION) {
+                    endGamePhase = EndGamePhase.FADE_TO_BLACK;
+                    endGameTimer = 0f;
+                }
+                break;
+
+            case FADE_TO_BLACK:
+                endGameTimer += delta;
+                endGameFadeAlpha = Math.min(1f, endGameTimer / END_GAME_FADE_DURATION);
+                if (endGameFadeAlpha >= 1f) {
+                    endGamePhase = EndGamePhase.DONE;
+                    navigator.goToEndGame(gameData);
+                    gameEnded = true;
+                    return;
+                }
+                break;
+
+            case DONE:
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /** Draws a black overlay with the current end-game fade alpha. */
+    private void drawEndGameFadeOverlay() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0, 0, 0, endGameFadeAlpha);
+
+        float x = camera.position.x - camera.viewportWidth / 2f;
+        float y = camera.position.y - camera.viewportHeight / 2f;
+        shapeRenderer.rect(x, y, camera.viewportWidth, camera.viewportHeight);
+        shapeRenderer.end();
     }
 
     /** Advances the respawn state machine each frame. */
@@ -724,6 +813,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
+        EventBus.getInstance().unsubscribe(GameEvent.FALSE_KNIGHT_DEFEATED, this);
         batch.dispose();
         shapeRenderer.dispose();
         gameMap.dispose();
@@ -874,5 +964,14 @@ public class GameScreen implements Screen {
         NONE, // Normal gameplay
         FADE_TO_BLACK, // Black overlay alpha increasing (map not swapped yet)
         FADE_IN // Black overlay alpha decreasing (map already swapped)
+    }
+
+    // --- End-game (victory) state machine ---
+
+    private enum EndGamePhase {
+        NONE, // Normal gameplay
+        WAIT, // Boss defeated - letting the death animation play out
+        FADE_TO_BLACK, // Fading the screen to black before handing off
+        DONE // Screen is about to be swapped
     }
 }

@@ -1,5 +1,6 @@
 package com.github.matinnameni.minihollowknight.controller;
 
+import com.github.matinnameni.minihollowknight.model.entity.enemies.Boss;
 import com.github.matinnameni.minihollowknight.model.event.EventBus;
 import com.github.matinnameni.minihollowknight.model.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.event.EventListener;
@@ -44,12 +45,11 @@ public class AchievementController implements EventListener {
         }
     }
 
-    // --- Event handlers ----------------------------------------------------------
+    // --- Event handlers ---
 
     /**
      * Records an enemy kill (drives the True Hunter achievement) and bumps the
-     * per-slot kill counter. Bosses are excluded from the generic kill counter
-     * since they are tracked separately via {@link #onFalseKnightDefeated}.
+     * per-slot kill counter.
      */
     private void onEnemyDied(Object payload, AchievementManager manager) {
         if (!(payload instanceof Enemy)) return;
@@ -59,7 +59,7 @@ public class AchievementController implements EventListener {
         manager.recordEnemyKill(enemy);
 
         GameData data = manager.getActiveGameData();
-        if (data != null && !(enemy instanceof FalseKnight)) {
+        if (data != null && !(enemy instanceof Boss)) {
             data.enemiesKilled++;
         }
     }

@@ -24,6 +24,7 @@ public class MenuAssetBundle extends AssetBundle {
     private static final String BACKGROUND_IMG_CLASSIC = "sprites/Menu/Menu_Theme_Classic_Current.png";
     private static final String BACKGROUND_IMG_LIFEBLOOD = "sprites/Menu/Menu_Theme_Lifeblood.png";
     private static final String BACKGROUND_IMG_HIDDEN_DREAMS = "sprites/Menu/Menu_Theme_Hidden_Dreams.png";
+    private static final String BACKGROUND_IMG_DEFAULT = "sprites/Menu/controller_prompt_bg.png";
     private static final String LOGO_IMG = "sprites/Menu/logo.png";
     private static final String SEPARATOR = "sprites/Inventory & UI/Fleurs/Warning_Fleur0008.png";
     private static final String MENU_MUSIC = "Audio_Files/Title.wav";
@@ -67,6 +68,7 @@ public class MenuAssetBundle extends AssetBundle {
         queue(PROFILE_MASK, Texture.class);
         queue(PAUSE_OVERLAY_TOP_FLEUR, Texture.class);
         queue(PAUSE_OVERLAY_BOTTOM_FLEUR, Texture.class);
+        queue(BACKGROUND_IMG_DEFAULT, Texture.class);
     }
 
     @Override
@@ -93,7 +95,16 @@ public class MenuAssetBundle extends AssetBundle {
     }
 
     public void setBackground(MenuStyle style) {
+        if (style == null) {
+            backgroundPath = BACKGROUND_IMG_DEFAULT;
+            return;
+        }
+
         switch (style) {
+            case CLASSIC:
+                backgroundPath = BACKGROUND_IMG_CLASSIC;
+                break;
+
             case LIFEBLOOD:
                 backgroundPath = BACKGROUND_IMG_LIFEBLOOD;
                 break;
@@ -103,7 +114,7 @@ public class MenuAssetBundle extends AssetBundle {
                 break;
 
             default:
-                backgroundPath = BACKGROUND_IMG_CLASSIC;
+                backgroundPath = BACKGROUND_IMG_DEFAULT;
                 break;
         }
     }

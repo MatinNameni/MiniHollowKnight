@@ -71,7 +71,7 @@ public class AchievementManager {
         return instance;
     }
 
-    // --- Lifecycle / persistence -------------------------------------------------
+    // --- Lifecycle / persistence ---
 
     /**
      * Loads the global achievement state from the database:
