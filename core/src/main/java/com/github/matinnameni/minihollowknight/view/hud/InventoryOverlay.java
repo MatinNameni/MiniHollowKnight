@@ -120,6 +120,7 @@ public class InventoryOverlay {
     }
 
     public void draw() {
+        init();
         drawDimOverlay();
         stage.draw();
     }
@@ -241,8 +242,6 @@ public class InventoryOverlay {
         if (iconTex != null) {
             icon = new Image(new TextureRegion(iconTex));
         } else {
-            // Defensive fallback: if the texture hasn't been loaded yet (e.g.
-            // the bundle wasn't finished loading), render an empty cell.
             icon = new Image();
         }
         icon.setScaling(Scaling.fit);

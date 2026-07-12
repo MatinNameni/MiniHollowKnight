@@ -195,4 +195,9 @@ public class KnightInputProcessor extends InputAdapter {
             ? Direction.RIGHT
             : Direction.LEFT;
     }
+
+    /** @return true if interaction key is being held. */
+    public boolean interactionKeyHeld() {
+        return Gdx.input.isKeyPressed(settings.getKeyInteract());
+    }
 }

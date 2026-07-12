@@ -140,7 +140,7 @@ public class GameScreen implements Screen, EventListener {
         this.settings = settings;
         this.knight = new Knight(knightAssets, settings);
         this.knightRenderer = new KnightRenderer(knight, knightAssets);
-        this.controller = new GameScreenController(knight, enemiesAssets);
+        this.controller = new GameScreenController(knight, enemiesAssets, gameData);
         this.gameHud = new GameHud(knight, hudAssets);
         this.menuAssets = menuAssets;
         this.mapAssets = mapAssets;
@@ -174,8 +174,8 @@ public class GameScreen implements Screen, EventListener {
         // Load the Tiled map
         GameEnvironment currentEnvironment = GameEnvironment.fromId(gameData.currentEnvironment);
         gameMap = (currentEnvironment == null) ?
-            MapLoader.loadMap(GameEnvironment.FORGOTTEN_CROSSROADS, mapAssets) :
-            MapLoader.loadMap(currentEnvironment, mapAssets);
+            MapLoader.loadMap(GameEnvironment.FORGOTTEN_CROSSROADS, mapAssets, gameData) :
+            MapLoader.loadMap(currentEnvironment, mapAssets, gameData);
         controller.setGameMap(gameMap);
 
         // Start the area-appropriate background music.
@@ -296,6 +296,8 @@ public class GameScreen implements Screen, EventListener {
         Color bgColor = controller.getCurrentBackgroundColor(gameMap);
         Gdx.gl.glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        gameMap.update(delta);
 
         // Background layer
         gameMap.renderBackground(camera);
@@ -524,7 +526,7 @@ public class GameScreen implements Screen, EventListener {
         if (gameMap != null) {
             gameMap.dispose();
         }
-        gameMap = MapLoader.loadMap(GameEnvironment.FORGOTTEN_CROSSROADS, mapAssets);
+        gameMap = MapLoader.loadMap(GameEnvironment.FORGOTTEN_CROSSROADS, mapAssets, gameData);
         controller.setGameMap(gameMap);
 
         // Reset the background music
@@ -630,7 +632,7 @@ public class GameScreen implements Screen, EventListener {
         if (gameMap != null) {
             gameMap.dispose();
         }
-        gameMap = MapLoader.loadMap(target, mapAssets);
+        gameMap = MapLoader.loadMap(target, mapAssets, gameData);
         controller.setGameMap(gameMap);
 
         // Place the knight at the new map's transfer point.

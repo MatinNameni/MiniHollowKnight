@@ -839,6 +839,26 @@ public class Knight implements Entity {
         return velocity;
     }
 
+    public float getWidth() {
+        return WIDTH;
+    }
+
+    public float getHeight() {
+        return HEIGHT;
+    }
+
+    public Direction getAttackDirection() {
+        return attackDirection;
+    }
+
+    public Vector2 getLastSafePosition() {
+        return lastSafePosition;
+    }
+
+    public boolean hasVoidHear() {
+        return charmEffects.hasVoidHeart();
+    }
+
     // --- Cheat accessors ---
 
     public boolean isGodMode() {
@@ -879,26 +899,6 @@ public class Knight implements Entity {
     /** Restores the knight to full masks. */
     public void fullHeal() {
         this.masks = maxMasks;
-    }
-
-    public float getWidth() {
-        return WIDTH;
-    }
-
-    public float getHeight() {
-        return HEIGHT;
-    }
-
-    public Direction getAttackDirection() {
-        return attackDirection;
-    }
-
-    public Vector2 getLastSafePosition() {
-        return lastSafePosition;
-    }
-
-    public boolean hasVoidHear() {
-        return charmEffects.hasVoidHeart();
     }
 
     // --- Setters ---

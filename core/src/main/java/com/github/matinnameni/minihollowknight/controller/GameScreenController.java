@@ -6,13 +6,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.github.matinnameni.minihollowknight.controller.input.KnightInputProcessor;
-import com.github.matinnameni.minihollowknight.controller.system.CameraSystem;
-import com.github.matinnameni.minihollowknight.controller.system.CombatSystem;
-import com.github.matinnameni.minihollowknight.controller.system.CollisionSystem;
-import com.github.matinnameni.minihollowknight.controller.system.EnemySystem;
-import com.github.matinnameni.minihollowknight.controller.system.KnightPhysicsSystem;
-import com.github.matinnameni.minihollowknight.controller.system.ProjectileSystem;
-import com.github.matinnameni.minihollowknight.controller.system.WorldSystem;
+import com.github.matinnameni.minihollowknight.controller.system.*;
+import com.github.matinnameni.minihollowknight.model.data.GameData;
 import com.github.matinnameni.minihollowknight.model.event.EventBus;
 import com.github.matinnameni.minihollowknight.model.event.GameEvent;
 import com.github.matinnameni.minihollowknight.model.event.EventListener;
@@ -43,6 +38,7 @@ public class GameScreenController implements EventListener {
     // --- Dependencies ---
     private final Knight knight;
     private final EnemiesAssetsManager enemiesAssets;
+    private final GameData gameData;
 
     // --- Subsystems ---
     private final KnightInputProcessor knightInputProcessor;
@@ -53,15 +49,17 @@ public class GameScreenController implements EventListener {
     private final CombatSystem combatSystem;
     private final CameraSystem cameraSystem;
     private final WorldSystem worldSystem;
+    private final InteractionSystem interactionSystem;
 
     // --- Respawn callback ---
     private Runnable onPlayerDied;
 
     private GameEnvironment pendingTransfer = null;
 
-    public GameScreenController(Knight knight, EnemiesAssetsManager enemiesAssets) {
+    public GameScreenController(Knight knight, EnemiesAssetsManager enemiesAssets, GameData gameData) {
         this.knight = knight;
         this.enemiesAssets = enemiesAssets;
+        this.gameData = gameData;
 
         // Build subsystems
         this.knightInputProcessor = new KnightInputProcessor(knight, knight.getSettings());
@@ -72,6 +70,7 @@ public class GameScreenController implements EventListener {
         this.combatSystem = new CombatSystem(collisionSystem);
         this.cameraSystem = new CameraSystem();
         this.worldSystem = new WorldSystem();
+        this.interactionSystem = new InteractionSystem();
 
         // Subscribe to events
         EventBus.getInstance().subscribe(GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST, this);
@@ -199,6 +198,9 @@ public class GameScreenController implements EventListener {
                     }
                 }
             }
+
+            // 16. Void heart unlocking check
+            interactionSystem.resolveVoidHeartItemInteraction(knight, gameMap, gameData, knightInputProcessor);
         }
     }
 

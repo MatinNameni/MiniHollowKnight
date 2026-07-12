@@ -7,11 +7,15 @@ import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.objects.PointMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.tiles.AnimatedTiledMapTile;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.github.matinnameni.minihollowknight.model.data.GameData;
+import com.github.matinnameni.minihollowknight.model.enums.CharmType;
 import com.github.matinnameni.minihollowknight.model.object.Arena;
 import com.github.matinnameni.minihollowknight.model.object.BreakableWall;
 import com.github.matinnameni.minihollowknight.model.object.Door;
@@ -32,6 +36,7 @@ public class TiledGameMap {
 
     private static final String MAIN_LAYER_NAME = "MainLayer";
     private static final String DOORS_LAYER_NAME = "Doors";
+    private static final String INTERACTION_LAYER_NAME = "Interaction";
 
     private static final String SPAWN_POINT_NAME = "playerSpawnPoint";
     private static final String CRAWLID_SPAWN_NAME = "crawlidSpawn";
@@ -53,6 +58,7 @@ public class TiledGameMap {
     private static final String PROP_TEX_CRACKED = "textureCracked";
     private static final String PROP_TEX_BROKEN = "textureBroken";
     private static final String PROP_HITS_TO_BREAK = "hitsToBreak";
+    private static final String PROP_INTERACTION = "interaction";
 
     // --- Arena ---
     private static final String ARENA_NAME = "arena";
@@ -77,6 +83,8 @@ public class TiledGameMap {
     private TiledMapTileLayer mainLayer;
     private TiledMapTileLayer mainForegroundLayer;
 
+    private TiledMapTileLayer voidHeartCharmLayer;
+
     private TiledMapTileLayer blackMaskFGLayer;
 
     private TiledMapTileLayer foregroundLayer;
@@ -98,13 +106,15 @@ public class TiledGameMap {
     private List<Arena> arenas = new ArrayList<>();
 
     // --- Map dimensions ---
-
     private final float mapWidth;
     private final float mapHeight;
 
     // --- Hidden room ---
-
     private boolean blackMaskRemoved = false;
+
+    // --- Void Heart ---
+    private Rectangle voidHeartInteractionArea;
+    private boolean voidHeartRemoved = false;
 
     // --- Current environment ---
     private GameEnvironment currentEnvironment;
@@ -112,11 +122,11 @@ public class TiledGameMap {
     // --- Assets ---
     private TiledMapAssetBundle mapAssets;
 
-    public TiledGameMap(GameEnvironment environment, TiledMapAssetBundle mapAssets) {
-        this(environment, UNIT_SCALE, mapAssets);
+    public TiledGameMap(GameEnvironment environment, TiledMapAssetBundle mapAssets, GameData gameData) {
+        this(environment, UNIT_SCALE, mapAssets, gameData);
     }
 
-    public TiledGameMap(GameEnvironment environment, float unitScale, TiledMapAssetBundle mapAssets) {
+    public TiledGameMap(GameEnvironment environment, float unitScale, TiledMapAssetBundle mapAssets, GameData gameData) {
         tiledMap = new TmxMapLoader().load(environment.path);
         renderer = new OrthogonalTiledMapRenderer(tiledMap, unitScale);
 
@@ -131,6 +141,8 @@ public class TiledGameMap {
 
         this.currentEnvironment = environment;
         this.mapAssets = mapAssets;
+
+        this.voidHeartRemoved = gameData.hasCollected(CharmType.VOID_HEART);
 
         cacheLayers();
         extractObjects(unitScale);
@@ -169,6 +181,9 @@ public class TiledGameMap {
                     break;
                 case "mainForeground":
                     mainForegroundLayer = tileLayer;
+                    break;
+                case "voidHeartCharm":
+                    voidHeartCharmLayer = tileLayer;
                     break;
                 case "blackMaskFG":
                     blackMaskFGLayer = tileLayer;
@@ -213,6 +228,28 @@ public class TiledGameMap {
                         rect.height * unitScale,
                         mapAssets);
                     doors.add(door);
+                }
+            }
+        }
+
+        // Interaction
+        MapLayer interaction = tiledMap.getLayers().get(INTERACTION_LAYER_NAME);
+        if (interaction != null) {
+            for (MapObject mapObject : interaction.getObjects()) {
+                if (mapObject instanceof RectangleMapObject) {
+                    Rectangle rect = ((RectangleMapObject) mapObject).getRectangle();
+
+                    if (mapObject.getProperties().containsKey(PROP_INTERACTION)) {
+                        String toBeInteracted = mapObject.getProperties().get(PROP_INTERACTION, String.class);
+                        if (toBeInteracted.equals("voidHeart")) {
+                            voidHeartInteractionArea = new Rectangle(
+                                rect.x * unitScale,
+                                rect.y * unitScale,
+                                rect.width * unitScale,
+                                rect.height * unitScale
+                            );
+                        }
+                    }
                 }
             }
         }
@@ -357,6 +394,10 @@ public class TiledGameMap {
 
     // --- Rendering ---
 
+    public void update(float deltaTime) {
+        AnimatedTiledMapTile.updateAnimationBaseTime();
+    }
+
     /**
      * Renders the background tile layer.
      * Should be called before any other layers.
@@ -396,6 +437,7 @@ public class TiledGameMap {
         if (mainBackgroundLayer != null) renderer.renderTileLayer(mainBackgroundLayer);
         if (mainLayer != null) renderer.renderTileLayer(mainLayer);
         if (mainForegroundLayer != null) renderer.renderTileLayer(mainForegroundLayer);
+        if (voidHeartCharmLayer != null && !voidHeartRemoved) renderer.renderTileLayer(voidHeartCharmLayer);
         renderer.getBatch().end();
     }
 
@@ -470,6 +512,10 @@ public class TiledGameMap {
         return doors;
     }
 
+    public Rectangle getVoidHeartInteractionArea() {
+        return voidHeartInteractionArea;
+    }
+
     public Vector2 getTransferPoint(GameEnvironment previous, GameEnvironment current) {
         for (Map.Entry<ArrayList<GameEnvironment>, Vector2> entry : transferPoints.entrySet()) {
             GameEnvironment env1 = entry.getKey().getFirst();
@@ -499,6 +545,21 @@ public class TiledGameMap {
             blackMaskFGLayer.setVisible(false);
             blackMaskFGLayer.setOpacity(0f);
         }
+    }
+
+    /** Removes the glowing item representing the void heart charm. */
+    public void removeVoidHeartCharm() {
+        if (voidHeartRemoved) return;
+        voidHeartRemoved = true;
+        if(voidHeartCharmLayer != null) {
+            voidHeartCharmLayer.setVisible(false);
+            voidHeartCharmLayer.setOpacity(0f);
+        }
+    }
+
+    /** @return true if void heart charm layer is already removed. */
+    public boolean isVoidHeartRemoved() {
+        return voidHeartRemoved;
     }
 
     // --- Lifecycle ---
