@@ -49,6 +49,7 @@ import com.github.matinnameni.minihollowknight.view.hud.InventoryOverlay;
 import com.github.matinnameni.minihollowknight.view.hud.PauseOverlay;
 import com.github.matinnameni.minihollowknight.view.hud.ZoteDialogueOverlay;
 import com.github.matinnameni.minihollowknight.view.renderer.KnightRenderer;
+import com.github.matinnameni.minihollowknight.view.renderer.EnvironmentBackgroundRenderer;
 
 /**
  * The main gameplay screen.
@@ -77,6 +78,9 @@ public class GameScreen implements Screen, EventListener {
     private KnightRenderer knightRenderer;
     private TiledGameMap gameMap;
     private TiledMapAssetBundle mapAssets;
+
+    // --- Environment background picture (covers the whole screen behind the Tiled map) ---
+    private EnvironmentBackgroundRenderer environmentBackground;
 
     // --- HUD ---
     private GameHud gameHud;
@@ -199,6 +203,9 @@ public class GameScreen implements Screen, EventListener {
             MapLoader.loadMap(GameEnvironment.FORGOTTEN_CROSSROADS, mapAssets, gameData) :
             MapLoader.loadMap(currentEnvironment, mapAssets, gameData);
         controller.setGameMap(gameMap);
+
+        environmentBackground = new EnvironmentBackgroundRenderer(null);
+        environmentBackground.setCurrentEnvironment(gameMap.getCurrentEnvironment());
 
         // Start the area-appropriate background music.
         GameEnvironment musicEnv = (currentEnvironment == null)
@@ -332,6 +339,10 @@ public class GameScreen implements Screen, EventListener {
         Color bgColor = controller.getCurrentBackgroundColor(gameMap);
         Gdx.gl.glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (environmentBackground != null) {
+            environmentBackground.render(batch, camera);
+        }
 
         gameMap.update(delta);
 
@@ -586,6 +597,11 @@ public class GameScreen implements Screen, EventListener {
         gameMap = MapLoader.loadMap(GameEnvironment.FORGOTTEN_CROSSROADS, mapAssets, gameData);
         controller.setGameMap(gameMap);
 
+        // Swap the background picture to match the respawn area.
+        if (environmentBackground != null) {
+            environmentBackground.setCurrentEnvironment(gameMap.getCurrentEnvironment());
+        }
+
         // Reset the background music
         UiManager.getInstance().onGameEnvironmentChanged(GameEnvironment.FORGOTTEN_CROSSROADS);
 
@@ -691,6 +707,11 @@ public class GameScreen implements Screen, EventListener {
         }
         gameMap = MapLoader.loadMap(target, mapAssets, gameData);
         controller.setGameMap(gameMap);
+
+        // Swap the background picture to match the new area.
+        if (environmentBackground != null) {
+            environmentBackground.setCurrentEnvironment(gameMap.getCurrentEnvironment());
+        }
 
         // Place the knight at the new map's transfer point.
         Vector2 spawn = gameMap.getTransferPoint(previousMap, target);
@@ -900,6 +921,9 @@ public class GameScreen implements Screen, EventListener {
         zoteDialogueOverlay.dispose();
         inventoryOverlay.dispose();
         achievementPopup.dispose();
+        if (environmentBackground != null) {
+            environmentBackground.dispose();
+        }
     }
 
     // --- Helpers ---
