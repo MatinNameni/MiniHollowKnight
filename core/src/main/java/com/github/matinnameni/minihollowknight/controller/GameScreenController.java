@@ -240,11 +240,11 @@ public class GameScreenController implements EventListener {
     public void onEvent(GameEvent event, Object payload) {
         if (event == GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST && payload instanceof VengefulSpirit.SpawnInfo) {
             VengefulSpirit.SpawnInfo info = (VengefulSpirit.SpawnInfo) payload;
-            projectileSystem.addProjectile(new VengefulSpirit(info.x, info.y, info.direction, info.assets, info.damageMultiplier));
+            projectileSystem.addProjectile(new VengefulSpirit(info.x, info.y, info.direction, info.assets, info.isShadow, info.damageMultiplier));
             EventBus.getInstance().publish(GameEvent.CAMERA_SHAKE);
         } else if (event == GameEvent.PLAYER_HOWLING_WRAITHS_CAST && payload instanceof HowlingWraiths.SpawnInfo) {
             HowlingWraiths.SpawnInfo info = (HowlingWraiths.SpawnInfo) payload;
-            projectileSystem.addProjectile(new HowlingWraiths(info.x, info.y, info.assets, info.damageMultiplier));
+            projectileSystem.addProjectile(new HowlingWraiths(info.x, info.y, info.assets, info.isShadow, info.damageMultiplier));
             EventBus.getInstance().publish(GameEvent.CAMERA_SHAKE);
         } else if (event == GameEvent.PLAYER_NAIL_HIT && payload instanceof Enemy) {
             combatSystem.resolveNailHitOnEnemy(knight, (Enemy) payload);

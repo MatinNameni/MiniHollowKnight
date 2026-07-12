@@ -74,7 +74,7 @@ public class KnightRenderer {
             case FALLING: return assets.getAnimation(KnightAnimationType.FALL);
             case WALL_SLIDE: return assets.getAnimation(KnightAnimationType.WALL_SLIDE);
             case WALL_JUMP: return assets.getAnimation(KnightAnimationType.WALL_JUMP);
-            case DASHING: return assets.getAnimation(KnightAnimationType.DASH);
+            case DASHING: return getDashAnimation();
             case FOCUSING: return assets.getAnimation(KnightAnimationType.FOCUS);
             case HIT: return assets.getAnimation(KnightAnimationType.IDLE);
             case LANDING: return assets.getAnimation(KnightAnimationType.LANDING);
@@ -195,5 +195,16 @@ public class KnightRenderer {
     /** Blink effect: skip every other render frame during invincibility. */
     private boolean shouldSkipRenderFrame() {
         return ((int) (knight.getInvincibilityTimer() * 8f) % 2) == 0;
+    }
+
+    /**
+     * @return the shadow animation if the knight has sharp shadow,
+     * normal animation otherwise
+     */
+    private Animation<TextureRegion> getDashAnimation() {
+        if (knight.isDashingThroughEnemies()) {
+            return assets.getAnimation(KnightAnimationType.SHADOW_DASH);
+        }
+        return assets.getAnimation(KnightAnimationType.DASH);
     }
 }

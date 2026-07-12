@@ -31,8 +31,10 @@ public class VengefulSpirit implements Projectile {
     public static final int DAMAGE = 50;
 
     // Size
-    private static final float HITBOX_WIDTH = 180f;
-    private static final float HITBOX_HEIGHT = 100f;
+    private static final float NORMAL_DASH_HITBOX_WIDTH = 180f;
+    private static final float NORMAL_DASH_HITBOX_HEIGHT = 100f;
+    private static final float SHADOW_DASH_HITBOX_WIDTH = 400f;
+    private static final float SHADOW_DASH_HITBOX_HEIGHT = 100f;
 
     // --- State ---
 
@@ -42,6 +44,7 @@ public class VengefulSpirit implements Projectile {
     private float stateTime = 0f;
     private float lifetime = 0f;
     private final float damageMultiplier;
+    private boolean isShadow;
 
     private final Set<Enemy> damagedEnemies = new LinkedHashSet<>();
 
@@ -49,15 +52,17 @@ public class VengefulSpirit implements Projectile {
 
     private KnightAssetBundle assets;
 
-    public VengefulSpirit(float x, float y, Direction direction, KnightAssetBundle assets) {
-        this(x, y, direction, assets, 1f);
+    public VengefulSpirit(float x, float y, Direction direction, boolean isShadow, KnightAssetBundle assets) {
+        this(x, y, direction, assets, isShadow, 1f);
     }
 
-    public VengefulSpirit(float x, float y, Direction direction, KnightAssetBundle assets, float damageMultiplier) {
+    public VengefulSpirit(float x, float y, Direction direction, KnightAssetBundle assets, boolean isShadow,
+                          float damageMultiplier) {
         this.position.set(x, y);
         this.direction = (direction == Direction.LEFT) ? Direction.LEFT : Direction.RIGHT;
         this.assets = assets;
         this.damageMultiplier = damageMultiplier;
+        this.isShadow = isShadow;
     }
 
     // --- Projectile ---
@@ -79,6 +84,11 @@ public class VengefulSpirit implements Projectile {
                 break;
 
             case IMPACT:
+                if (isShadow) {
+                    state = State.DEAD;
+                    return;
+                }
+
                 Animation<TextureRegion> impactAnimation = assets.getAnimation(KnightAnimationType.BALL_END);
                 if (impactAnimation != null && stateTime >= impactAnimation.getAnimationDuration()) {
                     state = State.DEAD;
@@ -118,10 +128,18 @@ public class VengefulSpirit implements Projectile {
 
     @Override
     public Rectangle getBounds() {
+        if (isShadow) {
+            return new Rectangle(
+                position.x - SHADOW_DASH_HITBOX_WIDTH / 2f,
+                position.y - SHADOW_DASH_HITBOX_HEIGHT / 2f,
+                SHADOW_DASH_HITBOX_WIDTH, SHADOW_DASH_HITBOX_HEIGHT
+            );
+        }
+
         return new Rectangle(
-            position.x - HITBOX_WIDTH / 2f,
-            position.y - HITBOX_HEIGHT / 2f,
-            HITBOX_WIDTH, HITBOX_HEIGHT
+            position.x - NORMAL_DASH_HITBOX_WIDTH / 2f,
+            position.y - NORMAL_DASH_HITBOX_HEIGHT / 2f,
+            NORMAL_DASH_HITBOX_WIDTH, NORMAL_DASH_HITBOX_HEIGHT
         );
     }
 
@@ -189,7 +207,9 @@ public class VengefulSpirit implements Projectile {
 
     private Animation<TextureRegion> getCurrentAnimation() {
         switch (state) {
-            case FLYING: return assets.getAnimation(KnightAnimationType.SOUL_BALL);
+            case FLYING: return (isShadow) ?
+                assets.getAnimation(KnightAnimationType.SHADOW_BALL) :
+                assets.getAnimation(KnightAnimationType.SOUL_BALL);
             case IMPACT: return assets.getAnimation(KnightAnimationType.BALL_END);
             default: return null;
         }
@@ -209,17 +229,19 @@ public class VengefulSpirit implements Projectile {
         public final Direction direction;
         public final KnightAssetBundle assets;
         public final float damageMultiplier;
+        public final boolean isShadow;
 
-        public SpawnInfo(float x, float y, Direction direction, KnightAssetBundle assets) {
-            this(x, y, direction, assets, 1f);
+        public SpawnInfo(float x, float y, Direction direction, boolean isShadow, KnightAssetBundle assets) {
+            this(x, y, direction, assets, isShadow, 1f);
         }
 
-        public SpawnInfo(float x, float y, Direction direction, KnightAssetBundle assets, float damageMultiplier) {
+        public SpawnInfo(float x, float y, Direction direction, KnightAssetBundle assets, boolean isShadow, float damageMultiplier) {
             this.x = x;
             this.y = y;
             this.direction = direction;
             this.assets = assets;
             this.damageMultiplier = damageMultiplier;
+            this.isShadow = isShadow;
         }
     }
 }

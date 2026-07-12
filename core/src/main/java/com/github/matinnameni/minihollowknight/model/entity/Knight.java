@@ -18,6 +18,7 @@ import com.github.matinnameni.minihollowknight.model.enums.KnightAnimationType;
 import com.github.matinnameni.minihollowknight.model.enums.KnightState;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /** The player-controlled Knight entity. */
@@ -402,7 +403,7 @@ public class Knight implements Entity {
         float spawnY = position.y + HEIGHT / 2f + HOWLING_WRAITHS_OFFSET;
 
         EventBus.getInstance().publish(GameEvent.PLAYER_HOWLING_WRAITHS_CAST,
-            new HowlingWraiths.SpawnInfo(spawnX, spawnY, assets, charmEffects.getSpellDamageMultiplier()));
+            new HowlingWraiths.SpawnInfo(spawnX, spawnY, assets, hasVoidHear(), charmEffects.getSpellDamageMultiplier()));
     }
 
     public boolean canCastVengefulSpirit() {
@@ -424,7 +425,7 @@ public class Knight implements Entity {
         Direction fireDir = facingRight ? Direction.RIGHT : Direction.LEFT;
 
         EventBus.getInstance().publish(GameEvent.PLAYER_VENGEFUL_SPIRIT_CAST,
-            new VengefulSpirit.SpawnInfo(spawnX, spawnY, fireDir, assets, charmEffects.getSpellDamageMultiplier()));
+            new VengefulSpirit.SpawnInfo(spawnX, spawnY, fireDir, assets, hasVoidHear(), charmEffects.getSpellDamageMultiplier()));
     }
 
     // --- State ---
@@ -894,6 +895,10 @@ public class Knight implements Entity {
 
     public Vector2 getLastSafePosition() {
         return lastSafePosition;
+    }
+
+    public boolean hasVoidHear() {
+        return charmEffects.hasVoidHeart();
     }
 
     // --- Setters ---

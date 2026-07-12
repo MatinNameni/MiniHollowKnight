@@ -31,6 +31,7 @@ public class HowlingWraiths implements Projectile {
     private float stateTime = 0f;
     private boolean isDead;
     private final float damageMultiplier;
+    private boolean isShadow;
 
     private final Set<Enemy> damagedEnemies = new LinkedHashSet<>();
 
@@ -38,14 +39,15 @@ public class HowlingWraiths implements Projectile {
 
     private KnightAssetBundle assets;
 
-    public HowlingWraiths(float x, float y, KnightAssetBundle assets) {
-        this(x, y, assets, 1f);
+    public HowlingWraiths(float x, float y, KnightAssetBundle assets, boolean isShadow) {
+        this(x, y, assets, isShadow, 1f);
     }
 
-    public HowlingWraiths(float x, float y, KnightAssetBundle assets, float damageMultiplier) {
+    public HowlingWraiths(float x, float y, KnightAssetBundle assets, boolean isShadow, float damageMultiplier) {
         this.position.set(x, y);
         this.assets = assets;
         this.damageMultiplier = damageMultiplier;
+        this.isShadow = isShadow;
     }
 
     @Override
@@ -54,7 +56,7 @@ public class HowlingWraiths implements Projectile {
 
         stateTime += deltaTime;
 
-        Animation<TextureRegion> animation = assets.getAnimation(KnightAnimationType.SOUL_SCREAM);
+        Animation<TextureRegion> animation = getCurrentAnimation();
         if (animation != null && stateTime >= animation.getAnimationDuration()) {
             isDead = true;
         }
@@ -134,7 +136,9 @@ public class HowlingWraiths implements Projectile {
         if(isDead) {
             return null;
         }
-        return assets.getAnimation(KnightAnimationType.SOUL_SCREAM);
+        return (isShadow) ?
+            assets.getAnimation(KnightAnimationType.SHADOW_SCREAM) :
+            assets.getAnimation(KnightAnimationType.SOUL_SCREAM);
     }
 
     // --- Inner classes ---
@@ -144,16 +148,18 @@ public class HowlingWraiths implements Projectile {
         public final float y;
         public final KnightAssetBundle assets;
         public final float damageMultiplier;
+        public final boolean isShadow;
 
-        public SpawnInfo(float x, float y, KnightAssetBundle assets) {
-            this(x, y, assets, 1f);
+        public SpawnInfo(float x, float y, boolean isShadow, KnightAssetBundle assets) {
+            this(x, y, assets, isShadow, 1f);
         }
 
-        public SpawnInfo(float x, float y, KnightAssetBundle assets, float damageMultiplier) {
+        public SpawnInfo(float x, float y, KnightAssetBundle assets, boolean isShadow, float damageMultiplier) {
             this.x = x;
             this.y = y;
             this.assets = assets;
             this.damageMultiplier = damageMultiplier;
+            this.isShadow = isShadow;
         }
     }
 }
