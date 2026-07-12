@@ -212,6 +212,11 @@ public class HuskHornhead extends Enemy {
                 break;
 
             case RESTING:
+                if (knockbackCooldown > 0f) {
+                    knockbackCooldown -= deltaTime;
+                    break;
+                }
+
                 velocity.x = 0f;
                 if (stateTime >= REST_DURATION) {
                     enterState(State.WALKING);

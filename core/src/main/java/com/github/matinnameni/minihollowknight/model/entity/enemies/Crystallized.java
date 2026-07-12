@@ -297,8 +297,12 @@ public class Crystallized extends Enemy {
 
         switch (state) {
             case IDLE:
+                if (knockbackCooldown > 0f) {
+                    knockbackCooldown -= deltaTime;
+                    break;
+                }
+
                 velocity.x = 0f;
-                if (knockbackCooldown > 0f) break;
                 if (stateTime >= IDLE_DURATION) {
                     enterState(State.RUNNING);
                 }
